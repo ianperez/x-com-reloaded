@@ -7,12 +7,11 @@ namespace ufo
 	{
 		SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
-		SDL_Surface* screen = SDL_SetVideoMode(800, 600, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_ANYFORMAT);
+		SDL_Surface* screen = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_ANYFORMAT);
 
 		WorldMap map;
 
-		map.radius = 5;
-		map.distance = 2000;
+		map.distance = 10000;
 		while (1)
 		{
 			SDL_FillRect(screen, NULL, 0);
@@ -21,17 +20,12 @@ namespace ufo
 			SDL_PollEvent(&e);
 			if (e.type == SDL_QUIT)
 				break;
-			if (e.type == SDL_KEYDOWN)
-			{
-				if (e.key.keysym.sym == SDLK_UP)
-					map.distance += 20;
-				if (e.key.keysym.sym == SDLK_DOWN && map.distance > 20)
-					map.distance -= 20;
-				if (e.key.keysym.sym == SDLK_LEFT && map.radius > 0)
-					map.radius--;
-				if (e.key.keysym.sym == SDLK_RIGHT)
-					map.radius++;
-			}
+
+			Uint8 *keystate = SDL_GetKeyState(NULL);
+			if (keystate[SDLK_UP])
+				map.distance += 200;
+			if (keystate[SDLK_DOWN] && map.distance > 200)
+				map.distance -= 200;
 
 			map.draw(screen);
 

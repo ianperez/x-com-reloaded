@@ -22,11 +22,6 @@ namespace ufo
 		unsigned long texture;
 	};
 
-	struct Polygon3d : public vector<Point3d>
-	{
-		unsigned long texture;
-	};
-
 	class TrigTable
 	{
 	protected:
@@ -60,17 +55,16 @@ namespace ufo
 		Sin m_sin;
 		Cos m_cos;
 
-		vector<Polygon2d> m_raw;
-		vector<Polygon3d> m_transformed;
+		vector<Polygon2d> m_map;
+
+		void toSpherical(Point2d& p1, Point3d& p2);
 
 	public:
 
 		WorldMap();
 
-		unsigned short radius;
-		unsigned short distance;
+		unsigned long distance;
 
 		void draw(SDL_Surface* surface);
-		void transform();
 	};
 }
