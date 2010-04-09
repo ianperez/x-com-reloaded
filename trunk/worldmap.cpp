@@ -63,7 +63,7 @@ namespace ufo
 				break;
 	
 			file.read((char*)&polygon.texture, 4);
-			m_raw.push_back(polygon);
+			m_map.push_back(polygon);
 		}
 	}
 
@@ -71,17 +71,21 @@ namespace ufo
 	{
 		transform();
 
-		for (size_t i = 0; i < m_raw.size(); ++i)
+		for (size_t i = 0; i < m_map.size(); ++i)
 		{
-			for (size_t j = 0; j < m_raw[i].size(); ++j)
+			for (size_t j = 0; j < m_map[i].size(); ++j)
 			{
+				size_t k = (j + 1) % m_map[i].size();
+
+				Point3d p1;
+				toSpherical(m_map[i][j], p1);
+
+				Point3d p2;
 				Point2d p1;
 				Point2d p2;
 
 				p1.x = m_transformed[i][j].x / (m_transformed[i][j].z == 0 ? 1 : m_transformed[i][j].z);
 				p1.y = m_transformed[i][j].y / (m_transformed[i][j].z == 0 ? 1 : m_transformed[i][j].z);
-
-				size_t k = (j + 1) % m_transformed[i].size();
 
 				p2.x = m_transformed[i][k].x / (m_transformed[i][k].z == 0 ? 1 : m_transformed[i][k].z);
 				p2.y = m_transformed[i][k].y / (m_transformed[i][k].z == 0 ? 1 : m_transformed[i][k].z);
@@ -96,25 +100,10 @@ namespace ufo
 		}
 	}
 
-	void WorldMap::transform()
+	void WorldMap::toSpherical(Point2d& p1, Point3d& p2)
 	{
-		m_transformed.clear();
-
-		for (size_t i = 0; i < m_raw.size(); ++i)
-		{
-			Polygon3d polygon;
-			for (size_t j = 0; j < m_raw[i].size(); ++j)
-			{
-				Point3d point;
-				point.x = radius * m_sin(m_raw[i][j].y + 720) * m_cos(m_raw[i][j].x);
-				point.y = radius * m_sin(m_raw[i][j].y + 720) * m_sin(m_raw[i][j].x);
-				point.z = distance + radius * m_cos(m_raw[i][j].y + 720);
-
-				polygon.push_back(point);
-			}
-
-			polygon.texture = m_raw[i].texture;
-			m_transformed.push_back(polygon);
-		}
+		p2.x = m_sin(p1.y + 720) * m_cos(p1.x);
+		p2.y = m_sin(p1.y + 720) * m_sin(p1.x);
+		p2.z = m_cos(p1.y + 720);
 	}
 }
