@@ -9,7 +9,7 @@ namespace ufo
 
 	struct Point2d
 	{
-		short x, y;
+		long x, y;
 	};
 
 	struct Point3d
@@ -57,13 +57,14 @@ namespace ufo
 
 		vector<Polygon2d> m_map;
 
-		void toSpherical(Point2d& p1, Point3d& p2);
+		void toSpherical(const Point2d& p1, Point3d& p2);
 
 	public:
 
 		WorldMap();
 
-		unsigned long distance;
+		long distance;
+		long rx, ry;
 
 		void draw(SDL_Surface* surface);
 	};
