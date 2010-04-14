@@ -80,12 +80,18 @@ namespace ufo
 			{
 				size_t k = (j + 1) % m_map[i].size();
 
+				// transform points to spherical coordinates
 				Point3d p1;
 				toSpherical(m_map[i][j], p1);
 
 				Point3d p2;
 				toSpherical(m_map[i][k], p2);
 
+				// perform basic rotation
+
+				// perform basic translation
+
+				// perform basic projection
 				Point2d p3;
 				p3.x = p1.x / p1.z;
 				p3.y = p1.y / p1.z;
@@ -94,6 +100,7 @@ namespace ufo
 				p4.x = p2.x / p2.z;
 				p4.y = p2.y / p2.z;
 
+				// move origin (0, 0) to center of screen
 				p3.x += surface->w / 2;
 				p3.y += surface->h / 2;
 				p4.x += surface->w / 2;
