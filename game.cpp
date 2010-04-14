@@ -12,6 +12,8 @@ namespace ufo
 		WorldMap map;
 
 		map.distance = 10000;
+		map.rx = 0;
+		map.ry = 0;
 		while (1)
 		{
 			SDL_FillRect(screen, NULL, 0);
@@ -23,9 +25,13 @@ namespace ufo
 
 			Uint8 *keystate = SDL_GetKeyState(NULL);
 			if (keystate[SDLK_UP])
-				map.distance += 200;
-			if (keystate[SDLK_DOWN] && map.distance > 200)
-				map.distance -= 200;
+				map.ry -= 10;
+			if (keystate[SDLK_DOWN])
+				map.ry += 10;
+			if (keystate[SDLK_LEFT])
+				map.rx -= 10;
+			if (keystate[SDLK_RIGHT])
+				map.rx += 10;
 
 			map.draw(screen);
 
