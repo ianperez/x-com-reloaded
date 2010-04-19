@@ -3,6 +3,17 @@
 
 namespace ufo
 {
+	void init(WorldMap& map)
+	{
+		map.radius = 1;
+		map.distance = 3000000;
+		map.rx = 0;
+		map.ry = 0;
+		map.rz = 0;
+		map.lx = 0;
+		map.ly = 720;
+	}
+
 	Game::Game()
 	{
 		SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
@@ -10,8 +21,8 @@ namespace ufo
 		SDL_Surface* screen = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_DOUBLEBUF | SDL_ANYFORMAT);
 
 		WorldMap map;
-
-		map.distance = 10000;
+		init(map);
+		map.test(screen);
 		map.rx = 0;
 		map.ry = 0;
 		while (1)
@@ -25,13 +36,27 @@ namespace ufo
 
 			Uint8 *keystate = SDL_GetKeyState(NULL);
 			if (keystate[SDLK_UP])
-				map.ry -= 10;
+				map.ry -= 0.01;
 			if (keystate[SDLK_DOWN])
-				map.ry += 10;
+				map.ry += 0.01;
 			if (keystate[SDLK_LEFT])
-				map.rx -= 10;
+				map.rx -= 0.01;
 			if (keystate[SDLK_RIGHT])
-				map.rx += 10;
+				map.rx += 0.01;
+			if (keystate[SDLK_HOME])
+				map.ly -= 5;
+			if (keystate[SDLK_END])
+				map.ly += 5;
+			if (keystate[SDLK_DELETE])
+				map.lx -= 5;
+			if (keystate[SDLK_PAGEDOWN])
+				map.lx += 5;
+			if (keystate[SDLK_PAGEUP])
+				map.distance += 10000;
+			if (keystate[SDLK_INSERT])
+				map.distance -= 10000;
+			if (keystate[SDLK_KP0])
+				init(map);
 
 			map.draw(screen);
 

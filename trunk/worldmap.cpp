@@ -22,9 +22,9 @@ namespace ufo
 		}
 	}
 
-	short TrigTable::operator () (size_t i)
+	short TrigTable::operator () (long i)
 	{
-		return m_table[i % m_table.size()];
+		return m_table[abs(i) % m_table.size()];
 	}
 
 	Sin::Sin()
@@ -80,41 +80,88 @@ namespace ufo
 			{
 				size_t k = (j + 1) % m_map[i].size();
 
-				// transform points to spherical coordinates
+				// transform raw points (from world.dat) to spherical coordinates
 				Point3d p1;
 				toSpherical(m_map[i][j], p1);
 
 				Point3d p2;
 				toSpherical(m_map[i][k], p2);
 
-				// perform basic rotation
+				// perform x/y rotation
+				rotate(p1);
+				rotate(p2);
 
 				// perform basic translation
+				p1.z += distance;
+				p2.z += distance;
 
 				// perform basic projection
+				if (p1.z < 1 || p2.z < 1)
+					continue;
+
 				Point2d p3;
-				p3.x = p1.x / p1.z;
-				p3.y = p1.y / p1.z;
+				project(surface, p1, p3);
 
 				Point2d p4;
-				p4.x = p2.x / p2.z;
-				p4.y = p2.y / p2.z;
-
-				// move origin (0, 0) to center of screen
-				p3.x += surface->w / 2;
-				p3.y += surface->h / 2;
-				p4.x += surface->w / 2;
-				p4.y += surface->h / 2;
+				project(surface, p2, p4);
 
 				lineRGBA(surface, p3.x, p3.y, p4.x, p4.y, 255, 255, 255, 255);
 			}
 		}
 	}
 
+	void WorldMap::test(SDL_Surface* surface)
+	{
+		ofstream file("test.txt");
+		for (size_t i = 0; i < m_map.size(); ++i)
+		{
+			for (size_t j = 0; j < m_map[i].size(); ++j)
+			{
+				size_t k = (j + 1) % m_map[i].size();
+
+				// transform raw points (from world.dat) to spherical coordinates
+				Point3d p1;
+				toSpherical(m_map[i][j], p1);
+
+				Point3d p2;
+				toSpherical(m_map[i][k], p2);
+
+				file << p1.x << '\t' << p1.y << '\t' << p1.z << '\t';
+				file << p2.x << '\t' << p2.y << '\t' << p2.z << endl;
+			}
+		}
+	}
+
 	void WorldMap::toSpherical(const Point2d& p1, Point3d& p2)
 	{
-		p2.x = m_sin(p1.y + 720) * m_cos(p1.x + rx);
-		p2.y = m_sin(p1.y + 720) * m_sin(p1.x + rx);
-		p2.z = m_cos(p1.y + 720) + distance;
+		short sx = m_sin(p1.x + lx);
+		short cx = m_cos(p1.x + lx);
+		short sy = m_sin(p1.y + ly);
+		short cy = m_cos(p1.y + ly);
+
+		p2.x = radius * sy * cx;
+		p2.y = radius * sy * sx;
+		p2.z = radius * cx;
+	}
+
+	void WorldMap::rotate(Point3d& p)
+	{
+		Point3d orig;
+
+		// rotate y-axis
+		orig = p;
+		p.x = sin(rx) * orig.z + cos(rx) * orig.x;
+		p.z = cos(rx) * orig.z - sin(rx) * orig.x;
+
+		// rotate x-axis
+		orig = p;
+		p.y = cos(ry) * orig.y - sin(ry) * orig.z;
+		p.z = sin(ry) * orig.y + cos(ry) * orig.z;
+	}
+
+	void WorldMap::project(SDL_Surface* surface, const Point3d& p1, Point2d& p2)
+	{
+		p2.x = static_cast<short>(surface->w * p1.x / p1.z + surface->w / 2);
+		p2.y = static_cast<short>(surface->w * p1.y / p1.z + surface->h / 2);
 	}
 }
