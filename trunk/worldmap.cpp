@@ -2,7 +2,6 @@
 #include <fstream>
 #include <sdl_gfxprimitives.h>
 #include <cmath>
-#include <sstream>
 
 namespace ufo
 {
