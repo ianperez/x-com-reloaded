@@ -9,7 +9,7 @@ namespace ufo
 
 	struct Point2d
 	{
-		long x, y;
+		short x, y;
 	};
 
 	struct Point3d
@@ -32,7 +32,7 @@ namespace ufo
 
 	public:
 
-		short operator () (long i);
+		short operator () (short i);
 	};
 
 	class Sin : public TrigTable
@@ -58,6 +58,7 @@ namespace ufo
 		vector<Polygon2d> m_map;
 
 		void toSpherical(const Point2d& p1, Point3d& p2);
+		double toRad(double deg);
 		void rotate(Point3d& p);
 		void project(SDL_Surface* surface, const Point3d& p1, Point2d& p2);
 
@@ -65,10 +66,8 @@ namespace ufo
 
 		WorldMap();
 
-		double distance;
-		double rx, ry, rz;
-		double radius;
-		short lx, ly;
+		short rx, ry;
+		short radius;
 
 		void draw(SDL_Surface* surface);
 		void test(SDL_Surface* surface);
