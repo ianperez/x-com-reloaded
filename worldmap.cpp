@@ -2,6 +2,7 @@
 #include <fstream>
 #include <sdl_gfxprimitives.h>
 #include <cmath>
+#include <sstream>
 
 namespace ufo
 {
@@ -11,20 +12,16 @@ namespace ufo
 		if (!file)
 			throw runtime_error("error opening " + filename);
 
-		short v;
-		while (1)
-		{
-			file.read((char*)&v, 2);
-			if (file.gcount() == 0)
-				break;
-
-			m_table.push_back(v);
-		}
+		m_table.resize(2881);
+		for (size_t i = 0; i < m_table.size(); ++i)
+			file.read((char*)&m_table[i], 2);
 	}
 
-	short TrigTable::operator () (long i)
+	short TrigTable::operator () (short i)
 	{
-		return m_table[abs(i) % m_table.size()];
+		if (i < 0)
+			i = m_table.size() - (abs(i) % m_table.size());
+		return m_table[i % m_table.size()];
 	}
 
 	Sin::Sin()
@@ -91,12 +88,8 @@ namespace ufo
 				rotate(p1);
 				rotate(p2);
 
-				// perform basic translation
-				p1.z += distance;
-				p2.z += distance;
-
-				// perform basic projection
-				if (p1.z < 1 || p2.z < 1)
+				// skip if points are on back side of sphere
+				if (p1.z > 0 && p2.z > 0)
 					continue;
 
 				Point2d p3;
@@ -134,34 +127,28 @@ namespace ufo
 
 	void WorldMap::toSpherical(const Point2d& p1, Point3d& p2)
 	{
-		short sx = m_sin(p1.x + lx);
-		short cx = m_cos(p1.x + lx);
-		short sy = m_sin(p1.y + ly);
-		short cy = m_cos(p1.y + ly);
+		double sx = m_sin(p1.x + rx) / 1024.0;
+		double cx = m_cos(p1.x + rx) / 1024.0;
+		double sy = m_sin(p1.y + 720) / 1024.0;
+		double cy = m_cos(p1.y + 720) / 1024.0;
 
 		p2.x = radius * sy * cx;
 		p2.y = radius * sy * sx;
-		p2.z = radius * cx;
+		p2.z = radius * cy;
 	}
 
 	void WorldMap::rotate(Point3d& p)
 	{
-		Point3d orig;
-
-		// rotate y-axis
-		orig = p;
-		p.x = sin(rx) * orig.z + cos(rx) * orig.x;
-		p.z = cos(rx) * orig.z - sin(rx) * orig.x;
+		Point3d orig(p);
 
 		// rotate x-axis
-		orig = p;
-		p.y = cos(ry) * orig.y - sin(ry) * orig.z;
-		p.z = sin(ry) * orig.y + cos(ry) * orig.z;
+		p.y = m_cos(ry) / 1024.0 * orig.y - m_sin(ry) / 1024.0 * orig.z;
+		p.z = m_sin(ry) / 1024.0 * orig.y + m_cos(ry) / 1024.0 * orig.z;
 	}
 
 	void WorldMap::project(SDL_Surface* surface, const Point3d& p1, Point2d& p2)
 	{
-		p2.x = static_cast<short>(surface->w * p1.x / p1.z + surface->w / 2);
-		p2.y = static_cast<short>(surface->w * p1.y / p1.z + surface->h / 2);
+		p2.x = static_cast<short>(p1.x + surface->w / 2);
+		p2.y = static_cast<short>(p1.y + surface->h / 2);
 	}
 }
