@@ -7,6 +7,8 @@ namespace ufo
 {
 	using namespace std;
 
+	const double Pi = 3.14159265;
+
 	struct Point2d
 	{
 		Sint16 x, y;
@@ -17,7 +19,22 @@ namespace ufo
 		double x, y, z;
 	};
 
-	struct Polygon3d : public vector<Point3d>
+	struct GeoPoint
+	{
+		Point2d s; // spherical coordinate
+		Point3d c; // cartesian coordinate
+	};
+
+	struct GeoObject : public GeoPoint
+	{
+		Uint32 lastUpdate;
+
+		Sint16 lastDistance;
+		double direction;
+		Point2d target;
+	};
+
+	struct GeoPolygon : public vector<GeoPoint>
 	{
 		Uint32 texture;
 	};
@@ -55,23 +72,27 @@ namespace ufo
 		Sin m_sin;
 		Cos m_cos;
 
-		vector<Polygon3d> m_sphere;
-		vector<Point3d> m_test;
+		vector<GeoPolygon> m_world;
+		vector<GeoObject> m_test;
+
+		Sint16 m_rotx, m_rotz;
+		Sint16 m_radius;
 
 		SDL_Surface* m_surface;
 
-		void toSpherical(const Point2d& p1, Point3d& p2);
-		void rotate(Point3d& p, Sint16 x, Sint16 y);
+		void toCartesian(const Point2d& p1, Point3d& p2);
+		void toSpherical(const Point3d& p1, Point2d& p2);
+		void rotate(Point3d& p, Sint16 x, Sint16 z);
 		void project(const Point3d& p1, Point2d& p2);
+		Sint16 distance(Point2d p1, Point2d p2);
 
 	public:
 
 		WorldMap(SDL_Surface* m_surface);
 
-		Sint16 rx, ry;
-		Sint16 radius;
-
 		void draw();
 		void onClick(Sint16 sx, Sint16 sy);
+		void rotateHorz(Sint16 delta);
+		void rotateVert(Sint16 delta);
 	};
 }

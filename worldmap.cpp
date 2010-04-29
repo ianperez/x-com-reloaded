@@ -34,7 +34,7 @@ namespace ufo
 	}
 
 	WorldMap::WorldMap(SDL_Surface* surface)
-		: m_surface(surface), radius(m_surface->h / 2 - 10), rx(0), ry(0)
+		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0)
 	{
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
@@ -43,55 +43,51 @@ namespace ufo
 
 		while (1)
 		{
-			Point3d point;
-			Polygon3d polygon;
+			GeoPoint gp;
+			GeoPolygon polygon;
 			for (char i = 0; i < 4; ++i)
 			{
-				Sint16 x, y;
-				file.read((char*)&x, 2);
+				file.read((char*)&gp.s.x, 2);
 				if (file.eof())
 					break;
 
-				file.read((char*)&y, 2);
+				file.read((char*)&gp.s.y, 2);
 
-				if (x == -1)
+				if (gp.s.x == -1)
 					break;
 
-				Point2d temp;
-				temp.x = x;
-				temp.y = y;
+				gp.s.y += 720;
 
-				toSpherical(temp, point);
-				rotate(point, 0, 720);
+				toCartesian(gp.s, gp.c);
 
-				polygon.push_back(point);
+				polygon.push_back(gp);
 			}
 
 			if (file.eof())
 				break;
 
 			file.read((char*)&polygon.texture, 4);
-			m_sphere.push_back(polygon);
+			m_world.push_back(polygon);
 		}
 	}
 
 	void WorldMap::draw()
 	{
-		for (size_t i = 0; i < m_sphere.size(); ++i)
+		for (size_t i = 0; i < m_world.size(); ++i)
 		{
-			for (size_t j = 0; j < m_sphere[i].size(); ++j)
+			for (size_t j = 0; j < m_world[i].size(); ++j)
 			{
-				size_t k = (j + 1) % m_sphere[i].size();
+				size_t k = (j + 1) % m_world[i].size();
 
-				Point3d p1(m_sphere[i][j]);
-				Point3d p2(m_sphere[i][k]);
+				Point3d p1(m_world[i][j].c);
+				Point3d p2(m_world[i][k].c);
 
 				// perform rotation
-				rotate(p1, rx, ry);
-				rotate(p2, rx, ry);
+				rotate(p1, m_rotx, m_rotz);
+				rotate(p2, m_rotx, m_rotz);
 
 				// skip if points are on back side of sphere
-				if (p1.z > 0 && p2.z > 0)
+				if (p1.y > 0 && p2.y > 0)
 					continue;
 
 				Point2d p3;
@@ -106,9 +102,25 @@ namespace ufo
 
 		for (size_t i = 0; i < m_test.size(); ++i)
 		{
-			Point3d p1(m_test[i]);
-			rotate(p1, rx, ry);
-			if (p1.z > 0)
+			// move point toward 0,0
+			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
+			{
+				Point2d temp(m_test[i].s);
+				temp.x += static_cast<Sint16>(cos(m_test[i].direction) * 5);
+				temp.y += static_cast<Sint16>(sin(m_test[i].direction) * 5);
+
+//				if (distance(temp, m_test[i].target) < m_test[i].lastDistance)
+//				{
+					m_test[i].s = temp;
+					toCartesian(m_test[i].s, m_test[i].c);
+//				}
+
+				m_test[i].lastUpdate = SDL_GetTicks();
+			}
+
+			Point3d p1(m_test[i].c);
+			rotate(p1, m_rotx, m_rotz);
+			if (p1.y > 0)
 				continue;
 
 			Point2d p2;
@@ -122,37 +134,50 @@ namespace ufo
 		}
 	}
 
-	void WorldMap::toSpherical(const Point2d& p1, Point3d& p2)
+	// convert Spherical coordinates to Cartesian coordinates
+	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
 		double sx = m_sin(p1.x) / 1024.0;
 		double cx = m_cos(p1.x) / 1024.0;
-		double sy = m_sin(p1.y + 720) / 1024.0;
-		double cy = m_cos(p1.y + 720) / 1024.0;
+		double sy = m_sin(p1.y) / 1024.0;
+		double cy = m_cos(p1.y) / 1024.0;
 
-		p2.x = radius * sy * cx;
-		p2.y = radius * sy * sx;
-		p2.z = radius * cy;
+		p2.x = m_radius * sy * cx;
+		p2.y = m_radius * sy * sx;
+		p2.z = m_radius * cy;
 	}
 
-	void WorldMap::rotate(Point3d& p, Sint16 x, Sint16 y)
+	// convert Cartesian coordinates to Spherical coordinates
+	void WorldMap::toSpherical(const Point3d& p1, Point2d& p2)
+	{
+		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 180 / Pi * 8);
+		p2.x = static_cast<Sint16>(atan2(p1.y, p1.x) * 180 / Pi * 8);
+	}
+
+	void WorldMap::rotate(Point3d& p, Sint16 x, Sint16 z)
 	{
 		Point3d orig;
 
-		// rotate y-axis
+		// rotate z-axis
 		orig = p;
-		p.z = m_cos(x) / 1024.0 * orig.z - m_sin(x) / 1024.0 * orig.x;
-		p.x = m_sin(x) / 1024.0 * orig.z + m_cos(x) / 1024.0 * orig.x;
+		p.y = m_cos(z) / 1024.0 * orig.y - m_sin(z) / 1024.0 * orig.x;
+		p.x = m_sin(z) / 1024.0 * orig.y + m_cos(z) / 1024.0 * orig.x;
 
 		// rotate x-axis
 		orig = p;
-		p.y = m_cos(y) / 1024.0 * orig.y - m_sin(y) / 1024.0 * orig.z;
-		p.z = m_sin(y) / 1024.0 * orig.y + m_cos(y) / 1024.0 * orig.z;
+		p.z = m_cos(x) / 1024.0 * orig.z - m_sin(x) / 1024.0 * orig.y;
+		p.y = m_sin(x) / 1024.0 * orig.z + m_cos(x) / 1024.0 * orig.y;
 	}
 
 	void WorldMap::project(const Point3d& p1, Point2d& p2)
 	{
 		p2.x = static_cast<Sint16>(p1.x + m_surface->w / 2);
-		p2.y = static_cast<Sint16>(p1.y + m_surface->h / 2);
+		p2.y = static_cast<Sint16>(-p1.z + m_surface->h / 2);
+	}
+
+	Sint16 WorldMap::distance(Point2d p1, Point2d p2)
+	{
+		return abs((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
 	}
 
 	void WorldMap::onClick(Sint16 sx, Sint16 sy)
@@ -161,19 +186,51 @@ namespace ufo
 		sx -= m_surface->w / 2;
 		sy -= m_surface->h / 2;
 
-		Point3d p;
-		p.x = sx;
-		p.y = sy;
-		double zs = radius * radius - p.x * p.x - p.y * p.y;
-		if (zs < 0)
+		GeoObject gp;
+		gp.c.x = sx;
+		gp.c.z = -sy;
+		double ys = m_radius * m_radius - gp.c.x * gp.c.x - gp.c.z * gp.c.z;
+		if (ys < 0)
 			return;
 
-		p.z = -sqrt(zs);
+		gp.c.y = -sqrt(ys);
 
 		// reverse rotation
-		rotate(p, 0, -ry);
-		rotate(p, -rx, 0);
+		rotate(gp.c, -m_rotx, 0);
+		rotate(gp.c, 0, -m_rotz);
 
-		m_test.push_back(p);
+		// populate spherical coordinates
+		toSpherical(gp.c, gp.s);
+
+		// set direction to target
+		gp.target.x = 0;
+		gp.target.y = 0;
+
+		Point2d orig(gp.s);
+		Point2d adj(gp.s);
+		adj.x += 2880;
+
+		gp.s = (distance(orig, gp.target) < distance(adj, gp.target) ? orig : adj);
+		gp.direction = atan2(static_cast<double>(gp.target.y - gp.s.y), static_cast<double>(gp.target.x - gp.s.x));
+		gp.lastDistance = distance(gp.s, gp.target);
+
+		gp.lastUpdate = SDL_GetTicks();
+
+		toCartesian(gp.s, gp.c);
+		m_test.push_back(gp);
+	}
+
+	void WorldMap::rotateHorz(Sint16 delta)
+	{
+		m_rotz += delta;
+	}
+
+	void WorldMap::rotateVert(Sint16 delta)
+	{
+		m_rotx += delta;
+		if (m_rotx < -720)
+			m_rotx = -720;
+		else if (m_rotx > 720)
+			m_rotx = 720;
 	}
 }
