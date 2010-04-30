@@ -69,6 +69,9 @@ namespace ufo
 			file.read((char*)&polygon.texture, 4);
 			m_world.push_back(polygon);
 		}
+
+		m_defaultTarget.x = 0;
+		m_defaultTarget.y = 0;
 	}
 
 	void WorldMap::draw()
@@ -126,12 +129,25 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			SDL_Rect r;
-			r.x = p2.x - 1;
-			r.y = p2.y - 1;
-			r.w = r.h = 3;
-			SDL_FillRect(m_surface, &r, SDL_MapRGB(m_surface->format, 150, 255, 150));
+			drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 200, 255, 200));
 		}
+
+		Point3d p1;
+		toCartesian(m_defaultTarget, p1);
+
+		Point2d p2;
+		project(p1, p2);
+
+		drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 255, 150, 150));
+	}
+
+	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
+	{
+		pixelColor(m_surface, x, y, color);
+		pixelColor(m_surface, x + 1, y, color);
+		pixelColor(m_surface, x - 1, y, color);
+		pixelColor(m_surface, x, y + 1, color);
+		pixelColor(m_surface, x, y - 1, color);
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates
@@ -152,6 +168,26 @@ namespace ufo
 	{
 		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 180 / Pi * 8);
 		p2.x = static_cast<Sint16>(atan2(p1.y, p1.x) * 180 / Pi * 8);
+	}
+
+	// convert Screen coordinates to Cartesian (x,y,z)
+	bool WorldMap::screenToCartesian(Sint16 x, Sint16 y, Point3d& p)
+	{
+		// unproject point
+		p.x = x - m_surface->w / 2;
+		p.z = -(y - m_surface->h / 2);
+
+		double ys = m_radius * m_radius - p.x * p.x - p.z * p.z;
+		if (ys < 0)
+			return false;
+
+		p.y = -sqrt(ys);
+
+		// reverse rotation
+		rotate(p, -m_rotx, 0);
+		rotate(p, 0, -m_rotz);
+
+		return true;		
 	}
 
 	void WorldMap::rotate(Point3d& p, Sint16 x, Sint16 z)
@@ -182,29 +218,14 @@ namespace ufo
 
 	void WorldMap::onClick(Sint16 sx, Sint16 sy)
 	{
-		// unproject point
-		sx -= m_surface->w / 2;
-		sy -= m_surface->h / 2;
-
 		GeoObject gp;
-		gp.c.x = sx;
-		gp.c.z = -sy;
-		double ys = m_radius * m_radius - gp.c.x * gp.c.x - gp.c.z * gp.c.z;
-		if (ys < 0)
-			return;
-
-		gp.c.y = -sqrt(ys);
-
-		// reverse rotation
-		rotate(gp.c, -m_rotx, 0);
-		rotate(gp.c, 0, -m_rotz);
+		screenToCartesian(sx, sy, gp.c);
 
 		// populate spherical coordinates
 		toSpherical(gp.c, gp.s);
 
 		// set direction to target
-		gp.target.x = 0;
-		gp.target.y = 0;
+		gp.target = m_defaultTarget;
 
 		Point2d orig(gp.s);
 		Point2d adj(gp.s);
@@ -232,5 +253,13 @@ namespace ufo
 			m_rotx = -720;
 		else if (m_rotx > 720)
 			m_rotx = 720;
+	}
+
+	void WorldMap::setDefaultTarget(Sint16 sx, Sint16 sy)
+	{
+		Point3d p;
+		screenToCartesian(sx, sy, p);
+
+		toSpherical(p, m_defaultTarget);
 	}
 }

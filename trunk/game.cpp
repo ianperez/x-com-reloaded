@@ -21,7 +21,10 @@ namespace ufo
 					break;
 				if (e.type == SDL_MOUSEBUTTONDOWN)
 				{
-					map.onClick(e.button.x, e.button.y);
+					if (e.button.button == SDL_BUTTON_LEFT)
+						map.onClick(e.button.x, e.button.y);
+					if (e.button.button == SDL_BUTTON_RIGHT)
+						map.setDefaultTarget(e.button.x, e.button.y);
 				}
 			}
 
