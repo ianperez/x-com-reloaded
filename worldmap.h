@@ -78,13 +78,18 @@ namespace ufo
 		Sint16 m_rotx, m_rotz;
 		Sint16 m_radius;
 
+		Point2d m_defaultTarget;
+
 		SDL_Surface* m_surface;
 
 		void toCartesian(const Point2d& p1, Point3d& p2);
 		void toSpherical(const Point3d& p1, Point2d& p2);
+		bool WorldMap::screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
 		void rotate(Point3d& p, Sint16 x, Sint16 z);
 		void project(const Point3d& p1, Point2d& p2);
 		Sint16 distance(Point2d p1, Point2d p2);
+
+		void drawShip(Sint16 x, Sint16 y, Uint32 color);
 
 	public:
 
@@ -94,5 +99,6 @@ namespace ufo
 		void onClick(Sint16 sx, Sint16 sy);
 		void rotateHorz(Sint16 delta);
 		void rotateVert(Sint16 delta);
+		void setDefaultTarget(Sint16 sx, Sint16 sy);
 	};
 }
