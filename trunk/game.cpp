@@ -7,7 +7,7 @@ namespace ufo
 	{
 		SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
-		SDL_Surface* screen = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_HWPALETTE);
+		SDL_Surface* screen = SDL_SetVideoMode(320, 240, 32, SDL_HWSURFACE | SDL_ANYFORMAT | SDL_DOUBLEBUF);
 
 		WorldMap map(screen);
 		while (1)
@@ -37,6 +37,10 @@ namespace ufo
 				map.rotateHorz(-8);
 			if (keystate[SDLK_RIGHT])
 				map.rotateHorz(8);
+			if (keystate[SDLK_PAGEUP])
+				map.zoom(10);
+			if (keystate[SDLK_PAGEDOWN])
+				map.zoom(-10);
 
 			map.draw();
 
