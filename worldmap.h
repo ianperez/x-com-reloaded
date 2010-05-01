@@ -11,11 +11,13 @@ namespace ufo
 
 	struct Point2d
 	{
+		Point2d(Sint16 ix = 0, Sint16 iy = 0) : x(ix), y(iy) { }
 		Sint16 x, y;
 	};
 
 	struct Point3d
 	{
+		Point3d(double ix = 0, double iy = 0, double iz = 0) : x(ix), y(iy), z(iz) { }
 		double x, y, z;
 	};
 
@@ -29,8 +31,6 @@ namespace ufo
 	{
 		Uint32 lastUpdate;
 
-		Sint16 lastDistance;
-		double direction;
 		Point2d target;
 	};
 
@@ -84,12 +84,12 @@ namespace ufo
 
 		void toCartesian(const Point2d& p1, Point3d& p2);
 		void toSpherical(const Point3d& p1, Point2d& p2);
-		bool WorldMap::screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
+		bool screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
 		void rotate(Point3d& p, Sint16 x, Sint16 z);
 		void project(const Point3d& p1, Point2d& p2);
 		Sint16 distance(Point2d p1, Point2d p2);
 
-		void drawShip(Sint16 x, Sint16 y, Uint32 color);
+		void drawShip(Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b);
 
 	public:
 
@@ -99,6 +99,7 @@ namespace ufo
 		void onClick(Sint16 sx, Sint16 sy);
 		void rotateHorz(Sint16 delta);
 		void rotateVert(Sint16 delta);
+		void zoom(Sint16 delta);
 		void setDefaultTarget(Sint16 sx, Sint16 sy);
 	};
 }

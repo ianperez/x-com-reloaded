@@ -108,15 +108,18 @@ namespace ufo
 			// move point toward 0,0
 			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
 			{
-				Point2d temp(m_test[i].s);
-				temp.x += static_cast<Sint16>(cos(m_test[i].direction) * 5);
-				temp.y += static_cast<Sint16>(sin(m_test[i].direction) * 5);
+				if (m_test[i].s.x != m_test[i].target.x || m_test[i].s.y != m_test[i].target.y)
+				{
+					Point2d targetTemp(m_test[i].target);
+					if (m_test[i].s.y > 240 && m_test[i].s.y < 1200 && (m_test[i].target.y <= 240 || m_test[i].target.y >= 1200))
+						targetTemp.x = m_test[i].s.x;
 
-//				if (distance(temp, m_test[i].target) < m_test[i].lastDistance)
-//				{
-					m_test[i].s = temp;
+					double direction = atan2(static_cast<double>(targetTemp.y - m_test[i].s.y), static_cast<double>(targetTemp.x - m_test[i].s.x));
+					m_test[i].s.x += static_cast<Sint16>(cos(direction) * 2);
+					m_test[i].s.y += static_cast<Sint16>(sin(direction) * 2);
+
 					toCartesian(m_test[i].s, m_test[i].c);
-//				}
+				}
 
 				m_test[i].lastUpdate = SDL_GetTicks();
 			}
@@ -129,25 +132,28 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 200, 255, 200));
+			drawShip(p2.x, p2.y, 0, 255, 0);
 		}
 
 		Point3d p1;
 		toCartesian(m_defaultTarget, p1);
 
-		Point2d p2;
-		project(p1, p2);
+		rotate(p1, m_rotx, m_rotz);
+		if (p1.y <= 0)
+		{
+			Point2d p2;
+			project(p1, p2);
 
-		drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 255, 150, 150));
+			drawShip(p2.x, p2.y, 255, 0, 0);
+		}
 	}
 
-	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
+	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
 	{
-		pixelColor(m_surface, x, y, color);
-		pixelColor(m_surface, x + 1, y, color);
-		pixelColor(m_surface, x - 1, y, color);
-		pixelColor(m_surface, x, y + 1, color);
-		pixelColor(m_surface, x, y - 1, color);
+		pixelRGBA(m_surface, x + 1, y, r, g, b, 255);
+		pixelRGBA(m_surface, x - 1, y, r, g, b, 255);
+		pixelRGBA(m_surface, x, y + 1, r, g, b, 255);
+		pixelRGBA(m_surface, x, y - 1, r, g, b, 255);
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates
@@ -213,31 +219,31 @@ namespace ufo
 
 	Sint16 WorldMap::distance(Point2d p1, Point2d p2)
 	{
-		return abs((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
+		return static_cast<Sint16>(sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y))));
 	}
 
 	void WorldMap::onClick(Sint16 sx, Sint16 sy)
 	{
 		GeoObject gp;
-		screenToCartesian(sx, sy, gp.c);
+		if (!screenToCartesian(sx, sy, gp.c))
+			return;
 
 		// populate spherical coordinates
 		toSpherical(gp.c, gp.s);
 
-		// set direction to target
+		// set target
 		gp.target = m_defaultTarget;
 
-		Point2d orig(gp.s);
-		Point2d adj(gp.s);
-		adj.x += 2880;
-
-		gp.s = (distance(orig, gp.target) < distance(adj, gp.target) ? orig : adj);
-		gp.direction = atan2(static_cast<double>(gp.target.y - gp.s.y), static_cast<double>(gp.target.x - gp.s.x));
-		gp.lastDistance = distance(gp.s, gp.target);
+		// adjust target if needed
+		if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
+		{
+			if (distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
+				gp.target.x -= 2880;
+			else
+				gp.target.x += 2880;
+		}
 
 		gp.lastUpdate = SDL_GetTicks();
-
-		toCartesian(gp.s, gp.c);
 		m_test.push_back(gp);
 	}
 
@@ -255,10 +261,25 @@ namespace ufo
 			m_rotx = 720;
 	}
 
+	void WorldMap::zoom(Sint16 delta)
+	{
+		m_radius += delta;
+
+		for (size_t i = 0; i < m_world.size(); ++i)
+		{
+			for (size_t j = 0; j < m_world[i].size(); ++j)
+				toCartesian(m_world[i][j].s, m_world[i][j].c);
+		}
+
+		for (size_t i = 0; i < m_test.size(); ++i)
+			toCartesian(m_test[i].s, m_test[i].c);
+	}
+
 	void WorldMap::setDefaultTarget(Sint16 sx, Sint16 sy)
 	{
 		Point3d p;
-		screenToCartesian(sx, sy, p);
+		if (!screenToCartesian(sx, sy, p))
+			return;
 
 		toSpherical(p, m_defaultTarget);
 	}
