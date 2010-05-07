@@ -1,6 +1,7 @@
 #include "worldmap.h"
+#include "util.h"
 #include <fstream>
-#include <sdl_draw.h>
+#include <SDL_gfxPrimitives.h>
 #include <cmath>
 
 namespace ufo
@@ -103,7 +104,7 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				Draw_Line(m_surface, p3.x, p3.y, p4.x, p4.y, SDL_MapRGB(m_surface->format, 50, 50, 180));
+				lineColor(m_surface, p3.x, p3.y, p4.x, p4.y, GetColor(50, 50, 180));
 			}
 		}
 
@@ -136,7 +137,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 0, 255, 0));
+			drawShip(p2.x, p2.y, GetColor(255, 255, 0));
 		}
 
 		Point3d p1;
@@ -148,16 +149,16 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 255, 0, 0));
+			drawShip(p2.x, p2.y, GetColor(255, 0, 0));
 		}
 	}
 
 	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
 	{
-		Draw_Pixel(m_surface, x + 1, y, color);
-		Draw_Pixel(m_surface, x - 1, y, color);
-		Draw_Pixel(m_surface, x, y + 1, color);
-		Draw_Pixel(m_surface, x, y - 1, color);
+		pixelColor(m_surface, x + 1, y, color);
+		pixelColor(m_surface, x - 1, y, color);
+		pixelColor(m_surface, x, y + 1, color);
+		pixelColor(m_surface, x, y - 1, color);
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates
@@ -240,12 +241,9 @@ namespace ufo
 
 		// adjust target if needed
 		if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
-		{
-			if (distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
-				gp.target.x -= 2880;
-			else
-				gp.target.x += 2880;
-		}
+			gp.target.x -= 2880;
+		if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)))
+			gp.target.x += 2880;
 
 		gp.lastUpdate = SDL_GetTicks();
 		m_test.push_back(gp);
