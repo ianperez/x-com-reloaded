@@ -77,6 +77,9 @@ namespace ufo
 
 		Sint16 m_rotx, m_rotz;
 		Sint16 m_radius;
+		Sint16 m_radiusMin;
+		Sint16 m_radiusMax;
+		Sint16 m_polarDegFix;
 
 		Point2d m_defaultTarget;
 
@@ -89,7 +92,7 @@ namespace ufo
 		void project(const Point3d& p1, Point2d& p2);
 		Sint16 distance(Point2d p1, Point2d p2);
 
-		void drawShip(Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b);
+		void drawShip(Sint16 x, Sint16 y, Uint32 color);
 
 	public:
 

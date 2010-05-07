@@ -1,6 +1,6 @@
 #include "worldmap.h"
 #include <fstream>
-#include <sdl_gfxprimitives.h>
+#include <sdl_draw.h>
 #include <cmath>
 
 namespace ufo
@@ -34,8 +34,12 @@ namespace ufo
 	}
 
 	WorldMap::WorldMap(SDL_Surface* surface)
-		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0)
+		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0), m_polarDegFix(160)
 	{
+		m_radiusMin = m_surface->h / 2 - 10;
+		m_radiusMax = m_surface->h * 2;
+		m_radius = m_radiusMin;
+
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
 		if (!file)
@@ -99,19 +103,19 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				lineRGBA(m_surface, p3.x, p3.y, p4.x, p4.y, 50, 50, 180, 255);
+				Draw_Line(m_surface, p3.x, p3.y, p4.x, p4.y, SDL_MapRGB(m_surface->format, 50, 50, 180));
 			}
 		}
 
 		for (size_t i = 0; i < m_test.size(); ++i)
 		{
-			// move point toward 0,0
+			// move point toward target
 			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
 			{
 				if (m_test[i].s.x != m_test[i].target.x || m_test[i].s.y != m_test[i].target.y)
 				{
 					Point2d targetTemp(m_test[i].target);
-					if (m_test[i].s.y > 240 && m_test[i].s.y < 1200 && (m_test[i].target.y <= 240 || m_test[i].target.y >= 1200))
+					if (m_test[i].s.y > m_polarDegFix && m_test[i].s.y < (1440 - m_polarDegFix) && (m_test[i].target.y <= m_polarDegFix || m_test[i].target.y >= (1440 - m_polarDegFix)))
 						targetTemp.x = m_test[i].s.x;
 
 					double direction = atan2(static_cast<double>(targetTemp.y - m_test[i].s.y), static_cast<double>(targetTemp.x - m_test[i].s.x));
@@ -132,7 +136,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, 0, 255, 0);
+			drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 0, 255, 0));
 		}
 
 		Point3d p1;
@@ -144,16 +148,16 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, 255, 0, 0);
+			drawShip(p2.x, p2.y, SDL_MapRGB(m_surface->format, 255, 0, 0));
 		}
 	}
 
-	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint8 r, Uint8 g, Uint8 b)
+	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
 	{
-		pixelRGBA(m_surface, x + 1, y, r, g, b, 255);
-		pixelRGBA(m_surface, x - 1, y, r, g, b, 255);
-		pixelRGBA(m_surface, x, y + 1, r, g, b, 255);
-		pixelRGBA(m_surface, x, y - 1, r, g, b, 255);
+		Draw_Pixel(m_surface, x + 1, y, color);
+		Draw_Pixel(m_surface, x - 1, y, color);
+		Draw_Pixel(m_surface, x, y + 1, color);
+		Draw_Pixel(m_surface, x, y - 1, color);
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates
@@ -263,7 +267,12 @@ namespace ufo
 
 	void WorldMap::zoom(Sint16 delta)
 	{
+		Sint16 radius_min = m_surface->h / 2 - 10;
 		m_radius += delta;
+		if (m_radius < m_radiusMin)
+			m_radius = m_radiusMin;
+		if (m_radius > m_radiusMax)
+			m_radius = m_radiusMax;
 
 		for (size_t i = 0; i < m_world.size(); ++i)
 		{
