@@ -7,6 +7,6 @@ namespace ufo
 	{
 	public:
 
-
+		bool processEvent(SDL_Event& e);
 	};
 }

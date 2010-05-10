@@ -8,9 +8,10 @@ namespace ufo
 	{
 		SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 
-		SDL_Surface* screen = SDL_SetVideoMode(320, 240, 24, SDL_HWSURFACE | SDL_DOUBLEBUF);
+		SDL_Surface* screen = SDL_SetVideoMode(320, 200, 24, SDL_HWSURFACE | SDL_DOUBLEBUF);
 
 		WorldMap map(screen);
+		UIManager ui;
 		while (1)
 		{
 			SDL_FillRect(screen, NULL, 0);
