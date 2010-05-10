@@ -10,7 +10,10 @@ namespace ufo
 	{
 	public:
 
-		UIElement();
+		UIElement() { }
+		UIElement(Sint16 ix, Sint16 iy, Uint16 iw, Uint16 ih);
+
+		virtual bool processEvent(SDL_Event& e) { return false; }
 
 	protected:
 

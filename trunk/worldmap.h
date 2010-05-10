@@ -2,6 +2,8 @@
 #include <string>
 #include <vector>
 #include <sdl.h>
+#include "uielement.h"
+#include "palette.h"
 
 namespace ufo
 {
@@ -67,13 +69,15 @@ namespace ufo
 		Cos();
 	};
 
-	class WorldMap
+	class WorldMap : public UIElement
 	{
 		Sin m_sin;
 		Cos m_cos;
 
 		vector<GeoPolygon> m_world;
 		vector<GeoObject> m_test;
+
+		Point2d m_center;
 
 		Sint16 m_rotx, m_rotz;
 		Sint16 m_radius;
@@ -84,6 +88,9 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		SDL_Surface* m_surface;
+		SDL_Surface* m_bg;
+
+		Palette m_palette;
 
 		void toCartesian(const Point2d& p1, Point3d& p2);
 		void toSpherical(const Point3d& p1, Point2d& p2);
@@ -104,5 +111,7 @@ namespace ufo
 		void rotateVert(Sint16 delta);
 		void zoom(Sint16 delta);
 		void setDefaultTarget(Sint16 sx, Sint16 sy);
+
+		bool processEvent(SDL_Event& e);
 	};
 }

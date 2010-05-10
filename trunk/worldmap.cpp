@@ -13,7 +13,7 @@ namespace ufo
 			throw runtime_error("error opening " + filename);
 
 		m_table.resize(2881);
-		for (size_t i = 0; i < m_table.size(); ++i)
+		for (Uint32 i = 0; i < m_table.size(); ++i)
 			file.read((char*)&m_table[i], 2);
 	}
 
@@ -35,10 +35,12 @@ namespace ufo
 	}
 
 	WorldMap::WorldMap(SDL_Surface* surface)
-		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0), m_polarDegFix(160)
+		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0), m_polarDegFix(160), UIElement(0, 0, surface->w, surface->h), m_palette("geodata/palettes.dat", 256), m_center((surface->w - 64) / 2, surface->h / 2)
 	{
+		m_bg = loadSCR("geograph/geobord.scr", m_palette);
+
 		m_radiusMin = m_surface->h / 2 - 10;
-		m_radiusMax = m_surface->h * 2;
+		m_radiusMax = m_surface->h * 4;
 		m_radius = m_radiusMin;
 
 		const string filename("geodata/world.dat");
@@ -81,11 +83,17 @@ namespace ufo
 
 	void WorldMap::draw()
 	{
-		for (size_t i = 0; i < m_world.size(); ++i)
+		SDL_BlitSurface(m_bg, NULL, m_surface, NULL);
+
+		SDL_Rect clip;
+		SDL_SetRect(&clip, 0, 0, m_surface->w - 64, m_surface->h);
+		SDL_SetClipRect(m_surface, &clip);
+
+		for (Uint32 i = 0; i < m_world.size(); ++i)
 		{
-			for (size_t j = 0; j < m_world[i].size(); ++j)
+			for (Uint32 j = 0; j < m_world[i].size(); ++j)
 			{
-				size_t k = (j + 1) % m_world[i].size();
+				Uint32 k = (j + 1) % m_world[i].size();
 
 				Point3d p1(m_world[i][j].c);
 				Point3d p2(m_world[i][k].c);
@@ -108,7 +116,7 @@ namespace ufo
 			}
 		}
 
-		for (size_t i = 0; i < m_test.size(); ++i)
+		for (Uint32 i = 0; i < m_test.size(); ++i)
 		{
 			// move point toward target
 			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
@@ -151,6 +159,8 @@ namespace ufo
 
 			drawShip(p2.x, p2.y, GetColor(255, 0, 0));
 		}
+
+		SDL_SetClipRect(m_surface, NULL);
 	}
 
 	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
@@ -164,10 +174,10 @@ namespace ufo
 	// convert Spherical coordinates to Cartesian coordinates
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
-		double sx = m_sin(p1.x) / 1024.0;
-		double cx = m_cos(p1.x) / 1024.0;
-		double sy = m_sin(p1.y) / 1024.0;
-		double cy = m_cos(p1.y) / 1024.0;
+		double sx = m_sin(p1.x) / 1023.0;
+		double cx = m_cos(p1.x) / 1023.0;
+		double sy = m_sin(p1.y) / 1023.0;
+		double cy = m_cos(p1.y) / 1023.0;
 
 		p2.x = m_radius * sy * cx;
 		p2.y = m_radius * sy * sx;
@@ -185,8 +195,8 @@ namespace ufo
 	bool WorldMap::screenToCartesian(Sint16 x, Sint16 y, Point3d& p)
 	{
 		// unproject point
-		p.x = x - m_surface->w / 2;
-		p.z = -(y - m_surface->h / 2);
+		p.x = x - m_center.x;
+		p.z = -(y - m_center.y);
 
 		double ys = m_radius * m_radius - p.x * p.x - p.z * p.z;
 		if (ys < 0)
@@ -207,19 +217,19 @@ namespace ufo
 
 		// rotate z-axis
 		orig = p;
-		p.y = m_cos(z) / 1024.0 * orig.y - m_sin(z) / 1024.0 * orig.x;
-		p.x = m_sin(z) / 1024.0 * orig.y + m_cos(z) / 1024.0 * orig.x;
+		p.y = m_cos(z) / 1023.0 * orig.y - m_sin(z) / 1023.0 * orig.x;
+		p.x = m_sin(z) / 1023.0 * orig.y + m_cos(z) / 1023.0 * orig.x;
 
 		// rotate x-axis
 		orig = p;
-		p.z = m_cos(x) / 1024.0 * orig.z - m_sin(x) / 1024.0 * orig.y;
-		p.y = m_sin(x) / 1024.0 * orig.z + m_cos(x) / 1024.0 * orig.y;
+		p.z = m_cos(x) / 1023.0 * orig.z - m_sin(x) / 1023.0 * orig.y;
+		p.y = m_sin(x) / 1023.0 * orig.z + m_cos(x) / 1023.0 * orig.y;
 	}
 
 	void WorldMap::project(const Point3d& p1, Point2d& p2)
 	{
-		p2.x = static_cast<Sint16>(p1.x + m_surface->w / 2);
-		p2.y = static_cast<Sint16>(-p1.z + m_surface->h / 2);
+		p2.x = static_cast<Sint16>(p1.x + m_center.x);
+		p2.y = static_cast<Sint16>(-p1.z + m_center.y);
 	}
 
 	Sint16 WorldMap::distance(Point2d p1, Point2d p2)
@@ -272,13 +282,13 @@ namespace ufo
 		if (m_radius > m_radiusMax)
 			m_radius = m_radiusMax;
 
-		for (size_t i = 0; i < m_world.size(); ++i)
+		for (Uint32 i = 0; i < m_world.size(); ++i)
 		{
-			for (size_t j = 0; j < m_world[i].size(); ++j)
+			for (Uint32 j = 0; j < m_world[i].size(); ++j)
 				toCartesian(m_world[i][j].s, m_world[i][j].c);
 		}
 
-		for (size_t i = 0; i < m_test.size(); ++i)
+		for (Uint32 i = 0; i < m_test.size(); ++i)
 			toCartesian(m_test[i].s, m_test[i].c);
 	}
 
@@ -289,5 +299,10 @@ namespace ufo
 			return;
 
 		toSpherical(p, m_defaultTarget);
+	}
+
+	bool WorldMap::processEvent(SDL_Event& e)
+	{
+		return false;
 	}
 }

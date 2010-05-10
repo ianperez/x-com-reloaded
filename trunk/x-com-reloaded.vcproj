@@ -181,6 +181,18 @@
 				>
 			</File>
 			<File
+				RelativePath=".\palette.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uielement.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uimanager.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\util.cpp"
 				>
 			</File>
@@ -196,6 +208,10 @@
 			>
 			<File
 				RelativePath=".\game.h"
+				>
+			</File>
+			<File
+				RelativePath=".\palette.h"
 				>
 			</File>
 			<File
