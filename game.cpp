@@ -7,6 +7,7 @@ namespace ufo
 	Game::Game()
 	{
 		SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
+		SDL_WM_SetCaption("x-com-reloaded", "");
 
 		SDL_Surface* screen = SDL_SetVideoMode(320, 200, 24, SDL_HWSURFACE | SDL_DOUBLEBUF);
 
