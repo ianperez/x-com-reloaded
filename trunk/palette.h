@@ -15,12 +15,13 @@ namespace ufo
 		Palette();
 		Palette(string filename, Uint16 paletteSize);
 
-		Uint32 operator() (Uint8 index);
+		SDL_Color operator() (Uint8 index);
 		void setPalette(Uint8 palette);
+		void apply(SDL_Surface* surface);
 
 	protected:
 
 		Uint8 m_currentPalette;
-		vector<vector<Uint32> > m_colors;
+		vector<vector<SDL_Color> > m_colors;
 	};
 }

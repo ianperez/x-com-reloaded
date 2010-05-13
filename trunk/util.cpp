@@ -24,6 +24,16 @@ namespace ufo
 		return ((Uint32)r << 24) | (Uint32)(g << 16) | ((Uint16)b << 8) | (Uint8)255;
 	}
 
+	Uint32 GetColor(SDL_Color c)
+	{
+		return ((Uint32)c.r << 24) | (Uint32)(c.g << 16) | ((Uint16)c.b << 8) | (Uint8)255;
+	}
+
+	void pixelColor8(SDL_Surface* surface, Sint16 x, Sint16 y, Uint8 color)
+	{
+		*((Uint8 *)surface->pixels + y * surface->pitch + x) = color;
+	}
+
 	SDL_Surface* loadSCR(string filename, Palette& p, Uint16 width)
 	{
 		ifstream infile(filename.c_str(), ios::binary);
@@ -35,9 +45,11 @@ namespace ufo
 		Uint16 height = static_cast<Uint16>(infile.tellg() / width);
 		infile.seekg(0, ios::beg);
 
-		SDL_Surface* surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 24, 0, 0, 0, 0);
+		SDL_Surface* surface = SDL_CreateRGBSurface(SDL_SWSURFACE, width, height, 8, 0, 0, 0, 0);
 		if (!surface)
 			throw runtime_error("error creating surface for file: " + filename);
+
+		p.apply(surface);
 
 		Sint16 x = 0, y = 0;
 		while (1)
@@ -48,7 +60,7 @@ namespace ufo
 				break;
 
 			if (c > 0)
-				pixelColor(surface, x, y, p(c));
+				pixelColor8(surface, x, y, c);
 			if (++x >= width)
 			{
 				x = 0;

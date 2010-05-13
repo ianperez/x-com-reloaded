@@ -17,7 +17,7 @@ namespace ufo
 		vector<char> buffer(bufferSize);
 		while (!infile.eof())
 		{
-			vector<Uint32> colors;
+			vector<SDL_Color> colors;
 			for (Uint16 i = 0; i < paletteSize; ++i)
 			{
 				Uint8 r, g, b;
@@ -28,7 +28,12 @@ namespace ufo
 				if (infile.eof())
 					break;
 
-				colors.push_back(GetColor((r + 1) * 4 - 1, (g + 1) * 4 - 1, (b + 1) * 4 - 1));
+				SDL_Color c;
+				c.r = (r + 1) * 4 - 1;
+				c.g = (g + 1) * 4 - 1;
+				c.b = (b + 1) * 4 - 1;
+				c.unused = 0;
+				colors.push_back(c);
 			}
 
 			m_colors.push_back(colors);
@@ -49,13 +54,18 @@ namespace ufo
 		load(filename, paletteSize);
 	}
 
-	Uint32 Palette::operator() (Uint8 index)
+	SDL_Color Palette::operator() (Uint8 index)
 	{
-		return m_colors[m_currentPalette][index - (m_colors[m_currentPalette].size() - 256)];
+		return m_colors[m_currentPalette][index + (256 - m_colors[m_currentPalette].size())];
 	}
 
 	void Palette::setPalette(Uint8 palette)
 	{
 		m_currentPalette = palette;
+	}
+
+	void Palette::apply(SDL_Surface* surface)
+	{
+		SDL_SetColors(surface, &m_colors[m_currentPalette][0], 256 - m_colors[m_currentPalette].size(), m_colors[m_currentPalette].size());
 	}
 }
