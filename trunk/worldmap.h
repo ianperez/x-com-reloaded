@@ -4,6 +4,7 @@
 #include <sdl.h>
 #include "uielement.h"
 #include "palette.h"
+#include "font.h"
 
 namespace ufo
 {
@@ -113,5 +114,7 @@ namespace ufo
 		void setDefaultTarget(Sint16 sx, Sint16 sy);
 
 		bool processEvent(SDL_Event& e);
+
+		Font m_font;
 	};
 }
