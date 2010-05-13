@@ -35,9 +35,13 @@ namespace ufo
 	}
 
 	WorldMap::WorldMap(SDL_Surface* surface)
-		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0), m_polarDegFix(160), UIElement(0, 0, surface->w, surface->h), m_palette("geodata/palettes.dat", 256), m_center((surface->w - 64) / 2, surface->h / 2)
+		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0), m_polarDegFix(120), UIElement(0, 0, surface->w, surface->h), m_palette("geodata/palettes.dat", 256), m_center((surface->w - 64) / 2, surface->h / 2), m_font("geodata/biglets.dat", 16, 16)
 	{
-		m_bg = loadSCR("geograph/geobord.scr", m_palette);
+		m_bg = loadSCR("geograph/geobord.scr");
+		m_palette.apply(m_bg);
+
+		m_font.palette(&m_palette);
+		m_font.offset(239);
 
 		m_radiusMin = m_surface->h / 2 - 10;
 		m_radiusMax = m_surface->h * 4;
@@ -161,6 +165,8 @@ namespace ufo
 		}
 
 		SDL_SetClipRect(m_surface, NULL);
+
+		m_font.write(m_surface, 5, 5, "SELECT SITE FOR NEW BASE");
 	}
 
 	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
@@ -174,10 +180,10 @@ namespace ufo
 	// convert Spherical coordinates to Cartesian coordinates
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
-		double sx = m_sin(p1.x) / 1023.0;
-		double cx = m_cos(p1.x) / 1023.0;
-		double sy = m_sin(p1.y) / 1023.0;
-		double cy = m_cos(p1.y) / 1023.0;
+		double sx = m_sin(p1.x) / 1024.0;
+		double cx = m_cos(p1.x) / 1024.0;
+		double sy = m_sin(p1.y) / 1024.0;
+		double cy = m_cos(p1.y) / 1024.0;
 
 		p2.x = m_radius * sy * cx;
 		p2.y = m_radius * sy * sx;
@@ -217,13 +223,13 @@ namespace ufo
 
 		// rotate z-axis
 		orig = p;
-		p.y = m_cos(z) / 1023.0 * orig.y - m_sin(z) / 1023.0 * orig.x;
-		p.x = m_sin(z) / 1023.0 * orig.y + m_cos(z) / 1023.0 * orig.x;
+		p.y = m_cos(z) / 1024.0 * orig.y - m_sin(z) / 1024.0 * orig.x;
+		p.x = m_sin(z) / 1024.0 * orig.y + m_cos(z) / 1024.0 * orig.x;
 
 		// rotate x-axis
 		orig = p;
-		p.z = m_cos(x) / 1023.0 * orig.z - m_sin(x) / 1023.0 * orig.y;
-		p.y = m_sin(x) / 1023.0 * orig.z + m_cos(x) / 1023.0 * orig.y;
+		p.z = m_cos(x) / 1024.0 * orig.z - m_sin(x) / 1024.0 * orig.y;
+		p.y = m_sin(x) / 1024.0 * orig.z + m_cos(x) / 1024.0 * orig.y;
 	}
 
 	void WorldMap::project(const Point3d& p1, Point2d& p2)

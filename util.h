@@ -13,5 +13,5 @@ namespace ufo
 	Uint32 GetColor(SDL_Color c);
 	void pixelColor8(SDL_Surface* surface, Sint16 x, Sint16 y, Uint8 color);
 
-	SDL_Surface* loadSCR(string filename, Palette& p, Uint16 width = 320);
+	SDL_Surface* loadSCR(string filename, Uint16 width = 320);
 }
