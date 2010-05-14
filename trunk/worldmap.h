@@ -88,7 +88,6 @@ namespace ufo
 
 		Point2d m_defaultTarget;
 
-		SDL_Surface* m_surface;
 		SDL_Surface* m_bg;
 
 		Palette m_palette;
@@ -100,13 +99,13 @@ namespace ufo
 		void project(const Point3d& p1, Point2d& p2);
 		Sint16 distance(Point2d p1, Point2d p2);
 
-		void drawShip(Sint16 x, Sint16 y, Uint32 color);
+		void drawShip(SDL_Surface* surface, Sint16 x, Sint16 y, Uint32 color);
 
 	public:
 
-		WorldMap(SDL_Surface* m_surface);
+		WorldMap();
 
-		void draw();
+		void draw(SDL_Surface* surface);
 		void onClick(Sint16 sx, Sint16 sy);
 		void rotateHorz(Sint16 delta);
 		void rotateVert(Sint16 delta);

@@ -227,6 +227,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\uihotspot.h"
+				>
+			</File>
+			<File
 				RelativePath=".\uimanager.h"
 				>
 			</File>

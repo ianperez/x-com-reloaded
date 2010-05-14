@@ -9,4 +9,9 @@ namespace ufo
 		w = iw;
 		h = ih;
 	}
+
+	void UIElement::add(shared_ptr<UIElement> element)
+	{
+		m_elements.push_back(element);
+	}
 }

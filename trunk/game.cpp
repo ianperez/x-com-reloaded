@@ -1,6 +1,9 @@
 #include "game.h"
 #include "worldmap.h"
 #include "uimanager.h"
+#include <boost/shared_ptr.hpp>
+
+using namespace boost;
 
 namespace ufo
 {
@@ -9,10 +12,15 @@ namespace ufo
 		SDL_Init(SDL_INIT_TIMER | SDL_INIT_VIDEO);
 		SDL_WM_SetCaption("x-com-reloaded", "");
 
+		SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
+
 		SDL_Surface* screen = SDL_SetVideoMode(320, 200, 24, SDL_HWSURFACE | SDL_DOUBLEBUF);
 
-		WorldMap map(screen);
 		UIManager ui;
+
+		shared_ptr<WorldMap> map(new WorldMap);
+		ui.add(map);
+
 		while (1)
 		{
 			SDL_FillRect(screen, NULL, 0);
@@ -22,30 +30,10 @@ namespace ufo
 			{
 				if (e.type == SDL_QUIT)
 					break;
-				if (e.type == SDL_MOUSEBUTTONDOWN)
-				{
-					if (e.button.button == SDL_BUTTON_LEFT)
-						map.onClick(e.button.x, e.button.y);
-					if (e.button.button == SDL_BUTTON_RIGHT)
-						map.setDefaultTarget(e.button.x, e.button.y);
-				}
+				ui.processEvent(e);
 			}
 
-			Uint8 *keystate = SDL_GetKeyState(NULL);
-			if (keystate[SDLK_UP])
-				map.rotateVert(-8);
-			if (keystate[SDLK_DOWN])
-				map.rotateVert(8);
-			if (keystate[SDLK_LEFT])
-				map.rotateHorz(-8);
-			if (keystate[SDLK_RIGHT])
-				map.rotateHorz(8);
-			if (keystate[SDLK_PAGEUP])
-				map.zoom(10);
-			if (keystate[SDLK_PAGEDOWN])
-				map.zoom(-10);
-
-			map.draw();
+			ui.draw(screen);
 
 			SDL_Flip(screen);
 			SDL_Delay(10);
