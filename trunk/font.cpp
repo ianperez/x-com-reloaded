@@ -82,6 +82,12 @@ namespace ufo
 					temp << va_arg(ap, Sint32);
 					buffer += temp.str();
 				}
+				else if (format[i] == 'f')
+				{
+					stringstream temp;
+					temp << va_arg(ap, double);
+					buffer += temp.str();
+				}
 				else if (format[i] == 'c')
 					buffer += va_arg(ap, char);
 				else if (format[i] == '%')
