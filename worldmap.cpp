@@ -12,15 +12,15 @@ namespace ufo
 		if (!file)
 			throw runtime_error("error opening " + filename);
 
-		m_table.resize(2881);
+		m_table.resize(2880);
 		for (Uint32 i = 0; i < m_table.size(); ++i)
 			file.read((char*)&m_table[i], 2);
 	}
 
 	Sint16 TrigTable::operator () (Sint16 i)
 	{
-		if (i < 0)
-			i = m_table.size() - (abs(i) % m_table.size());
+		while (i < 0)
+			i += m_table.size();
 		return m_table[i % m_table.size()];
 	}
 
@@ -35,7 +35,7 @@ namespace ufo
 	}
 
 	WorldMap::WorldMap()
-		: m_rotx(0), m_rotz(0), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256), m_font("geodata/smallset.dat", 8, 9)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256), m_font("geodata/smallset.dat", 8, 9)
 	{
 		m_radius = h / 2 - 10;
 		m_center = Point2d(w / 2, h / 2);
@@ -169,7 +169,20 @@ namespace ufo
 
 		SDL_SetClipRect(surface, NULL);
 
-		m_font.write(surface, 5, 5, "Load Saved Game");
+		m_font.write(surface, 5, 5, "%d, %d", m_rotx, m_rotz);
+
+		int mx, my;
+		SDL_GetMouseState(&mx, &my);
+
+		GeoPoint gptemp;
+		if (screenToCartesian(mx, my, gptemp.c))
+		{
+			toSpherical(gptemp.c, gptemp.s);
+			m_font.write(surface, 5, 15, "%d, %d", gptemp.s.x, gptemp.s.y);
+			m_font.write(surface, 5, 25, "%f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
+		}
+
+		m_font.write(surface, 5, 35, "%d, %d", m_defaultTarget.x, m_defaultTarget.y);
 	}
 
 	void WorldMap::drawShip(SDL_Surface* surface, Sint16 x, Sint16 y, Uint32 color)
@@ -196,8 +209,8 @@ namespace ufo
 	// convert Cartesian coordinates to Spherical coordinates
 	void WorldMap::toSpherical(const Point3d& p1, Point2d& p2)
 	{
-		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 180 / Pi * 8);
-		p2.x = static_cast<Sint16>(atan2(p1.y, p1.x) * 180 / Pi * 8);
+		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 1441 / Pi);
+		p2.x = static_cast<Sint16>(atan2(p1.y, p1.x) * 1440 / Pi);
 	}
 
 	// convert Screen coordinates to Cartesian (x,y,z)
@@ -217,7 +230,7 @@ namespace ufo
 		rotate(p, -m_rotx, 0);
 		rotate(p, 0, -m_rotz);
 
-		return true;		
+		return true;
 	}
 
 	void WorldMap::rotate(Point3d& p, Sint16 x, Sint16 z)
@@ -244,6 +257,18 @@ namespace ufo
 	Sint16 WorldMap::distance(Point2d p1, Point2d p2)
 	{
 		return static_cast<Sint16>(sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y))));
+	}
+
+	void WorldMap::center(Sint16 sx, Sint16 sy)
+	{
+		GeoPoint gp;
+		if (!screenToCartesian(sx, sy, gp.c))
+			return;
+
+		toSpherical(gp.c, gp.s);
+
+		m_rotx = gp.s.y - 720;
+		m_rotz = gp.s.x + 720;
 	}
 
 	void WorldMap::onClick(Sint16 sx, Sint16 sy)
@@ -316,7 +341,7 @@ namespace ufo
 			if (e.button.button == SDL_BUTTON_LEFT)
 				onClick(e.button.x, e.button.y);
 			if (e.button.button == SDL_BUTTON_RIGHT)
-				setDefaultTarget(e.button.x, e.button.y);
+				center(e.button.x, e.button.y);
 
 			return true;
 		}
@@ -334,6 +359,13 @@ namespace ufo
 				zoom(10);
 			if (e.key.keysym.sym == SDLK_PAGEDOWN)
 				zoom(-10);
+			if (e.key.keysym.sym == SDLK_SPACE)
+			{
+				int mx, my;
+				SDL_GetMouseState(&mx, &my);
+
+				setDefaultTarget(mx, my);
+			}
 		}
 
 		return false;

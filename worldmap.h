@@ -10,7 +10,7 @@ namespace ufo
 {
 	using namespace std;
 
-	const double Pi = 3.14159265;
+	const long double Pi = 3.141592653589;
 
 	struct Point2d
 	{
@@ -106,6 +106,7 @@ namespace ufo
 		WorldMap();
 
 		void draw(SDL_Surface* surface);
+		void center(Sint16 sx, Sint16 sy);
 		void onClick(Sint16 sx, Sint16 sy);
 		void rotateHorz(Sint16 delta);
 		void rotateVert(Sint16 delta);
