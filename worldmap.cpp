@@ -34,17 +34,20 @@ namespace ufo
 		load("geodata/cos.dat");
 	}
 
-	WorldMap::WorldMap(SDL_Surface* surface)
-		: m_surface(surface), m_radius(surface->h / 2 - 10), m_rotx(0), m_rotz(0), m_polarDegFix(120), UIElement(0, 0, surface->w, surface->h), m_palette("geodata/palettes.dat", 256), m_center((surface->w - 64) / 2, surface->h / 2), m_font("geodata/biglets.dat", 16, 16)
+	WorldMap::WorldMap()
+		: m_rotx(0), m_rotz(0), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256), m_font("geodata/smallset.dat", 8, 9)
 	{
+		m_radius = h / 2 - 10;
+		m_center = Point2d(w / 2, h / 2);
+
 		m_bg = loadSCR("geograph/geobord.scr");
 		m_palette.apply(m_bg);
 
 		m_font.palette(&m_palette);
 		m_font.offset(239);
 
-		m_radiusMin = m_surface->h / 2 - 10;
-		m_radiusMax = m_surface->h * 4;
+		m_radiusMin = h / 2 - 10;
+		m_radiusMax = h * 4;
 		m_radius = m_radiusMin;
 
 		const string filename("geodata/world.dat");
@@ -85,13 +88,13 @@ namespace ufo
 		m_defaultTarget.y = 0;
 	}
 
-	void WorldMap::draw()
+	void WorldMap::draw(SDL_Surface* surface)
 	{
-		SDL_BlitSurface(m_bg, NULL, m_surface, NULL);
+		SDL_BlitSurface(m_bg, NULL, surface, NULL);
 
 		SDL_Rect clip;
-		SDL_SetRect(&clip, 0, 0, m_surface->w - 64, m_surface->h);
-		SDL_SetClipRect(m_surface, &clip);
+		SDL_SetRect(&clip, 0, 0, surface->w - 64, surface->h);
+		SDL_SetClipRect(surface, &clip);
 
 		for (Uint32 i = 0; i < m_world.size(); ++i)
 		{
@@ -116,7 +119,7 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				lineColor(m_surface, p3.x, p3.y, p4.x, p4.y, GetColor(50, 50, 180));
+				lineColor(surface, p3.x, p3.y, p4.x, p4.y, GetColor(50, 50, 180));
 			}
 		}
 
@@ -149,7 +152,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, GetColor(255, 255, 0));
+			drawShip(surface, p2.x, p2.y, GetColor(255, 255, 0));
 		}
 
 		Point3d p1;
@@ -161,20 +164,20 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(p2.x, p2.y, GetColor(255, 0, 0));
+			drawShip(surface, p2.x, p2.y, GetColor(255, 0, 0));
 		}
 
-		SDL_SetClipRect(m_surface, NULL);
+		SDL_SetClipRect(surface, NULL);
 
-		m_font.write(m_surface, 5, 5, "SELECT SITE FOR NEW BASE");
+		m_font.write(surface, 5, 5, "Load Saved Game");
 	}
 
-	void WorldMap::drawShip(Sint16 x, Sint16 y, Uint32 color)
+	void WorldMap::drawShip(SDL_Surface* surface, Sint16 x, Sint16 y, Uint32 color)
 	{
-		pixelColor(m_surface, x + 1, y, color);
-		pixelColor(m_surface, x - 1, y, color);
-		pixelColor(m_surface, x, y + 1, color);
-		pixelColor(m_surface, x, y - 1, color);
+		pixelColor(surface, x + 1, y, color);
+		pixelColor(surface, x - 1, y, color);
+		pixelColor(surface, x, y + 1, color);
+		pixelColor(surface, x, y - 1, color);
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates
@@ -281,7 +284,6 @@ namespace ufo
 
 	void WorldMap::zoom(Sint16 delta)
 	{
-		Sint16 radius_min = m_surface->h / 2 - 10;
 		m_radius += delta;
 		if (m_radius < m_radiusMin)
 			m_radius = m_radiusMin;
@@ -309,6 +311,31 @@ namespace ufo
 
 	bool WorldMap::processEvent(SDL_Event& e)
 	{
+		if (e.type == SDL_MOUSEBUTTONDOWN)
+		{
+			if (e.button.button == SDL_BUTTON_LEFT)
+				onClick(e.button.x, e.button.y);
+			if (e.button.button == SDL_BUTTON_RIGHT)
+				setDefaultTarget(e.button.x, e.button.y);
+
+			return true;
+		}
+		if (e.type == SDL_KEYDOWN)
+		{
+			if (e.key.keysym.sym == SDLK_UP)
+				rotateVert(-8);
+			if (e.key.keysym.sym == SDLK_DOWN)
+				rotateVert(8);
+			if (e.key.keysym.sym == SDLK_LEFT)
+				rotateHorz(-8);
+			if (e.key.keysym.sym == SDLK_RIGHT)
+				rotateHorz(8);
+			if (e.key.keysym.sym == SDLK_PAGEUP)
+				zoom(10);
+			if (e.key.keysym.sym == SDLK_PAGEDOWN)
+				zoom(-10);
+		}
+
 		return false;
 	}
 }
