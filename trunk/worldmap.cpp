@@ -171,11 +171,8 @@ namespace ufo
 
 		m_font.write(surface, 5, 5, "%d, %d", m_rotx, m_rotz);
 
-		int mx, my;
-		SDL_GetMouseState(&mx, &my);
-
 		GeoPoint gptemp;
-		if (screenToCartesian(mx, my, gptemp.c))
+		if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
 		{
 			toSpherical(gptemp.c, gptemp.s);
 			m_font.write(surface, 5, 15, "%d, %d", gptemp.s.x, gptemp.s.y);
@@ -345,6 +342,11 @@ namespace ufo
 
 			return true;
 		}
+		if (e.type == SDL_MOUSEMOTION)
+		{
+			m_mouse.x = e.motion.x;
+			m_mouse.y = e.motion.y;
+		}
 		if (e.type == SDL_KEYDOWN)
 		{
 			if (e.key.keysym.sym == SDLK_UP)
@@ -360,12 +362,7 @@ namespace ufo
 			if (e.key.keysym.sym == SDLK_PAGEDOWN)
 				zoom(-10);
 			if (e.key.keysym.sym == SDLK_SPACE)
-			{
-				int mx, my;
-				SDL_GetMouseState(&mx, &my);
-
-				setDefaultTarget(mx, my);
-			}
+				setDefaultTarget(m_mouse.x, m_mouse.y);
 		}
 
 		return false;
