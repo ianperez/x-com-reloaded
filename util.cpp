@@ -31,8 +31,12 @@ namespace ufo
 
 	void pixelColor8(SDL_Surface* surface, Sint16 x, Sint16 y, Uint8 color)
 	{
+		if (SDL_MUSTLOCK(surface))
+			SDL_LockSurface(surface);
 		if (x >= 0 && y >= 0 && x < surface->w && y < surface->h)
 			*((Uint8 *)surface->pixels + y * surface->pitch + x) = color;
+		if (SDL_MUSTLOCK(surface))
+			SDL_UnlockSurface(surface);
 	}
 
 	SDL_Surface* loadSCR(string filename, Uint16 width)

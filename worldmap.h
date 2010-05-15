@@ -89,6 +89,7 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		SDL_Surface* m_bg;
+		Point2d m_mouse;
 
 		Palette m_palette;
 
