@@ -12,13 +12,18 @@ namespace ufo
 		if (!file)
 			throw runtime_error("error opening " + filename);
 
-		m_table.resize(2880);
-		for (Uint32 i = 0; i < m_table.size(); ++i)
-			file.read((char*)&m_table[i], 2);
+		for (Sint16 i = 0; i < 2880; ++i)
+		{
+			Sint16 v;
+			file.read((char*)&v, 2);
+			m_table[i] = v;
+		}
 	}
 
 	Sint16 TrigTable::operator () (Sint16 i)
 	{
+		i += m_offset;
+
 		while (i < 0)
 			i += m_table.size();
 		return m_table[i % m_table.size()];
@@ -26,12 +31,27 @@ namespace ufo
 
 	Sin::Sin()
 	{
-		load("geodata/sine.dat");
+		m_offset = 0;
+//		load("geodata/sine.dat");
+
+		for (size_t i = 0; i < 2880; ++i)
+			m_table[i] = static_cast<Sint16>(sin(i / 8.0 * Pi / 180.0) * 1024);
 	}
 
 	Cos::Cos()
 	{
-		load("geodata/cos.dat");
+		m_offset = 0;
+//		load("geodata/cos.dat");
+
+		for (size_t i = 0; i < 2880; ++i)
+			m_table[i] = static_cast<Sint16>(cos(i / 8 * Pi / 180) * 1024);
+	}
+
+	ArcCos::ArcCos()
+	{
+		m_offset = -1024;
+		for (Sint16 i = 0; i <= 2048; ++i)
+			m_table[i] = static_cast<Sint16>(acos((i - 1024) / 1024.0));
 	}
 
 	WorldMap::WorldMap()
@@ -177,6 +197,7 @@ namespace ufo
 			toSpherical(gptemp.c, gptemp.s);
 			m_font.write(surface, 5, 15, "%d, %d", gptemp.s.x, gptemp.s.y);
 			m_font.write(surface, 5, 25, "%f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
+			m_font.write(surface, 5, 45, "%f, %d", gptemp.c.z * 1024 / m_radius, m_acos(gptemp.c.z * 1024 / m_radius));
 		}
 
 		m_font.write(surface, 5, 35, "%d, %d", m_defaultTarget.x, m_defaultTarget.y);
@@ -190,7 +211,7 @@ namespace ufo
 		pixelColor(surface, x, y - 1, color);
 	}
 
-	// convert Spherical coordinates to Cartesian coordinates
+	// convert Spherical coordinates to Cartesian coordinates/
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
 		double sx = m_sin(p1.x) / 1024.0;
@@ -206,7 +227,8 @@ namespace ufo
 	// convert Cartesian coordinates to Spherical coordinates
 	void WorldMap::toSpherical(const Point3d& p1, Point2d& p2)
 	{
-		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 1441 / Pi);
+		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 1440 / Pi);
+		//p2.y = m_acos(static_cast<Sint16>(p1.z * 1024 / m_radius));
 		p2.x = static_cast<Sint16>(atan2(p1.y, p1.x) * 1440 / Pi);
 	}
 
