@@ -1,11 +1,30 @@
 #include "util.h"
 #include <fstream>
 #include <SDL_gfxPrimitives.h>
+#include <cmath>
 
 using namespace std;
 
 namespace ufo
 {
+	double round(double x)
+	{
+		double y;
+		if (modf(x, &y) < 0.5)
+			return floor(x);
+		return ceil(x);
+	}
+
+	double toRad(double x)
+	{
+		return x * Pi / 1440;
+	}
+
+	double toDeg(double x)
+	{
+		return x * 1440 / Pi;
+	}
+
 	void SDL_SetRect(SDL_Rect* r, Sint16 x, Sint16 y, Uint16 w, Uint16 h)
 	{
 		r->x = x;
