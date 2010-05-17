@@ -11,12 +11,10 @@ namespace ufo
 {
 	using namespace std;
 
-	const long double Pi = 3.141592653589;
-
 	struct Point2d
 	{
-		Point2d(Sint16 ix = 0, Sint16 iy = 0) : x(ix), y(iy) { }
-		Sint16 x, y;
+		Point2d(double ix = 0, double iy = 0) : x(ix), y(iy) { }
+		double x, y;
 	};
 
 	struct Point3d
@@ -43,48 +41,8 @@ namespace ufo
 		Uint32 texture;
 	};
 
-	class TrigTable
-	{
-	protected:
-
-		map<Sint16, Sint16> m_table;
-		Sint16 m_offset;
-
-		void load(string filename);
-
-	public:
-
-		Sint16 operator () (Sint16 i);
-	};
-
-	class Sin : public TrigTable
-	{
-
-	public:
-
-		Sin();
-	};
-
-	class Cos : public TrigTable
-	{
-	public:
-
-		Cos();
-	};
-
-	class ArcCos : public TrigTable
-	{
-	public:
-
-		ArcCos();
-	};
-
 	class WorldMap : public UIElement
 	{
-		Sin m_sin;
-		Cos m_cos;
-		ArcCos m_acos;
-
 		vector<GeoPolygon> m_world;
 		vector<GeoObject> m_test;
 
@@ -99,7 +57,7 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		SDL_Surface* m_bg;
-		Point2d m_mouse;
+		Sint16 m_mx, m_my;
 
 		Palette m_palette;
 
@@ -108,7 +66,7 @@ namespace ufo
 		bool screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
 		void rotate(Point3d& p, Sint16 x, Sint16 z);
 		void project(const Point3d& p1, Point2d& p2);
-		Sint16 distance(Point2d p1, Point2d p2);
+		double distance(Point2d p1, Point2d p2);
 
 		void drawShip(SDL_Surface* surface, Sint16 x, Sint16 y, Uint32 color);
 

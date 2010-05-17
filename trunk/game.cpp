@@ -15,7 +15,7 @@ namespace ufo
 
 		SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
-		SDL_Surface* screen = SDL_SetVideoMode(640, 400, 32, SDL_HWSURFACE);
+		SDL_Surface* screen = SDL_SetVideoMode(320, 200, 32, SDL_HWSURFACE);
 		SDL_Surface* main = SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 200, 32, 0, 0, 0, 0);
 
 		bool xscale = screen->w * 1.0 / main->w < screen->h * 1.0 / main->h;
@@ -57,7 +57,7 @@ namespace ufo
 
 			ui.draw(main);
 
-			SDL_Surface* temp = zoomSurface(main, scale, scale, 1);
+			SDL_Surface* temp = zoomSurface(main, scale, scale, scale == 1 ? 0 : 1);
 			SDL_BlitSurface(temp, NULL, screen, &dst);
 			SDL_FreeSurface(temp);
 

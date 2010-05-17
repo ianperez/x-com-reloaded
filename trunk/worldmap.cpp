@@ -6,54 +6,6 @@
 
 namespace ufo
 {
-	void TrigTable::load(string filename)
-	{
-		ifstream file(filename.c_str(), ios::binary);
-		if (!file)
-			throw runtime_error("error opening " + filename);
-
-		for (Sint16 i = 0; i < 2880; ++i)
-		{
-			Sint16 v;
-			file.read((char*)&v, 2);
-			m_table[i] = v;
-		}
-	}
-
-	Sint16 TrigTable::operator () (Sint16 i)
-	{
-		i += m_offset;
-
-		while (i < 0)
-			i += m_table.size();
-		return m_table[i % m_table.size()];
-	}
-
-	Sin::Sin()
-	{
-		m_offset = 0;
-//		load("geodata/sine.dat");
-
-		for (size_t i = 0; i < 2880; ++i)
-			m_table[i] = static_cast<Sint16>(sin(i / 8.0 * Pi / 180.0) * 1024);
-	}
-
-	Cos::Cos()
-	{
-		m_offset = 0;
-//		load("geodata/cos.dat");
-
-		for (size_t i = 0; i < 2880; ++i)
-			m_table[i] = static_cast<Sint16>(cos(i / 8 * Pi / 180) * 1024);
-	}
-
-	ArcCos::ArcCos()
-	{
-		m_offset = -1024;
-		for (Sint16 i = 0; i <= 2048; ++i)
-			m_table[i] = static_cast<Sint16>(acos((i - 1024) / 1024.0));
-	}
-
 	WorldMap::WorldMap()
 		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256), m_font("geodata/smallset.dat", 8, 9)
 	{
@@ -81,16 +33,19 @@ namespace ufo
 			GeoPolygon polygon;
 			for (char i = 0; i < 4; ++i)
 			{
-				file.read((char*)&gp.s.x, 2);
+				Sint16 v;
+				file.read((char*)&v, 2);
 				if (file.eof())
 					break;
 
-				file.read((char*)&gp.s.y, 2);
+				gp.s.x = v;
+
+				file.read((char*)&v, 2);
 
 				if (gp.s.x == -1)
 					break;
 
-				gp.s.y += 720;
+				gp.s.y = v + 720;
 
 				toCartesian(gp.s, gp.c);
 
@@ -139,7 +94,7 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				lineColor(surface, p3.x, p3.y, p4.x, p4.y, GetColor(50, 50, 180));
+				lineColor(surface, round(p3.x), round(p3.y), round(p4.x), round(p4.y), GetColor(50, 50, 180));
 			}
 		}
 
@@ -172,7 +127,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(surface, p2.x, p2.y, GetColor(255, 255, 0));
+			drawShip(surface, round(p2.x), round(p2.y), GetColor(255, 255, 0));
 		}
 
 		Point3d p1;
@@ -184,23 +139,24 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(surface, p2.x, p2.y, GetColor(255, 0, 0));
+			drawShip(surface, round(p2.x), round(p2.y), GetColor(255, 0, 0));
 		}
 
 		SDL_SetClipRect(surface, NULL);
 
-		m_font.write(surface, 5, 5, "%d, %d", m_rotx, m_rotz);
+		m_font.write(surface, 5, 5, "Rotation (x, z): %d, %d", m_rotx, m_rotz);
 
 		GeoPoint gptemp;
-		if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
+		if (screenToCartesian(m_mx, m_my, gptemp.c))
 		{
 			toSpherical(gptemp.c, gptemp.s);
-			m_font.write(surface, 5, 15, "%d, %d", gptemp.s.x, gptemp.s.y);
-			m_font.write(surface, 5, 25, "%f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
-			m_font.write(surface, 5, 45, "%f, %d", gptemp.c.z * 1024 / m_radius, m_acos(gptemp.c.z * 1024 / m_radius));
+			m_font.write(surface, 5, 15, "Mouse -> Spherical: %f, %f", gptemp.s.x, gptemp.s.y);
+			m_font.write(surface, 5, 25, "Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
+			m_font.write(surface, 5, 45, "toSpherical test: %f, %f", gptemp.c.z, toDeg(acos(gptemp.c.z / m_radius)));
+			m_font.write(surface, 5, 55, "Radius: %d", m_radius);
 		}
 
-		m_font.write(surface, 5, 35, "%d, %d", m_defaultTarget.x, m_defaultTarget.y);
+		m_font.write(surface, 5, 35, "Default Target (Spherical): %f, %f", m_defaultTarget.x, m_defaultTarget.y);
 	}
 
 	void WorldMap::drawShip(SDL_Surface* surface, Sint16 x, Sint16 y, Uint32 color)
@@ -214,10 +170,10 @@ namespace ufo
 	// convert Spherical coordinates to Cartesian coordinates/
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
-		double sx = m_sin(p1.x) / 1024.0;
-		double cx = m_cos(p1.x) / 1024.0;
-		double sy = m_sin(p1.y) / 1024.0;
-		double cy = m_cos(p1.y) / 1024.0;
+		double sx = sin(toRad(p1.x));
+		double cx = cos(toRad(p1.x));
+		double sy = sin(toRad(p1.y));
+		double cy = cos(toRad(p1.y));
 
 		p2.x = m_radius * sy * cx;
 		p2.y = m_radius * sy * sx;
@@ -227,9 +183,8 @@ namespace ufo
 	// convert Cartesian coordinates to Spherical coordinates
 	void WorldMap::toSpherical(const Point3d& p1, Point2d& p2)
 	{
-		p2.y = static_cast<Sint16>(acos(p1.z / m_radius) * 1440 / Pi);
-		//p2.y = m_acos(static_cast<Sint16>(p1.z * 1024 / m_radius));
-		p2.x = static_cast<Sint16>(atan2(p1.y, p1.x) * 1440 / Pi);
+		p2.y = toDeg(acos(p1.z / m_radius));
+		p2.x = toDeg(atan2(p1.y, p1.x));
 	}
 
 	// convert Screen coordinates to Cartesian (x,y,z)
@@ -258,13 +213,13 @@ namespace ufo
 
 		// rotate z-axis
 		orig = p;
-		p.y = m_cos(z) / 1024.0 * orig.y - m_sin(z) / 1024.0 * orig.x;
-		p.x = m_sin(z) / 1024.0 * orig.y + m_cos(z) / 1024.0 * orig.x;
+		p.y = cos(toRad(z)) * orig.y - sin(toRad(z)) * orig.x;
+		p.x = sin(toRad(z)) * orig.y + cos(toRad(z)) * orig.x;
 
 		// rotate x-axis
 		orig = p;
-		p.z = m_cos(x) / 1024.0 * orig.z - m_sin(x) / 1024.0 * orig.y;
-		p.y = m_sin(x) / 1024.0 * orig.z + m_cos(x) / 1024.0 * orig.y;
+		p.z = cos(toRad(x)) * orig.z - sin(toRad(x)) * orig.y;
+		p.y = sin(toRad(x)) * orig.z + cos(toRad(x)) * orig.y;
 	}
 
 	void WorldMap::project(const Point3d& p1, Point2d& p2)
@@ -273,9 +228,9 @@ namespace ufo
 		p2.y = static_cast<Sint16>(-p1.z + m_center.y);
 	}
 
-	Sint16 WorldMap::distance(Point2d p1, Point2d p2)
+	double WorldMap::distance(Point2d p1, Point2d p2)
 	{
-		return static_cast<Sint16>(sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y))));
+		return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
 	}
 
 	void WorldMap::center(Sint16 sx, Sint16 sy)
@@ -366,8 +321,8 @@ namespace ufo
 		}
 		if (e.type == SDL_MOUSEMOTION)
 		{
-			m_mouse.x = e.motion.x;
-			m_mouse.y = e.motion.y;
+			m_mx = e.motion.x;
+			m_my = e.motion.y;
 		}
 		if (e.type == SDL_KEYDOWN)
 		{
@@ -384,7 +339,7 @@ namespace ufo
 			if (e.key.keysym.sym == SDLK_PAGEDOWN)
 				zoom(-10);
 			if (e.key.keysym.sym == SDLK_SPACE)
-				setDefaultTarget(m_mouse.x, m_mouse.y);
+				setDefaultTarget(m_mx, m_my);
 		}
 
 		return false;
