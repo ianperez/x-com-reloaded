@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <map>
 #include <sdl.h>
 #include "uielement.h"
 #include "palette.h"
@@ -46,7 +47,8 @@ namespace ufo
 	{
 	protected:
 
-		vector<Sint16> m_table;
+		map<Sint16, Sint16> m_table;
+		Sint16 m_offset;
 
 		void load(string filename);
 
@@ -70,10 +72,18 @@ namespace ufo
 		Cos();
 	};
 
+	class ArcCos : public TrigTable
+	{
+	public:
+
+		ArcCos();
+	};
+
 	class WorldMap : public UIElement
 	{
 		Sin m_sin;
 		Cos m_cos;
+		ArcCos m_acos;
 
 		vector<GeoPolygon> m_world;
 		vector<GeoObject> m_test;
