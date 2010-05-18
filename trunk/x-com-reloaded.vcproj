@@ -189,6 +189,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\surface.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\uielement.cpp"
 				>
 			</File>
@@ -220,6 +224,10 @@
 			</File>
 			<File
 				RelativePath=".\palette.h"
+				>
+			</File>
+			<File
+				RelativePath=".\surface.h"
 				>
 			</File>
 			<File
