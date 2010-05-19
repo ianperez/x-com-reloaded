@@ -1,5 +1,7 @@
 #pragma once
 
+#include <sdl.h>
+
 namespace ufo
 {
 	class Surface
