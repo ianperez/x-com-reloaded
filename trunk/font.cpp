@@ -21,11 +21,15 @@ namespace ufo
 		infile.read((char*)&m_data[0], m_data.size());
 	}
 
-	void Font::_write(SDL_Surface* surface, Sint16 x, Sint16 y, string buffer)
+	Font::Font(string filename, Uint16 width, Uint16 height)
+		: m_width(width), m_height(height), m_offset(20)
 	{
-		if (!m_palette)
-			return;
+		load(filename);
+	}
 
+	void Font::print(Surface& surface, Sint16 x, Sint16 y, string buffer)
+	{
+		surface.lock();
 		for (size_t i = 0; i < buffer.size(); ++i)
 		{
 			if (buffer[i] >= 33)
@@ -40,7 +44,7 @@ namespace ufo
 					Uint8 c = m_data[j + k];
 					if (c > 0)
 					{
-						pixelColor(surface, x + (k % m_width), y + (k / m_width), GetColor((*m_palette)(c + m_offset)));
+						surface.pixelColor8(x + (k % m_width), y + (k / m_width), c + m_offset);
 						if ((k % m_width) > max)
 							max = k % m_width;
 					}
@@ -51,15 +55,10 @@ namespace ufo
 			else
 				x += m_width / 2;
 		}
+		surface.unlock();
 	}
 
-	Font::Font(string filename, Uint16 width, Uint16 height)
-		: m_width(width), m_height(height), m_offset(20)
-	{
-		load(filename);
-	}
-
-	void Font::write(SDL_Surface* surface, Sint16 x, Sint16 y, string format, ...)
+	void Font::printf(Surface& surface, Sint16 x, Sint16 y, string format, ...)
 	{
 		va_list ap;
 		va_start(ap, format);
@@ -100,12 +99,7 @@ namespace ufo
 		}
 
 		va_end(ap);
-		_write(surface, x, y, buffer);
-	}
-
-	void Font::palette(Palette* p)
-	{
-		m_palette = p;
+		print(surface, x, y, buffer);
 	}
 
 	void Font::offset(Uint8 offset)

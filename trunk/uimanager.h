@@ -8,6 +8,6 @@ namespace ufo
 	public:
 
 		bool processEvent(SDL_Event& e);
-		void draw(SDL_Surface* surface);
+		void draw(Surface& surface);
 	};
 }

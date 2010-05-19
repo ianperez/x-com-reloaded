@@ -1,21 +1,20 @@
 #include "worldmap.h"
 #include "util.h"
 #include <fstream>
-#include <SDL_gfxPrimitives.h>
 #include <cmath>
 
 namespace ufo
 {
-	WorldMap::WorldMap()
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256), m_font("geodata/smallset.dat", 8, 9)
+	WorldMap::WorldMap(Surface& surface)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_font("geodata/smallset.dat", 8, 9)
 	{
 		m_radius = h / 2 - 10;
 		m_center = Point2d(w / 2, h / 2);
 
-		m_bg = loadSCR("geograph/geobord.scr");
+		m_bg.loadSCR("geograph/geobord.scr");
+		m_palette.apply(surface);
 		m_palette.apply(m_bg);
 
-		m_font.palette(&m_palette);
 		m_font.offset(239);
 
 		m_radiusMin = h / 2 - 10;
@@ -63,14 +62,11 @@ namespace ufo
 		m_defaultTarget.y = 0;
 	}
 
-	void WorldMap::draw(SDL_Surface* surface)
+	void WorldMap::draw(Surface& surface)
 	{
-		SDL_BlitSurface(m_bg, NULL, surface, NULL);
+		m_bg.blit(surface);
 
-		SDL_Rect clip;
-		SDL_SetRect(&clip, 0, 0, surface->w - 64, surface->h);
-		SDL_SetClipRect(surface, &clip);
-
+		surface.setClipRect(Rect(0, 0, surface.w, surface.h));
 		for (Uint32 i = 0; i < m_world.size(); ++i)
 		{
 			for (Uint32 j = 0; j < m_world[i].size(); ++j)
@@ -94,7 +90,7 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				lineColor(surface, round(p3.x), round(p3.y), round(p4.x), round(p4.y), GetColor(50, 50, 180));
+				surface.lineColor8(round(p3.x), round(p3.y), round(p4.x), round(p4.y), 50);
 			}
 		}
 
@@ -127,7 +123,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(surface, round(p2.x), round(p2.y), GetColor(255, 255, 0));
+			drawShip(surface, round(p2.x), round(p2.y), 11);
 		}
 
 		Point3d p1;
@@ -139,32 +135,32 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(surface, round(p2.x), round(p2.y), GetColor(255, 0, 0));
+			drawShip(surface, round(p2.x), round(p2.y), 13);
 		}
 
-		SDL_SetClipRect(surface, NULL);
+		surface.clearClipRect();
 
-		m_font.write(surface, 5, 5, "Rotation (x, z): %d, %d", m_rotx, m_rotz);
+		m_font.printf(surface, 5, 5, "Rotation (x, z): %d, %d", m_rotx, m_rotz);
 
 		GeoPoint gptemp;
 		if (screenToCartesian(m_mx, m_my, gptemp.c))
 		{
 			toSpherical(gptemp.c, gptemp.s);
-			m_font.write(surface, 5, 15, "Mouse -> Spherical: %f, %f", gptemp.s.x, gptemp.s.y);
-			m_font.write(surface, 5, 25, "Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
-			m_font.write(surface, 5, 45, "toSpherical test: %f, %f", gptemp.c.z, toDeg(acos(gptemp.c.z / m_radius)));
-			m_font.write(surface, 5, 55, "Radius: %d", m_radius);
+			m_font.printf(surface, 5, 15, "Mouse -> Spherical: %f, %f", gptemp.s.x, gptemp.s.y);
+			m_font.printf(surface, 5, 25, "Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
+			m_font.printf(surface, 5, 45, "toSpherical test: %f, %f", gptemp.c.z, toDeg(acos(gptemp.c.z / m_radius)));
+			m_font.printf(surface, 5, 55, "Radius: %d", m_radius);
 		}
 
-		m_font.write(surface, 5, 35, "Default Target (Spherical): %f, %f", m_defaultTarget.x, m_defaultTarget.y);
+		m_font.printf(surface, 5, 35, "Default Target (Spherical): %f, %f", m_defaultTarget.x, m_defaultTarget.y);
 	}
 
-	void WorldMap::drawShip(SDL_Surface* surface, Sint16 x, Sint16 y, Uint32 color)
+	void WorldMap::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
 	{
-		pixelColor(surface, x + 1, y, color);
-		pixelColor(surface, x - 1, y, color);
-		pixelColor(surface, x, y + 1, color);
-		pixelColor(surface, x, y - 1, color);
+		surface.pixelColor8(x + 1, y, color);
+		surface.pixelColor8(x - 1, y, color);
+		surface.pixelColor8(x, y + 1, color);
+		surface.pixelColor8(x, y - 1, color);
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates/

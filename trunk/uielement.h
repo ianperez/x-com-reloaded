@@ -1,28 +1,29 @@
 #pragma once
 #include <vector>
 #include <sdl.h>
-#include <boost/shared_ptr.hpp>
+#include "surface.h"
 
 namespace ufo
 {
 	using namespace std;
-	using namespace boost;
 
-	class UIElement : public SDL_Rect
+	class UIElement : public Rect
 	{
 	public:
 
 		UIElement() { }
-		UIElement(Sint16 ix, Sint16 iy, Uint16 iw, Uint16 ih);
+		UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+
+		~UIElement();
 
 		virtual bool processEvent(SDL_Event& e) { return false; }
-		virtual void draw(SDL_Surface* surface) { }
+		virtual void draw(Surface& surface) { }
 
-		void add(shared_ptr<UIElement> element);
+		void add(UIElement* element);
 
 	protected:
 
-		vector<shared_ptr<UIElement> > m_elements;
-		shared_ptr<UIElement> m_parent;
+		vector<UIElement*> m_elements;
+		UIElement* m_parent;
 	};
 }
