@@ -6,7 +6,7 @@ using namespace std;
 
 namespace ufo
 {
-	void Palette::load(string filename, Uint16 paletteSize)
+	void Palette::load(string filename, Uint16 paletteSize, Uint8 index)
 	{
 		ifstream infile(filename.c_str(), ios::binary);
 		if (!infile)
@@ -14,58 +14,49 @@ namespace ufo
 
 		Uint8 bufferSize = paletteSize == 256 ? 6 : 0;
 
-		vector<char> buffer(bufferSize);
-		while (!infile.eof())
+		infile.seekg((paletteSize + bufferSize) * index, ios::beg);
+
+		for (Uint16 i = 0; i < paletteSize; ++i)
 		{
-			vector<SDL_Color> colors;
-			for (Uint16 i = 0; i < paletteSize; ++i)
-			{
-				Uint8 r, g, b;
-				infile.read((char*)&r, sizeof(r));
-				infile.read((char*)&g, sizeof(g));
-				infile.read((char*)&b, sizeof(b));
+			Uint8 r, g, b;
+			infile.read((char*)&r, sizeof(r));
+			infile.read((char*)&g, sizeof(g));
+			infile.read((char*)&b, sizeof(b));
 
-				if (infile.eof())
-					break;
+			if (infile.eof())
+				break;
 
-				SDL_Color c;
-				c.r = (r + 1) * 4 - 1;
-				c.g = (g + 1) * 4 - 1;
-				c.b = (b + 1) * 4 - 1;
-				c.unused = 0;
-				colors.push_back(c);
-			}
-
-			m_colors.push_back(colors);
-
-			if (bufferSize > 0)
-				infile.read(&buffer[0], bufferSize);
+			SDL_Color c;
+			c.r = (r + 1) * 4 - 1;
+			c.g = (g + 1) * 4 - 1;
+			c.b = (b + 1) * 4 - 1;
+			c.unused = 0;
+			m_colors.push_back(c);
 		}
 	}
 
 	Palette::Palette()
-		: m_currentPalette(0)
 	{
 	}
 
-	Palette::Palette(string filename, Uint16 paletteSize)
-		: m_currentPalette(0)
+	Palette::Palette(string filename, Uint16 paletteSize, Uint8 index)
 	{
-		load(filename, paletteSize);
+		load(filename, paletteSize, index);
 	}
 
-	SDL_Color Palette::operator() (Uint8 index)
+	Uint32 Palette::getRGBA(Uint8 index) const
 	{
-		return m_colors[m_currentPalette][index + (256 - m_colors[m_currentPalette].size())];
+		SDL_Color c(operator[] (index));
+		return ((Uint32)c.r << 24) | (Uint32)(c.g << 16) | ((Uint16)c.b << 8) | (Uint8)255;
 	}
 
-	void Palette::setPalette(Uint8 palette)
+	SDL_Color Palette::operator[] (Uint8 index) const
 	{
-		m_currentPalette = palette;
+		return m_colors[index + (256 - m_colors.size())];
 	}
 
-	void Palette::apply(SDL_Surface* surface)
+	void Palette::apply(Surface& surface)
 	{
-		SDL_SetColors(surface, &m_colors[m_currentPalette][0], 256 - m_colors[m_currentPalette].size(), m_colors[m_currentPalette].size());
+		surface.setColors(&m_colors[0], 256 - m_colors.size(), m_colors.size());
 	}
 }

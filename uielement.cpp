@@ -2,15 +2,18 @@
 
 namespace ufo
 {
-	UIElement::UIElement(Sint16 ix, Sint16 iy, Uint16 iw, Uint16 ih)
+	UIElement::UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
 	{
-		x = ix;
-		y = iy;
-		w = iw;
-		h = ih;
+		operator() (_x, _y, _w, _h);
 	}
 
-	void UIElement::add(shared_ptr<UIElement> element)
+	UIElement::~UIElement()
+	{
+		for (size_t i = 0; i < m_elements.size(); ++i)
+			delete m_elements[i];
+	}
+
+	void UIElement::add(UIElement* element)
 	{
 		m_elements.push_back(element);
 	}
