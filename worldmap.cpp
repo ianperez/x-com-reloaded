@@ -66,7 +66,7 @@ namespace ufo
 	{
 		m_bg.blit(surface);
 
-		surface.setClipRect(Rect(0, 0, surface.w, surface.h));
+		surface.setClipRect(Rect(0, 0, surface.w - 64, surface.h));
 		for (Uint32 i = 0; i < m_world.size(); ++i)
 		{
 			for (Uint32 j = 0; j < m_world[i].size(); ++j)

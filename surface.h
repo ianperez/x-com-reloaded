@@ -41,6 +41,7 @@ namespace ufo
 		void lineColor8(Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 color);
 		void fillRect(Rect* dst, Uint32 color);
 
+		Uint32 mapRGB(Uint8 r, Uint8 g, Uint8 b);
 		void setColors(SDL_Color* colors, int firstcolor, int ncolors);
 
 		void loadSCR(string filename, Uint16 width = 320);
