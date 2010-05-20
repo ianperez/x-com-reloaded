@@ -34,7 +34,6 @@ namespace ufo
 	Surface::Surface(SDL_Surface* surface)
 		: m_surface(surface), w(surface->w), h(surface->h)
 	{
-		
 	}
 
 	Surface::~Surface()
@@ -70,7 +69,7 @@ namespace ufo
 
 	void Surface::pixelColor8(Sint16 x, Sint16 y, Uint8 color)
 	{
-		if (x >= 0 && y >= 0 && x < m_surface->w && y < m_surface->h)
+		if (x >= m_surface->clip_rect.x && y >= m_surface->clip_rect.y && x < m_surface->clip_rect.x + m_surface->clip_rect.w && y < m_surface->clip_rect.y + m_surface->clip_rect.h)
 			*((Uint8 *)m_surface->pixels + y * m_surface->pitch + x) = color;
 	}
 
@@ -83,6 +82,11 @@ namespace ufo
 	void Surface::fillRect(Rect* dst, Uint32 color)
 	{
 		SDL_FillRect(m_surface, dst, color);
+	}
+
+	Uint32 Surface::mapRGB(Uint8 r, Uint8 g, Uint8 b)
+	{
+		return SDL_MapRGB(m_surface->format, r, g, b);
 	}
 
 	void Surface::loadSCR(string filename, Uint16 width)
