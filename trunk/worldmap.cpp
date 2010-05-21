@@ -194,14 +194,11 @@ namespace ufo
 	// convert Spherical coordinates to Cartesian coordinates
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
-		double sx = sin(toRad(p1.x));
-		double cx = cos(toRad(p1.x));
 		double sy = sin(toRad(p1.y));
-		double cy = cos(toRad(p1.y));
 
-		p2.x = m_radius * sy * cx;
-		p2.y = m_radius * sy * sx;
-		p2.z = m_radius * cy;
+		p2.x = m_radius * sy * cos(toRad(p1.x));
+		p2.y = m_radius * sy * sin(toRad(p1.x));
+		p2.z = m_radius * cos(toRad(p1.y));
 	}
 
 	// convert Cartesian coordinates to Spherical coordinates
