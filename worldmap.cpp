@@ -82,7 +82,11 @@ namespace ufo
 
 	void WorldMap::draw(Surface& surface)
 	{
+		// draw background
 		m_bg.blit(surface);
+
+		// draw ocean
+		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius, GetColor(0, 0, 255));
 
 		surface.setClipRect(Rect(0, 0, surface.w - 64, surface.h));
 		vector<Sint16> vx(4), vy(4);
