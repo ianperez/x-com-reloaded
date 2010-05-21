@@ -3,6 +3,7 @@
 namespace ufo
 {
 	UIElement::UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
+		: exclusive(false)
 	{
 		operator() (_x, _y, _w, _h);
 	}
@@ -16,5 +17,10 @@ namespace ufo
 	void UIElement::add(UIElement* element)
 	{
 		m_elements.push_back(element);
+	}
+
+	void UIElement::setUIManager(UIManager* ui)
+	{
+		m_ui = ui;
 	}
 }

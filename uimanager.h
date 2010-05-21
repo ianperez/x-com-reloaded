@@ -3,9 +3,18 @@
 
 namespace ufo
 {
-	class UIManager : public UIElement
+	class UIManager : protected vector<UIElement*>
 	{
+		UIElement* m_focus;
+
 	public:
+
+		UIManager();
+		~UIManager();
+
+		void add(UIElement* e);
+
+		bool requestFocus(UIElement* e);
 
 		bool processEvent(SDL_Event& e);
 		void draw(Surface& surface);

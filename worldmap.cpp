@@ -2,18 +2,36 @@
 #include "util.h"
 #include <fstream>
 #include <cmath>
+#include <sdl_gfxprimitives.h>
 
 namespace ufo
 {
 	WorldMap::WorldMap(Surface& surface)
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_font("geodata/smallset.dat", 8, 9)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_font("geodata/smallset.dat", 8, 9), m_mx(0), m_my(0)
 	{
 		m_radius = h / 2 - 10;
 		m_center = Point2d(w / 2, h / 2);
 
 		m_bg.loadSCR("geograph/geobord.scr");
-		m_palette.apply(surface);
 		m_palette.apply(m_bg);
+
+		Surface texture;
+		texture.loadSCR("geograph/texture.dat", 32);
+		m_palette.apply(texture);
+		texture.setFrames(32, 32, 39);
+
+		m_palette.apply(surface);
+
+		for (size_t i = 26; i < 39; ++i)
+		{
+			m_textures.push_back(new Surface(SDL_CreateRGBSurface(SDL_HWSURFACE, 32, 32, 8, 0, 0, 0, 0)));
+			Rect r(texture.getFrameRect(i));
+			m_palette.apply(*m_textures.back());
+			texture.blit(*m_textures.back(), 0, &r);
+		}
+
+		Rect rInv(257, 0, 63, 11);
+		m_bg.invert(248, &rInv);
 
 		m_font.offset(239);
 
@@ -69,6 +87,7 @@ namespace ufo
 		surface.setClipRect(Rect(0, 0, surface.w - 64, surface.h));
 		for (Uint32 i = 0; i < m_world.size(); ++i)
 		{
+			vector<Sint16> vx, vy;
 			for (Uint32 j = 0; j < m_world[i].size(); ++j)
 			{
 				Uint32 k = (j + 1) % m_world[i].size();
@@ -90,8 +109,15 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				surface.lineColor8(round(p3.x), round(p3.y), round(p4.x), round(p4.y), 50);
+				vx.push_back(p3.x);
+				vy.push_back(p3.y);
+				vx.push_back(p4.x);
+				vy.push_back(p4.y);
+//				surface.lineColor8(round(p3.x), round(p3.y), round(p4.x), round(p4.y), 195);
 			}
+
+			if (vx.size())
+				texturedPolygon(surface.get(), &vx[0], &vy[0], vx.size(), m_textures[m_world[i].texture]->get(), 0, 0);
 		}
 
 		for (Uint32 i = 0; i < m_test.size(); ++i)
@@ -153,6 +179,8 @@ namespace ufo
 		}
 
 		m_font.printf(surface, 5, 35, "Default Target (Spherical): %f, %f", m_defaultTarget.x, m_defaultTarget.y);
+
+		m_font.printf(surface, 5, 65, "Pixel: %d", surface.getPixel8(m_mx, m_my));
 	}
 
 	void WorldMap::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
@@ -163,7 +191,7 @@ namespace ufo
 		surface.pixelColor8(x, y - 1, color);
 	}
 
-	// convert Spherical coordinates to Cartesian coordinates/
+	// convert Spherical coordinates to Cartesian coordinates
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
 		double sx = sin(toRad(p1.x));
@@ -229,40 +257,6 @@ namespace ufo
 		return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
 	}
 
-	void WorldMap::center(Sint16 sx, Sint16 sy)
-	{
-		GeoPoint gp;
-		if (!screenToCartesian(sx, sy, gp.c))
-			return;
-
-		toSpherical(gp.c, gp.s);
-
-		m_rotx = gp.s.y - 720;
-		m_rotz = gp.s.x + 720;
-	}
-
-	void WorldMap::onClick(Sint16 sx, Sint16 sy)
-	{
-		GeoObject gp;
-		if (!screenToCartesian(sx, sy, gp.c))
-			return;
-
-		// populate spherical coordinates
-		toSpherical(gp.c, gp.s);
-
-		// set target
-		gp.target = m_defaultTarget;
-
-		// adjust target if needed
-		if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
-			gp.target.x -= 2880;
-		if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)))
-			gp.target.x += 2880;
-
-		gp.lastUpdate = SDL_GetTicks();
-		m_test.push_back(gp);
-	}
-
 	void WorldMap::rotateHorz(Sint16 delta)
 	{
 		m_rotz += delta;
@@ -304,39 +298,68 @@ namespace ufo
 		toSpherical(p, m_defaultTarget);
 	}
 
-	bool WorldMap::processEvent(SDL_Event& e)
+	bool WorldMap::onMouseLeftClick(Sint16 x, Sint16 y)
 	{
-		if (e.type == SDL_MOUSEBUTTONDOWN)
+		GeoObject gp;
+		if (screenToCartesian(x, y, gp.c))
 		{
-			if (e.button.button == SDL_BUTTON_LEFT)
-				onClick(e.button.x, e.button.y);
-			if (e.button.button == SDL_BUTTON_RIGHT)
-				center(e.button.x, e.button.y);
+			// populate spherical coordinates
+			toSpherical(gp.c, gp.s);
 
-			return true;
+			// set target
+			gp.target = m_defaultTarget;
+
+			// adjust target if needed
+			if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
+				gp.target.x -= 2880;
+			if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)))
+				gp.target.x += 2880;
+
+			gp.lastUpdate = SDL_GetTicks();
+			m_test.push_back(gp);
 		}
-		if (e.type == SDL_MOUSEMOTION)
+
+		return true;
+	}
+
+	bool WorldMap::onMouseRightClick(Sint16 x, Sint16 y)
+	{
+		GeoPoint gp;
+		if (screenToCartesian(x, y, gp.c))
 		{
-			m_mx = e.motion.x;
-			m_my = e.motion.y;
+			toSpherical(gp.c, gp.s);
+
+			m_rotx = round(gp.s.y - 720);
+			m_rotz = round(gp.s.x + 720);
 		}
-		if (e.type == SDL_KEYDOWN)
-		{
-			if (e.key.keysym.sym == SDLK_UP)
-				rotateVert(-8);
-			if (e.key.keysym.sym == SDLK_DOWN)
-				rotateVert(8);
-			if (e.key.keysym.sym == SDLK_LEFT)
-				rotateHorz(-8);
-			if (e.key.keysym.sym == SDLK_RIGHT)
-				rotateHorz(8);
-			if (e.key.keysym.sym == SDLK_PAGEUP)
-				zoom(10);
-			if (e.key.keysym.sym == SDLK_PAGEDOWN)
-				zoom(-10);
-			if (e.key.keysym.sym == SDLK_SPACE)
-				setDefaultTarget(m_mx, m_my);
-		}
+
+		return true;
+	}
+
+	bool WorldMap::onMouseHover(Sint16 x, Sint16 y)
+	{
+		m_mx = x;
+		m_my = y;
+
+		return true;
+	}
+
+	bool WorldMap::onKeyDown(SDL_keysym keysym)
+	{
+		if (keysym.sym == SDLK_UP)
+			rotateVert(-8);
+		if (keysym.sym == SDLK_DOWN)
+			rotateVert(8);
+		if (keysym.sym == SDLK_LEFT)
+			rotateHorz(-8);
+		if (keysym.sym == SDLK_RIGHT)
+			rotateHorz(8);
+		if (keysym.sym == SDLK_PAGEUP)
+			zoom(10);
+		if (keysym.sym == SDLK_PAGEDOWN)
+			zoom(-10);
+		if (keysym.sym == SDLK_SPACE)
+			setDefaultTarget(m_mx, m_my);
 
 		return false;
 	}
