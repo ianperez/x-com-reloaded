@@ -7,6 +7,7 @@
 namespace ufo
 {
 	using namespace std;
+
 	class Palette
 	{
 		void load(string filename, Uint16 paletteSize, Uint8 index);

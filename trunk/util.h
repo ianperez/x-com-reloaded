@@ -7,7 +7,7 @@ namespace ufo
 {
 	using namespace std;
 
-	const double Pi = 3.141592653589;
+	const double Pi = 3.14159265358979;
 
 	Sint16 round(double x);
 	double toRad(double x);

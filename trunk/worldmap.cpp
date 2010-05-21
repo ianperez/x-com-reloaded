@@ -85,39 +85,52 @@ namespace ufo
 		m_bg.blit(surface);
 
 		surface.setClipRect(Rect(0, 0, surface.w - 64, surface.h));
-		for (Uint32 i = 0; i < m_world.size(); ++i)
+		vector<Sint16> vx(4), vy(4);
+		for (size_t i = 0; i < m_world.size(); ++i)
 		{
-			vector<Sint16> vx, vy;
-			for (Uint32 j = 0; j < m_world[i].size(); ++j)
+			size_t hidden = 0;
+			Sint16* minx = &vx[0];
+			Sint16* miny = &vy[0];
+			Sint16* maxx = &vx[0];
+			Sint16* maxy = &vy[0];
+			for (size_t j = 0; j < m_world[i].size(); ++j)
 			{
-				Uint32 k = (j + 1) % m_world[i].size();
-
 				Point3d p1(m_world[i][j].c);
-				Point3d p2(m_world[i][k].c);
 
 				// perform rotation
 				rotate(p1, m_rotx, m_rotz);
-				rotate(p2, m_rotx, m_rotz);
 
-				// skip if points are on back side of sphere
-				if (p1.y > 0 && p2.y > 0)
-					continue;
+				// check if point is on back of sphere
+				if (p1.y > 0)
+					++hidden;
 
-				Point2d p3;
-				project(p1, p3);
+				Point2d p2;
+				project(p1, p2);
 
-				Point2d p4;
-				project(p2, p4);
+				vx[j] = p2.x;
+				vy[j] = p2.y;
 
-				vx.push_back(p3.x);
-				vy.push_back(p3.y);
-				vx.push_back(p4.x);
-				vy.push_back(p4.y);
-//				surface.lineColor8(round(p3.x), round(p3.y), round(p4.x), round(p4.y), 195);
+				if (vx[j] < *minx)
+					minx = &vx[j];
+				if (vy[j] < *miny)
+					miny = &vy[j];
+				if (vx[j] > *maxx)
+					maxx = &vx[j];
+				if (vy[j] > *maxy)
+					maxy = &vy[j];
 			}
 
-			if (vx.size())
-				texturedPolygon(surface.get(), &vx[0], &vy[0], vx.size(), m_textures[m_world[i].texture]->get(), 0, 0);
+			// skip polygon if all points are on back of sphere
+			if (hidden == m_world[i].size())
+				continue;
+
+			// enlarge polygons to remove gaps
+			(*minx) -= 1;
+			(*miny) -= 1;
+			(*maxx) += 1;
+			(*maxy) += 1;
+
+			texturedPolygon(surface.get(), &vx[0], &vy[0], m_world[i].size(), m_textures[m_world[i].texture]->get(), 0, 0);
 		}
 
 		for (Uint32 i = 0; i < m_test.size(); ++i)
@@ -181,6 +194,7 @@ namespace ufo
 		m_font.printf(surface, 5, 35, "Default Target (Spherical): %f, %f", m_defaultTarget.x, m_defaultTarget.y);
 
 		m_font.printf(surface, 5, 65, "Pixel: %d", surface.getPixel8(m_mx, m_my));
+		m_font.printf(surface, 5, 75, "Test: %d", round(1.53456));
 	}
 
 	void WorldMap::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
@@ -245,8 +259,8 @@ namespace ufo
 
 	void WorldMap::project(const Point3d& p1, Point2d& p2)
 	{
-		p2.x = static_cast<Sint16>(p1.x + m_center.x);
-		p2.y = static_cast<Sint16>(-p1.z + m_center.y);
+		p2.x = p1.x + m_center.x;
+		p2.y = -p1.z + m_center.y;
 	}
 
 	double WorldMap::distance(Point2d p1, Point2d p2)
