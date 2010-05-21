@@ -57,6 +57,7 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		Surface m_bg;
+		vector<Surface*> m_textures;
 		Sint16 m_mx, m_my;
 
 		Palette m_palette;
@@ -82,7 +83,10 @@ namespace ufo
 		void zoom(Sint16 delta);
 		void setDefaultTarget(Sint16 sx, Sint16 sy);
 
-		bool processEvent(SDL_Event& e);
+		bool onMouseLeftClick(Sint16 x, Sint16 y);
+		bool onMouseRightClick(Sint16 x, Sint16 y);
+		bool onMouseHover(Sint16 x, Sint16 y);
+		bool onKeyDown(SDL_keysym keysym);
 
 		Font m_font;
 	};

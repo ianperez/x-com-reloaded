@@ -6,6 +6,11 @@ using namespace std;
 
 namespace ufo
 {
+	Rect::Rect(const SDL_Rect& r)
+	{
+		operator() (r.x, r.y, r.w, r.h);
+	}
+
 	Rect::Rect(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
 	{
 		operator() (_x, _y, _w, _h);
@@ -47,6 +52,13 @@ namespace ufo
 		return m_surface;
 	}
 
+	void Surface::setFrames(Uint16 frameWidth, Uint16 frameHeight, Uint16 frames)
+	{
+		m_frameWidth = frameWidth;
+		m_frameHeight = frameHeight;
+		m_frames = frames;
+	}
+
 	void Surface::setColors(SDL_Color* colors, int firstcolor, int ncolors)
 	{
 		SDL_SetColors(m_surface, colors, firstcolor, ncolors);
@@ -84,6 +96,15 @@ namespace ufo
 		SDL_FillRect(m_surface, dst, color);
 	}
 
+	Uint8 Surface::getPixel8(Sint16 x, Sint16 y)
+	{
+		lock();
+		Uint8 c = *((Uint8 *)m_surface->pixels + y * m_surface->pitch + x);
+		unlock();
+
+		return c;
+	}
+
 	Uint32 Surface::mapRGB(Uint8 r, Uint8 g, Uint8 b)
 	{
 		return SDL_MapRGB(m_surface->format, r, g, b);
@@ -104,7 +125,7 @@ namespace ufo
 		h = static_cast<Uint16>(infile.tellg() / w);
 		infile.seekg(0, ios::beg);
 
-		m_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 8, 0, 0, 0, 0);
+		m_surface = SDL_CreateRGBSurface(SDL_HWSURFACE, w, h, 8, 0, 0, 0, 0);
 		if (!m_surface)
 			throw runtime_error("error creating surface for file: " + filename);
 
@@ -129,6 +150,43 @@ namespace ufo
 	void Surface::blit(Surface& surface, Rect* dst, Rect* src)
 	{
 		SDL_BlitSurface(m_surface, src, surface.m_surface, dst);
+	}
+
+	Rect Surface::getFrameRect(Uint16 frame)
+	{
+		Uint16 i = m_frameWidth * frame / w;
+		return Rect(m_frameWidth * frame - w * i, i * m_frameHeight, m_frameWidth, m_frameHeight);
+	}
+
+	Surface Surface::getFrameSurface(Uint16 frame)
+	{
+		Surface surface(SDL_CreateRGBSurface(SDL_HWSURFACE, m_frameWidth, m_frameHeight, m_surface->format->BytesPerPixel * 8, 0, 0, 0, 0));
+		Rect src(getFrameRect(frame));
+		blit(surface, NULL, &src);
+
+		return surface;
+	}
+
+	void Surface::invert(Uint8 pivot, Rect* r)
+	{
+		Rect cliprect(m_surface->clip_rect);
+		if (!r)
+			r = &cliprect;
+
+		lock();
+
+		for (Uint16 y = r->y; y < r->y + r->h; ++y)
+		{
+			Uint8* p = ((Uint8*)m_surface->pixels + y * m_surface->pitch + r->x);
+			Uint8* end = p + r->w;
+			while (p < end)
+			{
+				*p = *p + 2 * (pivot - *p);
+				++p;
+			}
+		}
+
+		unlock();
 	}
 
 	void Surface::setClipRect(Rect& r)

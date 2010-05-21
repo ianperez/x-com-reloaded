@@ -7,12 +7,12 @@ using namespace std;
 
 namespace ufo
 {
-	double round(double x)
+	Sint16 round(double x)
 	{
 		double y;
 		if (modf(x, &y) < 0.5)
-			return floor(x);
-		return ceil(x);
+			return static_cast<Sint16>(floor(x));
+		return static_cast<Sint16>(ceil(x));
 	}
 
 	double toRad(double x)
