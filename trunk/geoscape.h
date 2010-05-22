@@ -65,12 +65,12 @@ namespace ufo
 			Ufopaedia,
 			Options,
 			Funding,
-			Time1,
-			Time2,
-			Time3,
-			Time4,
-			Time5,
-			Time6
+			Time5Sec,
+			Time1Min,
+			Time5Min,
+			Time30Min,
+			Time1Hour,
+			Time1Day
 		};
 	};
 
