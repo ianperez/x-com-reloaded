@@ -27,6 +27,8 @@ namespace ufo
 		Uint16 m_frameHeight;
 		Uint16 m_frames;
 
+		Surface(const Surface& surface) { }
+
 	public:
 
 		Surface();
