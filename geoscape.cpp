@@ -80,7 +80,12 @@ namespace ufo
 		m_ui->create(new GeoScapeButton(*this, 257, 48, 63, 11, GeoScapeButton::Options));
 		m_ui->create(new GeoScapeButton(*this, 257, 60, 63, 11, GeoScapeButton::Funding));
 
-		m_ui->create(new GeoScapeButton(*this, 257, 112, 31, 13, GeoScapeButton::Time1));
+		m_ui->create(new GeoScapeButton(*this, 257, 112, 31, 13, GeoScapeButton::Time5Sec));
+		m_ui->create(new GeoScapeButton(*this, 289, 112, 31, 13, GeoScapeButton::Time1Min));
+		m_ui->create(new GeoScapeButton(*this, 257, 126, 31, 13, GeoScapeButton::Time5Min));
+		m_ui->create(new GeoScapeButton(*this, 289, 126, 31, 13, GeoScapeButton::Time30Min));
+		m_ui->create(new GeoScapeButton(*this, 257, 140, 31, 13, GeoScapeButton::Time1Hour));
+		m_ui->create(new GeoScapeButton(*this, 289, 140, 31, 13, GeoScapeButton::Time1Day));
 
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
