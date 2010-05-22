@@ -13,8 +13,8 @@ namespace ufo
 
 	struct Point2d
 	{
-		Point2d(double ix = 0, double iy = 0) : x(ix), y(iy) { }
-		double x, y;
+		Point2d(Sint16 ix = 0, Sint16 iy = 0) : x(ix), y(iy) { }
+		Sint16 x, y;
 	};
 
 	struct Point3d
@@ -47,11 +47,14 @@ namespace ufo
 		vector<GeoObject> m_test;
 
 		Point2d m_center;
-
 		Sint16 m_rotx, m_rotz;
+
 		Sint16 m_radius;
 		Sint16 m_radiusMin;
 		Sint16 m_radiusMax;
+		vector<Sint16> m_zoomLevels;
+		size_t m_zoom;
+
 		Sint16 m_polarDegFix;
 
 		Point2d m_defaultTarget;
@@ -80,7 +83,7 @@ namespace ufo
 		void onClick(Sint16 sx, Sint16 sy);
 		void rotateHorz(Sint16 delta);
 		void rotateVert(Sint16 delta);
-		void zoom(Sint16 delta);
+		void zoom(Sint8 delta);
 		void setDefaultTarget(Sint16 sx, Sint16 sy);
 
 		bool onMouseLeftClick(Sint16 x, Sint16 y);
@@ -88,6 +91,6 @@ namespace ufo
 		bool onMouseHover(Sint16 x, Sint16 y);
 		bool onKeyDown(SDL_keysym keysym);
 
-		Font m_font;
+		SmallFont m_font;
 	};
 }

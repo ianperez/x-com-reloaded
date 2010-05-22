@@ -9,7 +9,15 @@ namespace ufo
 
 	const double Pi = 3.14159265358979;
 
-	Sint16 round(double x);
+	template<typename T>
+	T round(double x)
+	{
+		double y;
+		if (modf(x, &y) < 0.5)
+			return static_cast<T>(floor(x));
+		return static_cast<T>(ceil(x));
+	}
+
 	double toRad(double x);
 	double toDeg(double x);
 

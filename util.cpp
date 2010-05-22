@@ -7,14 +7,6 @@ using namespace std;
 
 namespace ufo
 {
-	Sint16 round(double x)
-	{
-		double y;
-		if (modf(x, &y) < 0.5)
-			return static_cast<Sint16>(floor(x));
-		return static_cast<Sint16>(ceil(x));
-	}
-
 	double toRad(double x)
 	{
 		return x * Pi / 1440;

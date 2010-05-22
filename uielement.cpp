@@ -2,9 +2,16 @@
 
 namespace ufo
 {
+	UIElement::UIElement()
+		: exclusive(false)
+	{
+		m_handler = this;
+	}
+
 	UIElement::UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
 		: exclusive(false)
 	{
+		m_handler = this;
 		operator() (_x, _y, _w, _h);
 	}
 
