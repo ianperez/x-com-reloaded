@@ -1,13 +1,34 @@
-#include "worldmap.h"
+#include "GeoScape.h"
 #include "util.h"
+#include "uimanager.h"
 #include <fstream>
 #include <cmath>
 #include <sdl_gfxprimitives.h>
 
 namespace ufo
 {
-	WorldMap::WorldMap(Surface& surface)
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_mx(0), m_my(0), m_zoom(0)
+	GeoScapeButton::GeoScapeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h, Uint16 id)
+		: m_gs(gs), UIButton(_x, _y, _w, _h)
+	{
+		m_id = id;
+	}
+
+	void GeoScapeButton::onPress()
+	{
+	}
+
+	void GeoScapeButton::draw(Surface& surface)
+	{
+		if (m_pressed)
+			surface.invert(248, this);
+	}
+
+	GeoScape::GeoScape(Surface& surface)
+		: m_surface(surface), m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_mouse(0, 0), m_zoom(0)
+	{
+	}
+
+	void GeoScape::onCreate()
 	{
 		// set up zoom levels
 		m_zoomLevels.push_back(91);
@@ -34,22 +55,32 @@ namespace ufo
 		// set texture frames (each texture is 32x32)
 		texture.setFrames(32, 32, 39);
 
-		for (size_t i = 26; i < 39; ++i)
+		for (size_t i = 0; i < 39; ++i)
 		{
-			m_textures.push_back(new Surface(SDL_CreateRGBSurface(SDL_HWSURFACE, 32, 32, 8, 0, 0, 0, 0)));
+			m_textures.push_back(shared_ptr<Surface>(new Surface(SDL_CreateRGBSurface(SDL_HWSURFACE, 32, 32, 8, 0, 0, 0, 0))));
 			Rect r(texture.getFrameRect(i));
 			m_palette.apply(*m_textures.back());
 			texture.blit(*m_textures.back(), 0, &r);
 		}
 
 		// apply palette to output surface
-		m_palette.apply(surface);
+		m_palette.apply(m_surface);
 
 		// set the font color (palette index) offset
 		m_font.colorOffset(239);
 
-		Rect rInv(257, 0, 63, 11);
-		m_bg.invert(248, &rInv);
+//		Rect rInv(257, 0, 63, 11);
+//		m_bg.invert(248, &rInv);
+
+		// create buttons
+		m_ui->create(new GeoScapeButton(*this, 257, 0, 63, 11, GeoScapeButton::Intercept));
+		m_ui->create(new GeoScapeButton(*this, 257, 12, 63, 11, GeoScapeButton::Bases));
+		m_ui->create(new GeoScapeButton(*this, 257, 24, 63, 11, GeoScapeButton::Graphs));
+		m_ui->create(new GeoScapeButton(*this, 257, 36, 63, 11, GeoScapeButton::Ufopaedia));
+		m_ui->create(new GeoScapeButton(*this, 257, 48, 63, 11, GeoScapeButton::Options));
+		m_ui->create(new GeoScapeButton(*this, 257, 60, 63, 11, GeoScapeButton::Funding));
+
+		m_ui->create(new GeoScapeButton(*this, 257, 112, 31, 13, GeoScapeButton::Time1));
 
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
@@ -85,14 +116,14 @@ namespace ufo
 				break;
 
 			file.read((char*)&polygon.texture, 4);
-			m_world.push_back(polygon);
+			m_polygons.push_back(polygon);
 		}
 
 		m_defaultTarget.x = 0;
 		m_defaultTarget.y = 0;
 	}
 
-	void WorldMap::draw(Surface& surface)
+	void GeoScape::draw(Surface& surface)
 	{
 		// draw background
 		m_bg.blit(surface);
@@ -104,16 +135,16 @@ namespace ufo
 		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius - 1, GetColor(0, 0, 255));
 
 		vector<Sint16> vx(4), vy(4);
-		for (size_t i = 0; i < m_world.size(); ++i)
+		for (size_t i = 0; i < m_polygons.size(); ++i)
 		{
 			size_t hidden = 0;
 			Sint16* minx = &vx[0];
 			Sint16* miny = &vy[0];
 			Sint16* maxx = &vx[0];
 			Sint16* maxy = &vy[0];
-			for (size_t j = 0; j < m_world[i].size(); ++j)
+			for (size_t j = 0; j < m_polygons[i].size(); ++j)
 			{
-				Point3d p1(m_world[i][j].c);
+				Point3d p1(m_polygons[i][j].c);
 
 				// perform rotation
 				rotate(p1, m_rotx, m_rotz);
@@ -140,7 +171,7 @@ namespace ufo
 			}
 
 			// skip polygon if all points are on back of sphere
-			if (hidden == m_world[i].size())
+			if (hidden == m_polygons[i].size())
 				continue;
 
 			// slightly enlarge polygons to remove gaps
@@ -152,7 +183,7 @@ namespace ufo
 			if (maxy != minx && maxy != miny && maxy != maxx)
 				(*maxy) += 1;
 
-			texturedPolygon(surface.get(), &vx[0], &vy[0], m_world[i].size(), m_textures[m_world[i].texture]->get(), 0, 0);
+			texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
 		}
 
 		for (Uint32 i = 0; i < m_test.size(); ++i)
@@ -204,7 +235,7 @@ namespace ufo
 		m_font.printf(surface, 5, 5, "Rotation (x, z): %d, %d", m_rotx, m_rotz);
 
 		GeoPoint gptemp;
-		if (screenToCartesian(m_mx, m_my, gptemp.c))
+		if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
 		{
 			toSpherical(gptemp.c, gptemp.s);
 			m_font.printf(surface, 5, 15, "Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y);
@@ -214,10 +245,10 @@ namespace ufo
 		m_font.printf(surface, 5, 45, "Radius: %d", m_radius);
 		m_font.printf(surface, 5, 35, "Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y);
 
-		m_font.printf(surface, 5, 55, "Pixel: %d", surface.getPixel8(m_mx, m_my));
+		m_font.printf(surface, 5, 55, "Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y));
 	}
 
-	void WorldMap::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
+	void GeoScape::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
 	{
 		surface.pixelColor8(x + 1, y, color);
 		surface.pixelColor8(x - 1, y, color);
@@ -226,7 +257,7 @@ namespace ufo
 	}
 
 	// convert Spherical coordinates to Cartesian coordinates
-	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
+	void GeoScape::toCartesian(const Point2d& p1, Point3d& p2)
 	{
 		double rx = toRad(p1.x);
 		double ry = toRad(p1.y);
@@ -238,14 +269,14 @@ namespace ufo
 	}
 
 	// convert Cartesian coordinates to Spherical coordinates
-	void WorldMap::toSpherical(const Point3d& p1, Point2d& p2)
+	void GeoScape::toSpherical(const Point3d& p1, Point2d& p2)
 	{
 		p2.y = round<Sint16>(toDeg(acos(p1.z / m_radius)));
 		p2.x = round<Sint16>(toDeg(atan2(p1.y, p1.x)));
 	}
 
 	// convert Screen coordinates to Cartesian (x,y,z)
-	bool WorldMap::screenToCartesian(Sint16 x, Sint16 y, Point3d& p)
+	bool GeoScape::screenToCartesian(Sint16 x, Sint16 y, Point3d& p)
 	{
 		// unproject point
 		p.x = x - m_center.x;
@@ -264,7 +295,7 @@ namespace ufo
 		return true;
 	}
 
-	void WorldMap::rotate(Point3d& p, Sint16 x, Sint16 z)
+	void GeoScape::rotate(Point3d& p, Sint16 x, Sint16 z)
 	{
 		Point3d orig;
 
@@ -279,38 +310,38 @@ namespace ufo
 		p.y = sin(toRad(x)) * orig.z + cos(toRad(x)) * orig.y;
 	}
 
-	void WorldMap::project(const Point3d& p1, Point2d& p2)
+	void GeoScape::project(const Point3d& p1, Point2d& p2)
 	{
 		p2.x = round<Sint16>(p1.x + m_center.x);
 		p2.y = round<Sint16>(-p1.z + m_center.y);
 	}
 
-	double WorldMap::distance(Point2d p1, Point2d p2)
+	double GeoScape::distance(Point2d p1, Point2d p2)
 	{
 		return sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)));
 	}
 
-	void WorldMap::rotateHorz(Sint16 delta)
+	void GeoScape::rotateHorz(Sint16 delta)
 	{
 		m_rotz += delta;
 	}
 
-	void WorldMap::rotateVert(Sint16 delta)
+	void GeoScape::rotateVert(Sint16 delta)
 	{
 		m_rotx += delta;
 	}
 
-	void WorldMap::zoom(Sint8 delta)
+	void GeoScape::zoom(Sint8 delta)
 	{
 		if (m_zoom + delta < m_zoomLevels.size())
 		{
 			m_zoom += delta;
 			m_radius = m_zoomLevels[m_zoom];
 
-			for (Uint32 i = 0; i < m_world.size(); ++i)
+			for (Uint32 i = 0; i < m_polygons.size(); ++i)
 			{
-				for (Uint32 j = 0; j < m_world[i].size(); ++j)
-					toCartesian(m_world[i][j].s, m_world[i][j].c);
+				for (Uint32 j = 0; j < m_polygons[i].size(); ++j)
+					toCartesian(m_polygons[i][j].s, m_polygons[i][j].c);
 			}
 
 			for (Uint32 i = 0; i < m_test.size(); ++i)
@@ -318,7 +349,7 @@ namespace ufo
 		}
 	}
 
-	void WorldMap::setDefaultTarget(Sint16 sx, Sint16 sy)
+	void GeoScape::setDefaultTarget(Sint16 sx, Sint16 sy)
 	{
 		Point3d p;
 		if (!screenToCartesian(sx, sy, p))
@@ -327,7 +358,7 @@ namespace ufo
 		toSpherical(p, m_defaultTarget);
 	}
 
-	bool WorldMap::onMouseLeftClick(Sint16 x, Sint16 y)
+	bool GeoScape::onMouseLeftClick(Sint16 x, Sint16 y)
 	{
 		GeoObject gp;
 		if (screenToCartesian(x, y, gp.c))
@@ -351,7 +382,7 @@ namespace ufo
 		return true;
 	}
 
-	bool WorldMap::onMouseRightClick(Sint16 x, Sint16 y)
+	bool GeoScape::onMouseRightClick(Sint16 x, Sint16 y)
 	{
 		GeoPoint gp;
 		if (screenToCartesian(x, y, gp.c))
@@ -365,15 +396,15 @@ namespace ufo
 		return true;
 	}
 
-	bool WorldMap::onMouseHover(Sint16 x, Sint16 y)
+	bool GeoScape::onMouseHover(Sint16 x, Sint16 y)
 	{
-		m_mx = x;
-		m_my = y;
+		m_mouse.x = x;
+		m_mouse.y = y;
 
 		return true;
 	}
 
-	bool WorldMap::onKeyDown(SDL_keysym keysym)
+	bool GeoScape::onKeyDown(SDL_keysym keysym)
 	{
 		if (keysym.sym == SDLK_UP)
 			rotateVert(-8);
@@ -388,7 +419,7 @@ namespace ufo
 		if (keysym.sym == SDLK_PAGEDOWN)
 			zoom(-1);
 		if (keysym.sym == SDLK_SPACE)
-			setDefaultTarget(m_mx, m_my);
+			setDefaultTarget(m_mouse.x, m_mouse.y);
 
 		return false;
 	}

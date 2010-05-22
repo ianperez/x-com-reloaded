@@ -1,5 +1,5 @@
 #include "game.h"
-#include "worldmap.h"
+#include "geoscape.h"
 #include "uimanager.h"
 #include <sdl_rotozoom.h>
 #include <boost/shared_ptr.hpp>
@@ -18,7 +18,7 @@ namespace ufo
 		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_HWSURFACE));
 
 		UIManager ui;
-		ui.add(new WorldMap(screen));
+		ui.create(new GeoScape(screen));
 
 		while (1)
 		{
