@@ -51,10 +51,9 @@ namespace ufo
 
 	public:
 
-		GeoScapeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h, Uint16 id);
+		GeoScapeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id);
 
 		void onPress();
-
 		void draw(Surface& surface);
 
 		// GeoScape button Id's
@@ -64,7 +63,23 @@ namespace ufo
 			Graphs,
 			Ufopaedia,
 			Options,
-			Funding,
+			Funding
+		};
+	};
+
+	class GeoScapeTimeButton : public UIRadioButton
+	{
+		GeoScape& m_gs;
+
+	public:
+
+		GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id, Uint16 groupId, bool current = false);
+
+		void onPress();
+		void draw(Surface& surface);
+
+		// GeoScape Time button Id's
+		enum {
 			Time5Sec,
 			Time1Min,
 			Time5Min,
@@ -93,7 +108,7 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		Surface m_bg;
-		Surface m_surface;
+		Surface& m_surface;
 
 		vector<shared_ptr<Surface> > m_textures;
 		Point2d m_mouse;
