@@ -27,8 +27,8 @@ namespace ufo
 		virtual bool onBlur() { return false; }
 
 		// Other events
-		virtual bool onCreate() { return false; }
-		virtual bool onDestroy() { return false; }
+		virtual void onCreate() { }
+		virtual void onDestroy() { }
 	};
 
 	class UIManager;
@@ -42,17 +42,16 @@ namespace ufo
 		UIElement();
 		UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
 
-		~UIElement();
-
 		virtual void draw(Surface& surface) { }
 
-		void add(UIElement* element);
+		Uint16 getId() const;
+		void setId(Uint16 id);
+
 		void setUIManager(UIManager* ui);
 
 	protected:
 
-		vector<UIElement*> m_elements;
-		UIEventHandler* m_handler;
+		Uint16 m_id;
 		UIManager* m_ui;
 	};
 }

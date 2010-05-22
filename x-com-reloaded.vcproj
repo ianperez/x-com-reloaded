@@ -171,6 +171,14 @@
 			Name="Interface"
 			>
 			<File
+				RelativePath=".\uibutton.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uibutton.h"
+				>
+			</File>
+			<File
 				RelativePath=".\uielement.cpp"
 				>
 			</File>
@@ -227,19 +235,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\geoscape.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\geoscape.h"
+				>
+			</File>
+			<File
 				RelativePath=".\util.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\util.h"
-				>
-			</File>
-			<File
-				RelativePath=".\worldmap.cpp"
-				>
-			</File>
-			<File
-				RelativePath=".\worldmap.h"
 				>
 			</File>
 		</Filter>

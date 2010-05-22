@@ -5,25 +5,22 @@ namespace ufo
 	UIElement::UIElement()
 		: exclusive(false)
 	{
-		m_handler = this;
 	}
 
 	UIElement::UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
 		: exclusive(false)
 	{
-		m_handler = this;
 		operator() (_x, _y, _w, _h);
 	}
 
-	UIElement::~UIElement()
+	Uint16 UIElement::getId() const
 	{
-		for (size_t i = 0; i < m_elements.size(); ++i)
-			delete m_elements[i];
+		return m_id;
 	}
 
-	void UIElement::add(UIElement* element)
+	void UIElement::setId(Uint16 id)
 	{
-		m_elements.push_back(element);
+		m_id = id;
 	}
 
 	void UIElement::setUIManager(UIManager* ui)

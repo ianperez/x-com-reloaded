@@ -1,15 +1,17 @@
 #pragma once
 #include <string>
 #include <vector>
-#include <map>
 #include <sdl.h>
+#include <boost/shared_ptr.hpp>
 #include "uielement.h"
+#include "uibutton.h"
 #include "palette.h"
 #include "font.h"
 
 namespace ufo
 {
 	using namespace std;
+	using namespace boost;
 
 	struct Point2d
 	{
@@ -41,9 +43,40 @@ namespace ufo
 		Uint32 texture;
 	};
 
-	class WorldMap : public UIElement
+	class GeoScape;
+
+	class GeoScapeButton : public UIButton
 	{
-		vector<GeoPolygon> m_world;
+		GeoScape& m_gs;
+
+	public:
+
+		GeoScapeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h, Uint16 id);
+
+		void onPress();
+
+		void draw(Surface& surface);
+
+		// GeoScape button Id's
+		enum {
+			Intercept,
+			Bases,
+			Graphs,
+			Ufopaedia,
+			Options,
+			Funding,
+			Time1,
+			Time2,
+			Time3,
+			Time4,
+			Time5,
+			Time6
+		};
+	};
+
+	class GeoScape : public UIElement
+	{
+		vector<GeoPolygon> m_polygons;
 		vector<GeoObject> m_test;
 
 		Point2d m_center;
@@ -60,10 +93,14 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		Surface m_bg;
-		vector<Surface*> m_textures;
-		Sint16 m_mx, m_my;
+		Surface m_surface;
+
+		vector<shared_ptr<Surface> > m_textures;
+		Point2d m_mouse;
 
 		Palette m_palette;
+
+		SmallFont m_font;
 
 		void toCartesian(const Point2d& p1, Point3d& p2);
 		void toSpherical(const Point3d& p1, Point2d& p2);
@@ -76,7 +113,7 @@ namespace ufo
 
 	public:
 
-		WorldMap(Surface& surface);
+		GeoScape(Surface& surface);
 
 		void draw(Surface& surface);
 		void center(Sint16 sx, Sint16 sy);
@@ -91,6 +128,6 @@ namespace ufo
 		bool onMouseHover(Sint16 x, Sint16 y);
 		bool onKeyDown(SDL_keysym keysym);
 
-		SmallFont m_font;
+		void onCreate();
 	};
 }
