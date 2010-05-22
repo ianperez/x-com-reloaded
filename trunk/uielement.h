@@ -39,7 +39,7 @@ namespace ufo
 
 		bool exclusive;
 
-		UIElement() : exclusive(false) { }
+		UIElement();
 		UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
 
 		~UIElement();
@@ -52,6 +52,7 @@ namespace ufo
 	protected:
 
 		vector<UIElement*> m_elements;
+		UIEventHandler* m_handler;
 		UIManager* m_ui;
 	};
 }

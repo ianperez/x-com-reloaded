@@ -20,12 +20,27 @@ namespace ufo
 
 		void print(Surface& surface, Sint16 x, Sint16 y, string buffer);
 		void printf(Surface& surface, Sint16 x, Sint16 y, string format, ...);
-		void offset(Uint8 offset);
+		void colorOffset(Uint8 colorOffset);
 
 	protected:
 
 		vector<Uint8> m_data;
 		Uint16 m_width, m_height;
-		Uint8 m_offset;
+		Uint8 m_spaceWidth;
+		Uint8 m_colorOffset;
+	};
+
+	class SmallFont : public Font
+	{
+	public:
+
+		SmallFont();
+	};
+
+	class BigFont : public Font
+	{
+	public:
+
+		BigFont();
 	};
 }

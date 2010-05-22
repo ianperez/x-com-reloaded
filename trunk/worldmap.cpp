@@ -7,20 +7,32 @@
 namespace ufo
 {
 	WorldMap::WorldMap(Surface& surface)
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_font("geodata/smallset.dat", 8, 9), m_mx(0), m_my(0)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_mx(0), m_my(0), m_zoom(0)
 	{
-		m_radius = h / 2 - 10;
+		// set up zoom levels
+		m_zoomLevels.push_back(91);
+		m_zoomLevels.push_back(121);
+		m_zoomLevels.push_back(210);
+		m_zoomLevels.push_back(320);
+		m_zoomLevels.push_back(430);
+		m_zoomLevels.push_back(540);
+
+		m_radius = m_zoomLevels[0];
+
+		// set center of globe
 		m_center = Point2d(w / 2, h / 2);
 
+		// load geoscape background image
 		m_bg.loadSCR("geograph/geobord.scr");
 		m_palette.apply(m_bg);
 
+		// load globe textures
 		Surface texture;
 		texture.loadSCR("geograph/texture.dat", 32);
 		m_palette.apply(texture);
-		texture.setFrames(32, 32, 39);
 
-		m_palette.apply(surface);
+		// set texture frames (each texture is 32x32)
+		texture.setFrames(32, 32, 39);
 
 		for (size_t i = 26; i < 39; ++i)
 		{
@@ -30,14 +42,14 @@ namespace ufo
 			texture.blit(*m_textures.back(), 0, &r);
 		}
 
+		// apply palette to output surface
+		m_palette.apply(surface);
+
+		// set the font color (palette index) offset
+		m_font.colorOffset(239);
+
 		Rect rInv(257, 0, 63, 11);
 		m_bg.invert(248, &rInv);
-
-		m_font.offset(239);
-
-		m_radiusMin = h / 2 - 10;
-		m_radiusMax = h * 4;
-		m_radius = m_radiusMin;
 
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
@@ -85,10 +97,12 @@ namespace ufo
 		// draw background
 		m_bg.blit(surface);
 
-		// draw ocean
-		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius, GetColor(0, 0, 255));
+		// set clipping rectangle
+		surface.setClipRect(Rect(0, 0, w, h));
 
-		surface.setClipRect(Rect(0, 0, surface.w - 64, surface.h));
+		// draw ocean
+		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius - 1, GetColor(0, 0, 255));
+
 		vector<Sint16> vx(4), vy(4);
 		for (size_t i = 0; i < m_world.size(); ++i)
 		{
@@ -166,7 +180,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(surface, round(p2.x), round(p2.y), 11);
+			drawShip(surface, p2.x, p2.y, 11);
 		}
 
 		Point3d p1;
@@ -178,7 +192,7 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			drawShip(surface, round(p2.x), round(p2.y), 13);
+			drawShip(surface, p2.x, p2.y, 13);
 		}
 
 		surface.clearClipRect();
@@ -191,14 +205,12 @@ namespace ufo
 			toSpherical(gptemp.c, gptemp.s);
 			m_font.printf(surface, 5, 15, "Mouse -> Spherical: %f, %f", gptemp.s.x, gptemp.s.y);
 			m_font.printf(surface, 5, 25, "Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
-			m_font.printf(surface, 5, 45, "toSpherical test: %f, %f", gptemp.c.z, toDeg(acos(gptemp.c.z / m_radius)));
-			m_font.printf(surface, 5, 55, "Radius: %d", m_radius);
+			m_font.printf(surface, 5, 45, "Radius: %d", m_radius);
 		}
 
 		m_font.printf(surface, 5, 35, "Default Target (Spherical): %f, %f", m_defaultTarget.x, m_defaultTarget.y);
 
-		m_font.printf(surface, 5, 65, "Pixel: %d", surface.getPixel8(m_mx, m_my));
-		m_font.printf(surface, 5, 75, "Test: %d", round(1.53456));
+		m_font.printf(surface, 5, 55, "Pixel: %d", surface.getPixel8(m_mx, m_my));
 	}
 
 	void WorldMap::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
@@ -212,18 +224,20 @@ namespace ufo
 	// convert Spherical coordinates to Cartesian coordinates
 	void WorldMap::toCartesian(const Point2d& p1, Point3d& p2)
 	{
-		double sy = sin(toRad(p1.y));
+		double rx = toRad(p1.x);
+		double ry = toRad(p1.y);
+		double sy = sin(ry);
 
-		p2.x = m_radius * sy * cos(toRad(p1.x));
-		p2.y = m_radius * sy * sin(toRad(p1.x));
-		p2.z = m_radius * cos(toRad(p1.y));
+		p2.x = m_radius * sy * cos(rx);
+		p2.y = m_radius * sy * sin(rx);
+		p2.z = m_radius * cos(ry);
 	}
 
 	// convert Cartesian coordinates to Spherical coordinates
 	void WorldMap::toSpherical(const Point3d& p1, Point2d& p2)
 	{
-		p2.y = toDeg(acos(p1.z / m_radius));
-		p2.x = toDeg(atan2(p1.y, p1.x));
+		p2.y = round<Sint16>(toDeg(acos(p1.z / m_radius)));
+		p2.x = round<Sint16>(toDeg(atan2(p1.y, p1.x)));
 	}
 
 	// convert Screen coordinates to Cartesian (x,y,z)
@@ -263,13 +277,13 @@ namespace ufo
 
 	void WorldMap::project(const Point3d& p1, Point2d& p2)
 	{
-		p2.x = p1.x + m_center.x;
-		p2.y = -p1.z + m_center.y;
+		p2.x = round<Sint16>(p1.x + m_center.x);
+		p2.y = round<Sint16>(-p1.z + m_center.y);
 	}
 
 	double WorldMap::distance(Point2d p1, Point2d p2)
 	{
-		return sqrt((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y));
+		return sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)));
 	}
 
 	void WorldMap::rotateHorz(Sint16 delta)
@@ -286,22 +300,22 @@ namespace ufo
 			m_rotx = 720;
 	}
 
-	void WorldMap::zoom(Sint16 delta)
+	void WorldMap::zoom(Sint8 delta)
 	{
-		m_radius += delta;
-		if (m_radius < m_radiusMin)
-			m_radius = m_radiusMin;
-		if (m_radius > m_radiusMax)
-			m_radius = m_radiusMax;
-
-		for (Uint32 i = 0; i < m_world.size(); ++i)
+		if (m_zoom + delta < m_zoomLevels.size())
 		{
-			for (Uint32 j = 0; j < m_world[i].size(); ++j)
-				toCartesian(m_world[i][j].s, m_world[i][j].c);
-		}
+			m_zoom += delta;
+			m_radius = m_zoomLevels[m_zoom];
 
-		for (Uint32 i = 0; i < m_test.size(); ++i)
-			toCartesian(m_test[i].s, m_test[i].c);
+			for (Uint32 i = 0; i < m_world.size(); ++i)
+			{
+				for (Uint32 j = 0; j < m_world[i].size(); ++j)
+					toCartesian(m_world[i][j].s, m_world[i][j].c);
+			}
+
+			for (Uint32 i = 0; i < m_test.size(); ++i)
+				toCartesian(m_test[i].s, m_test[i].c);
+		}
 	}
 
 	void WorldMap::setDefaultTarget(Sint16 sx, Sint16 sy)
@@ -344,8 +358,8 @@ namespace ufo
 		{
 			toSpherical(gp.c, gp.s);
 
-			m_rotx = round(gp.s.y - 720);
-			m_rotz = round(gp.s.x + 720);
+			m_rotx = gp.s.y - 720;
+			m_rotz = gp.s.x + 720;
 		}
 
 		return true;
@@ -370,9 +384,9 @@ namespace ufo
 		if (keysym.sym == SDLK_RIGHT)
 			rotateHorz(8);
 		if (keysym.sym == SDLK_PAGEUP)
-			zoom(10);
+			zoom(1);
 		if (keysym.sym == SDLK_PAGEDOWN)
-			zoom(-10);
+			zoom(-1);
 		if (keysym.sym == SDLK_SPACE)
 			setDefaultTarget(m_mx, m_my);
 

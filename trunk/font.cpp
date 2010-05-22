@@ -22,7 +22,7 @@ namespace ufo
 	}
 
 	Font::Font(string filename, Uint16 width, Uint16 height)
-		: m_width(width), m_height(height), m_offset(20)
+		: m_width(width), m_height(height), m_colorOffset(20), m_spaceWidth(width / 2)
 	{
 		load(filename);
 	}
@@ -44,7 +44,7 @@ namespace ufo
 					Uint8 c = m_data[j + k];
 					if (c > 0)
 					{
-						surface.pixelColor8(x + (k % m_width), y + (k / m_width), c + m_offset);
+						surface.pixelColor8(x + (k % m_width), y + (k / m_width), c + m_colorOffset);
 						if ((k % m_width) > max)
 							max = k % m_width;
 					}
@@ -53,7 +53,7 @@ namespace ufo
 				x += max;
 			}
 			else
-				x += m_width / 2;
+				x += m_spaceWidth;
 		}
 		surface.unlock();
 	}
@@ -102,8 +102,20 @@ namespace ufo
 		print(surface, x, y, buffer);
 	}
 
-	void Font::offset(Uint8 offset)
+	void Font::colorOffset(Uint8 colorOffset)
 	{
-		m_offset = offset;
+		m_colorOffset = colorOffset;
+	}
+
+	SmallFont::SmallFont()
+		: Font("geodata/smallset.dat", 8, 9)
+	{
+		m_spaceWidth = 4;
+	}
+
+	BigFont::BigFont()
+		: Font("geodata/biglets.dat", 16, 16)
+	{
+		m_spaceWidth = 6;
 	}
 }
