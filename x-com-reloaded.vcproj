@@ -179,6 +179,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\uidialog.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uidialog.h"
+				>
+			</File>
+			<File
 				RelativePath=".\uielement.cpp"
 				>
 			</File>

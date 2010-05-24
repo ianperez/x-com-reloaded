@@ -17,8 +17,8 @@ namespace ufo
 
 		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_HWSURFACE));
 
-		UIManager ui;
-		ui.create(new GeoScape(screen));
+		UIManager ui(screen);
+		ui.create(new GeoScape());
 
 		while (1)
 		{
@@ -33,7 +33,7 @@ namespace ufo
 				ui.processEvent(e);
 			}
 
-			ui.draw(screen);
+			ui.draw();
 
 			screen.flip();
 		}

@@ -149,7 +149,8 @@ namespace ufo
 
 	void Surface::blit(Surface& surface, Rect* dst, Rect* src)
 	{
-		SDL_BlitSurface(m_surface, src, surface.m_surface, dst);
+		if (m_surface && surface.m_surface)
+			SDL_BlitSurface(m_surface, src, surface.m_surface, dst);
 	}
 
 	Rect Surface::getFrameRect(Uint16 frame)

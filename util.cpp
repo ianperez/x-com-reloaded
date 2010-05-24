@@ -1,7 +1,6 @@
 #include "util.h"
 #include <fstream>
 #include <SDL_gfxPrimitives.h>
-#include <cmath>
 
 using namespace std;
 

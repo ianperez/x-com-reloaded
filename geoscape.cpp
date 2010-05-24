@@ -8,13 +8,17 @@
 namespace ufo
 {
 	GeoScapeButton::GeoScapeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id)
-		: m_gs(gs), UIButton(_x, _y, 63, 11)
+		: m_gs(gs), UIPushButton(_x, _y, 63, 11)
 	{
 		m_id = id;
 	}
 
 	void GeoScapeButton::onPress()
 	{
+		if (m_id == Intercept)
+		{
+			m_ui->create(new InterceptDialog(m_ui->surface));
+		}
 	}
 
 	void GeoScapeButton::draw(Surface& surface)
@@ -23,15 +27,10 @@ namespace ufo
 			surface.invert(248, this);
 	}
 
-	GeoScapeTimeButton::GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id, Uint16 groupId, bool current)
-		: m_gs(gs), UIRadioButton(_x, _y, 31, 13, groupId)
+	GeoScapeTimeButton::GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id)
+		: m_gs(gs), UIRadioButton(_x, _y, 31, 13, 0)
 	{
 		m_id = id;
-		if (current)
-		{
-			m_current[groupId] = this;
-			m_pressed = true;
-		}
 	}
 
 	void GeoScapeTimeButton::onPress()
@@ -44,8 +43,21 @@ namespace ufo
 			surface.invert(248, this);
 	}
 
-	GeoScape::GeoScape(Surface& surface)
-		: m_surface(surface), m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_mouse(0, 0), m_zoom(0)
+	InterceptDialog::InterceptDialog(Surface& surface)
+		: UIDialog(surface, 320, 140, Palette::blockSize * 15, UIDialog::Both)
+	{
+		m_bg.loadSCR("geograph/back12.scr");
+
+		Palette p("geodata/palettes.dat", 256, 0);
+		p.apply(m_bg);
+	}
+
+	void InterceptDialog::onOpen()
+	{
+	}
+
+	GeoScape::GeoScape()
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_mouse(0, 0), m_zoom(0)
 	{
 	}
 
@@ -85,10 +97,10 @@ namespace ufo
 		}
 
 		// apply palette to output surface
-		m_palette.apply(m_surface);
+		m_palette.apply(m_ui->surface);
 
 		// set the font color (palette index) offset
-		m_font.colorOffset(239);
+		m_font.colorOffset(Palette::blockSize * 14 + 15);
 
 		// create buttons
 		m_ui->create(new GeoScapeButton(*this, 257, 0, GeoScapeButton::Intercept));
@@ -98,12 +110,12 @@ namespace ufo
 		m_ui->create(new GeoScapeButton(*this, 257, 48, GeoScapeButton::Options));
 		m_ui->create(new GeoScapeButton(*this, 257, 60, GeoScapeButton::Funding));
 
-		m_ui->create(new GeoScapeTimeButton(*this, 257, 112, GeoScapeTimeButton::Time5Sec, 0, true));
-		m_ui->create(new GeoScapeTimeButton(*this, 289, 112, GeoScapeTimeButton::Time1Min, 0));
-		m_ui->create(new GeoScapeTimeButton(*this, 257, 126, GeoScapeTimeButton::Time5Min, 0));
-		m_ui->create(new GeoScapeTimeButton(*this, 289, 126, GeoScapeTimeButton::Time30Min, 0));
-		m_ui->create(new GeoScapeTimeButton(*this, 257, 140, GeoScapeTimeButton::Time1Hour, 0));
-		m_ui->create(new GeoScapeTimeButton(*this, 289, 140, GeoScapeTimeButton::Time1Day, 0));
+		m_ui->create(new GeoScapeTimeButton(*this, 257, 112, GeoScapeTimeButton::Time5Sec));
+		m_ui->create(new GeoScapeTimeButton(*this, 289, 112, GeoScapeTimeButton::Time1Min));
+		m_ui->create(new GeoScapeTimeButton(*this, 257, 126, GeoScapeTimeButton::Time5Min));
+		m_ui->create(new GeoScapeTimeButton(*this, 289, 126, GeoScapeTimeButton::Time30Min));
+		m_ui->create(new GeoScapeTimeButton(*this, 257, 140, GeoScapeTimeButton::Time1Hour));
+		m_ui->create(new GeoScapeTimeButton(*this, 289, 140, GeoScapeTimeButton::Time1Day));
 
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);

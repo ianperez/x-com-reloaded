@@ -6,8 +6,8 @@ using namespace std;
 
 namespace ufo
 {
-	UIManager::UIManager()
-		: m_focus(0)
+	UIManager::UIManager(Surface& s)
+		: m_focus(0), surface(s)
 	{
 	}
 
@@ -20,7 +20,7 @@ namespace ufo
 	void UIManager::create(UIElement* e)
 	{
 		push_front(e);
-		e->setUIManager(this);
+		e->m_ui = this;
 		e->onCreate();
 	}
 
@@ -98,7 +98,7 @@ namespace ufo
 				return true;
 		}
 
-		return false;
+		return i->m_exclusive;
 	}
 
 	bool UIManager::processEvent(SDL_Event& e)
@@ -130,9 +130,18 @@ namespace ufo
 		return true;
 	}
 
-	void UIManager::draw(Surface& surface)
+	void UIManager::updateTime(UIElement* e)
+	{
+		e->m_timeElapsed = SDL_GetTicks() - e->m_lastUpdate;
+		e->m_lastUpdate = SDL_GetTicks();
+	}
+
+	void UIManager::draw()
 	{
 		for (list<UIElement*>::reverse_iterator i = rbegin(); i != rend(); ++i)
+		{
+			updateTime(*i);
 			(*i)->draw(surface);
+		}
 	}
 }

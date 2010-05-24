@@ -37,21 +37,24 @@ namespace ufo
 	{
 	public:
 
-		bool exclusive;
+		friend class UIManager;
 
 		UIElement();
 		UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
 
 		virtual void draw(Surface& surface) { }
 
-		Uint16 getId() const;
-		void setId(Uint16 id);
-
-		void setUIManager(UIManager* ui);
+		Uint16 getId() const { return m_id; }
+		void setId(Uint16 id) { m_id = id; }
 
 	protected:
 
 		Uint16 m_id;
 		UIManager* m_ui;
+
+		Uint32 m_lastUpdate;
+		Uint32 m_timeElapsed;
+
+		bool m_exclusive;
 	};
 }
