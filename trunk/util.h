@@ -1,6 +1,7 @@
 #pragma once
 #include <sdl.h>
 #include <string>
+#include <cmath>
 #include "palette.h"
 
 namespace ufo

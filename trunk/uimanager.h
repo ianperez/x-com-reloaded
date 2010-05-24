@@ -12,10 +12,11 @@ namespace ufo
 		vector<UIElement*> m_toDestroy;
 
 		bool processEvent(SDL_Event& e, UIElement* i);
+		void updateTime(UIElement* e);
 
 	public:
 
-		UIManager();
+		UIManager(Surface& s);
 		~UIManager();
 
 		void create(UIElement* e);
@@ -25,6 +26,8 @@ namespace ufo
 		bool releaseFocus(UIElement* e);
 
 		bool processEvent(SDL_Event& e);
-		void draw(Surface& surface);
+		void draw();
+
+		Surface& surface;
 	};
 }

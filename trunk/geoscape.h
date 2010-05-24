@@ -5,6 +5,7 @@
 #include <boost/shared_ptr.hpp>
 #include "uielement.h"
 #include "uibutton.h"
+#include "uidialog.h"
 #include "palette.h"
 #include "font.h"
 
@@ -45,7 +46,7 @@ namespace ufo
 
 	class GeoScape;
 
-	class GeoScapeButton : public UIButton
+	class GeoScapeButton : public UIPushButton
 	{
 		GeoScape& m_gs;
 
@@ -73,7 +74,7 @@ namespace ufo
 
 	public:
 
-		GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id, Uint16 groupId, bool current = false);
+		GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id);
 
 		void onPress();
 		void draw(Surface& surface);
@@ -87,6 +88,15 @@ namespace ufo
 			Time1Hour,
 			Time1Day
 		};
+	};
+
+	class InterceptDialog : public UIDialog
+	{
+	public:
+
+		InterceptDialog(Surface& surface);
+
+		void onOpen();
 	};
 
 	class GeoScape : public UIElement
@@ -108,7 +118,6 @@ namespace ufo
 		Point2d m_defaultTarget;
 
 		Surface m_bg;
-		Surface& m_surface;
 
 		vector<shared_ptr<Surface> > m_textures;
 		Point2d m_mouse;
@@ -128,7 +137,7 @@ namespace ufo
 
 	public:
 
-		GeoScape(Surface& surface);
+		GeoScape();
 
 		void draw(Surface& surface);
 		void center(Sint16 sx, Sint16 sy);

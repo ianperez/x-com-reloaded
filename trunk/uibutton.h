@@ -6,11 +6,11 @@ namespace ufo
 {
 	using namespace std;
 
-	class UIButton : public UIElement
+	class UIPushButton : public UIElement
 	{
 	public:
 
-		UIButton(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		UIPushButton(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
 
 		virtual void onPress() { };
 		virtual bool onMouseLeftClick(Sint16 x, Sint16 y);
@@ -21,7 +21,7 @@ namespace ufo
 		bool m_pressed;
 	};
 
-	class UIToggleButton : public UIButton
+	class UIToggleButton : public UIPushButton
 	{
 	public:
 
@@ -31,7 +31,7 @@ namespace ufo
 		virtual bool onMouseLeftUnclick(Sint16 x, Sint16 y) { return true; }
 	};
 
-	class UIRadioButton : public UIButton
+	class UIRadioButton : public UIPushButton
 	{
 	public:
 

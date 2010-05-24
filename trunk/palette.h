@@ -22,6 +22,8 @@ namespace ufo
 
 		void apply(Surface& surface);
 
+		static const Uint8 blockSize = 16;
+
 	protected:
 
 		vector<SDL_Color> m_colors;
