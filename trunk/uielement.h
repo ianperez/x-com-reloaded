@@ -16,7 +16,7 @@ namespace ufo
 		virtual bool onMouseLeftUnclick(Sint16 x, Sint16 y) { return false; }
 		virtual bool onMouseRightClick(Sint16 x, Sint16 y) { return false; }
 		virtual bool onMouseRightUnclick(Sint16 x, Sint16 y) { return false; }
-		virtual bool onMouseHover(Sint16 x, Sint16 y) { return false; }
+		virtual bool onMouseMove(Sint16 x, Sint16 y) { return false; }
 
 		// Keyboard events
 		virtual bool onKeyDown(SDL_keysym keysym) { return false; }

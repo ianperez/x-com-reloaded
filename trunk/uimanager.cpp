@@ -86,7 +86,7 @@ namespace ufo
 
 		if (e.type == SDL_MOUSEMOTION)
 		{
-			if ((i == m_focus || i->contains(e.motion.x, e.motion.y)) && i->onMouseHover(e.motion.x, e.motion.y))
+			if ((i == m_focus || i->contains(e.motion.x, e.motion.y)) && i->onMouseMove(e.motion.x, e.motion.y))
 				return true;
 		}
 		else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
