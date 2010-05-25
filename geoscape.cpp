@@ -44,12 +44,13 @@ namespace ufo
 	}
 
 	InterceptDialog::InterceptDialog(Surface& surface)
-		: UIDialog(surface, 320, 140, Palette::blockSize * 15, UIDialog::Both)
+		: UIDialog(surface, 320, 140, Palette::blockSize * 15, UIDialog::Horizontal)
 	{
 		m_bg.loadSCR("geograph/back12.scr");
 
-		Palette p("geodata/palettes.dat", 256, 0);
+		Palette p("geodata/backpals.dat", 4, 16);
 		p.apply(m_bg);
+		p.apply(surface);
 	}
 
 	void InterceptDialog::onOpen()
@@ -57,7 +58,7 @@ namespace ufo
 	}
 
 	GeoScape::GeoScape()
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat", 256, 0), m_mouse(0, 0), m_zoom(0)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0)
 	{
 	}
 

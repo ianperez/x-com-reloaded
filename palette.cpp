@@ -6,15 +6,16 @@ using namespace std;
 
 namespace ufo
 {
-	void Palette::load(string filename, Uint16 paletteSize, Uint8 index)
+	void Palette::load(string filename, Uint8 index, Uint16 paletteSize)
 	{
 		ifstream infile(filename.c_str(), ios::binary);
 		if (!infile)
 			throw runtime_error("error opening " + filename);
 
 		Uint8 bufferSize = paletteSize == 256 ? 6 : 0;
+		m_offset = paletteSize == 256 ? 0 : 224;
 
-		infile.seekg((paletteSize + bufferSize) * index, ios::beg);
+		infile.seekg((paletteSize + bufferSize) * index * 3, ios::beg);
 
 		for (Uint16 i = 0; i < paletteSize; ++i)
 		{
@@ -36,12 +37,14 @@ namespace ufo
 	}
 
 	Palette::Palette()
+		: m_offset(0)
 	{
 	}
 
-	Palette::Palette(string filename, Uint16 paletteSize, Uint8 index)
+	Palette::Palette(string filename, Uint8 index, Uint16 paletteSize)
+		: m_offset(0)
 	{
-		load(filename, paletteSize, index);
+		load(filename, index, paletteSize);
 	}
 
 	Uint32 Palette::getRGBA(Uint8 index) const
@@ -52,11 +55,11 @@ namespace ufo
 
 	SDL_Color Palette::operator[] (Uint8 index) const
 	{
-		return m_colors[index + (256 - m_colors.size())];
+		return m_colors[index - m_offset];
 	}
 
 	void Palette::apply(Surface& surface)
 	{
-		surface.setColors(&m_colors[0], 256 - m_colors.size(), m_colors.size());
+		surface.setColors(&m_colors[0], m_offset, m_colors.size());
 	}
 }

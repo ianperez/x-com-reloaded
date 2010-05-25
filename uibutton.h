@@ -45,4 +45,13 @@ namespace ufo
 		Uint16 m_groupId;
 		static map<Uint16, UIRadioButton*> m_current;
 	};
+
+	class UIPushButtonStandard : public UIPushButton
+	{
+	public:
+
+		UIPushButtonStandard(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+
+		virtual void draw(Surface& surface);
+	};
 }

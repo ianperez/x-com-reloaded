@@ -96,6 +96,28 @@ namespace ufo
 		SDL_FillRect(m_surface, dst, color);
 	}
 
+	void Surface::hollowRect(Rect* dst, Uint32 colorTopLeft, Uint32 colorBottomRight)
+	{
+		// draw top line
+		Rect r(*dst);
+		r.h = 1;
+		r.w -= 1;
+		SDL_FillRect(m_surface, dst, colorTopLeft);
+
+		// draw left line
+		r.y += 1;
+		r.w = 1;
+		r.h = dst->h - 1;
+		SDL_FillRect(m_surface, dst, colorTopLeft);
+
+		// draw bottom line
+		r.x += 1;
+		r.y += dst->h - 1;
+		r.h = 1;
+		r.w = dst->w;
+		SDL_FillRect(m_surface, dst, colorBottomRight);
+	}
+
 	Uint8 Surface::getPixel8(Sint16 x, Sint16 y)
 	{
 		lock();
@@ -125,7 +147,7 @@ namespace ufo
 		h = static_cast<Uint16>(infile.tellg() / w);
 		infile.seekg(0, ios::beg);
 
-		m_surface = SDL_CreateRGBSurface(SDL_HWSURFACE, w, h, 8, 0, 0, 0, 0);
+		m_surface = SDL_CreateRGBSurface(SDL_SWSURFACE, w, h, 8, 0, 0, 0, 0);
 		if (!m_surface)
 			throw runtime_error("error creating surface for file: " + filename);
 
