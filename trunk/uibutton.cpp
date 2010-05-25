@@ -65,4 +65,9 @@ namespace ufo
 
 		return true;
 	}
+
+	UIPushButtonStandard(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
+		: UIPushButton(_x, _y, _w, _h)
+	{
+	}
 }

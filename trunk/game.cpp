@@ -15,7 +15,7 @@ namespace ufo
 
 		SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
-		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_HWSURFACE));
+		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_SWSURFACE | SDL_HWPALETTE));
 
 		UIManager ui(screen);
 		ui.create(new GeoScape());

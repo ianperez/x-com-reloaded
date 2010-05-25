@@ -46,6 +46,7 @@ namespace ufo
 		void pixelColor8(Sint16 x, Sint16 y, Uint8 color);
 		void lineColor8(Sint16 x1, Sint16 y1, Sint16 x2, Sint16 y2, Uint8 color);
 		void fillRect(Rect* dst, Uint32 color);
+		void hollowRect(Rect* dst, Uint32 colorTopLeft, Uint32 colorBottomRight);
 
 		Uint8 getPixel8(Sint16 x, Sint16 y);
 

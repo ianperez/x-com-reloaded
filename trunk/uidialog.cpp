@@ -4,7 +4,7 @@
 namespace ufo
 {
 	UIDialog::UIDialog(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h, Uint8 color, AnimationType type)
-		: UIElement(_x, _y, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(7.0)
+		: UIElement(_x, _y, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(2.0)
 	{
 		m_exclusive = true;
 		const Uint16 min = 90;
@@ -27,7 +27,7 @@ namespace ufo
 	}
 
 	UIDialog::UIDialog(Surface& surface, Uint16 _w, Uint16 _h, Uint8 color, AnimationType type)
-		: UIElement(0, 0, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(7.0)
+		: UIElement(0, 0, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(2.0)
 	{
 		m_exclusive = true;
 		const Uint16 min = 90;
@@ -38,15 +38,12 @@ namespace ufo
 			onOpen();
 		}
 		if (type == Horizontal || type == Both)
-		{
-			x = surface.w / 2 - min / 2;
 			w = min;
-		}
 		if (type == Vertical || type == Both)
-		{
-			y = surface.h / 2 - min / 2;
 			h = min;
-		}
+
+		x = surface.w / 2 - w / 2;
+		y = surface.h / 2 - h / 2;
 	}
 
 	void UIDialog::draw(Surface& surface)
