@@ -1,5 +1,6 @@
 #include "uibutton.h"
 #include "uimanager.h"
+#include "palette.h"
 
 namespace ufo
 {
@@ -66,8 +67,29 @@ namespace ufo
 		return true;
 	}
 
-	UIPushButtonStandard(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
+	UIPushButtonStandard::UIPushButtonStandard(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
 		: UIPushButton(_x, _y, _w, _h)
 	{
+	}
+
+	void UIPushButtonStandard::draw(Surface& surface)
+	{
+		// draw outside border
+		Rect r(*this);
+		surface.hollowRect(&r, Palette::blockSize * 8 + 6, Palette::blockSize * 8 + 10);
+
+		// draw inside border
+		r.x += 1;
+		r.y += 1;
+		r.w -= 2;
+		r.h -= 2;
+		surface.hollowRect(&r, Palette::blockSize * 8 + 7, Palette::blockSize * 8 + 9);
+
+		// draw inside rect
+		r.x += 1;
+		r.y += 1;
+		r.w -= 2;
+		r.h -= 2;
+		surface.fillRect(&r, Palette::blockSize * 8 + 8);
 	}
 }

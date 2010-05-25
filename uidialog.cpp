@@ -26,24 +26,10 @@ namespace ufo
 		}
 	}
 
-	UIDialog::UIDialog(Surface& surface, Uint16 _w, Uint16 _h, Uint8 color, AnimationType type)
-		: UIElement(0, 0, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(2.0)
+	void UIDialog::center(Rect& r)
 	{
-		m_exclusive = true;
-		const Uint16 min = 90;
-
-		if (type == None)
-		{
-			m_open = true;
-			onOpen();
-		}
-		if (type == Horizontal || type == Both)
-			w = min;
-		if (type == Vertical || type == Both)
-			h = min;
-
-		x = surface.w / 2 - w / 2;
-		y = surface.h / 2 - h / 2;
+		x = r.x + r.w / 2 - w / 2;
+		y = r.y + r.h / 2 - h / 2;
 	}
 
 	void UIDialog::draw(Surface& surface)
@@ -69,10 +55,10 @@ namespace ufo
 			Uint16 delta = round<Uint16>(m_timeElapsed / m_speed);
 
 			// adjust delta if needed
-			if ((m_type == Horizontal || m_type == Both) && w + delta > m_openWidth)
-				delta = m_openWidth - w;
-			if (m_type == Vertical && h + delta > m_openHeight)
-				delta = m_openHeight - h;
+			if ((m_type == Horizontal || m_type == Both) && w + (delta * 2) > m_openWidth)
+				delta = (m_openWidth - w) / 2;
+			if ((m_type == Vertical || m_type == Both) && (h + delta * 2) > m_openHeight)
+				delta = (m_openHeight - h) / 2;
 
 			// update element size for animated opening
 			if ((m_type == Horizontal || m_type == Both) && w < m_openWidth)
@@ -86,7 +72,7 @@ namespace ufo
 				h += delta * 2;
 			}
 
-			if (w == m_openWidth && h == m_openHeight)
+			if (!m_open && w == m_openWidth && h == m_openHeight)
 			{
 				m_open = true;
 				onOpen();

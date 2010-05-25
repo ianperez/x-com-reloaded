@@ -17,7 +17,7 @@ namespace ufo
 	{
 		if (m_id == Intercept)
 		{
-			m_ui->create(new InterceptDialog(m_ui->surface));
+			m_ui->create(new InterceptDialog());
 		}
 	}
 
@@ -43,18 +43,24 @@ namespace ufo
 			surface.invert(248, this);
 	}
 
-	InterceptDialog::InterceptDialog(Surface& surface)
-		: UIDialog(surface, 320, 140, Palette::blockSize * 15, UIDialog::Horizontal)
+	InterceptDialog::InterceptDialog()
+		: UIDialog(0, 0, 320, 140, Palette::blockSize * 15, UIDialog::Horizontal)
 	{
+	}
+
+	void InterceptDialog::onCreate()
+	{
+		center(Rect(0, 0, m_ui->surface.w, m_ui->surface.h));
 		m_bg.loadSCR("geograph/back12.scr");
 
 		Palette p("geodata/backpals.dat", 4, 16);
 		p.apply(m_bg);
-		p.apply(surface);
+		p.apply(m_ui->surface);
 	}
 
 	void InterceptDialog::onOpen()
 	{
+		m_ui->create(new UIPushButtonStandard(x + 20, y + h - 20, 288, 16));
 	}
 
 	GeoScape::GeoScape()

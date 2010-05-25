@@ -98,24 +98,34 @@ namespace ufo
 
 	void Surface::hollowRect(Rect* dst, Uint32 colorTopLeft, Uint32 colorBottomRight)
 	{
+		Rect r;
+
 		// draw top line
-		Rect r(*dst);
+		r.x = dst->x;
+		r.y = dst->y;
+		r.w = dst->w;
 		r.h = 1;
-		r.w -= 1;
-		SDL_FillRect(m_surface, dst, colorTopLeft);
+		SDL_FillRect(m_surface, &r, colorTopLeft);
 
 		// draw left line
-		r.y += 1;
+		r.y = dst->y + 1;
 		r.w = 1;
 		r.h = dst->h - 1;
-		SDL_FillRect(m_surface, dst, colorTopLeft);
+		SDL_FillRect(m_surface, &r, colorTopLeft);
 
 		// draw bottom line
-		r.x += 1;
-		r.y += dst->h - 1;
+		r.x = dst->x + 1;
+		r.y = dst->y + dst->h - 1;
 		r.h = 1;
-		r.w = dst->w;
-		SDL_FillRect(m_surface, dst, colorBottomRight);
+		r.w = dst->w - 1;
+		SDL_FillRect(m_surface, &r, colorBottomRight);
+
+		// draw right line
+		r.x = dst->x + dst->w - 1;
+		r.y = dst->y + 1;
+		r.w = 1;
+		r.h = dst->h - 2;
+		SDL_FillRect(m_surface, &r, colorBottomRight);
 	}
 
 	Uint8 Surface::getPixel8(Sint16 x, Sint16 y)
