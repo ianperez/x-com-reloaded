@@ -68,6 +68,33 @@ namespace ufo
 		};
 	};
 
+	class GeoScapeGlobeControl : public UIPushButton
+	{
+		GeoScape& m_gs;
+		Point2d m_mouse;
+		bool m_continuous;
+
+	public:
+
+		GeoScapeGlobeControl(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h, Uint16 id, bool continuous = true);
+
+		void onPress();
+
+		bool onMouseLeftUnclick(Sint16 x, Sint16 y);
+		bool onMouseMove(Sint16 x, Sint16 y);
+		void draw(Surface& surface);
+
+		// Map Control button Id's
+		enum {
+			RotateUp,
+			RotateDown,
+			RotateLeft,
+			RotateRight,
+			ZoomIn,
+			ZoomOut
+		};
+	};
+
 	class GeoScapeTimeButton : public UIRadioButton
 	{
 		GeoScape& m_gs;
@@ -141,6 +168,8 @@ namespace ufo
 
 		SmallFont m_font;
 
+		bool m_debug;
+
 		void toCartesian(const Point2d& p1, Point3d& p2);
 		void toSpherical(const Point3d& p1, Point2d& p2);
 		bool screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
@@ -157,14 +186,14 @@ namespace ufo
 		void draw(Surface& surface);
 		void center(Sint16 sx, Sint16 sy);
 		void onClick(Sint16 sx, Sint16 sy);
-		void rotateHorz(Sint16 delta);
-		void rotateVert(Sint16 delta);
+		void rotateHorizontal(Sint16 delta);
+		void rotateVertical(Sint16 delta);
 		void zoom(Sint8 delta);
 		void setDefaultTarget(Sint16 sx, Sint16 sy);
 
 		bool onMouseLeftClick(Sint16 x, Sint16 y);
 		bool onMouseRightClick(Sint16 x, Sint16 y);
-		bool onMouseHover(Sint16 x, Sint16 y);
+		bool onMouseMove(Sint16 x, Sint16 y);
 		bool onKeyDown(SDL_keysym keysym);
 
 		void onCreate();

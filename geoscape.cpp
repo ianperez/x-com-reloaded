@@ -27,6 +27,52 @@ namespace ufo
 			surface.invert(248, this);
 	}
 
+	GeoScapeGlobeControl::GeoScapeGlobeControl(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h, Uint16 id, bool continuous)
+		: m_gs(gs), UIPushButton(_x, _y, _w, _h), m_continuous(continuous)
+	{
+		m_id = id;
+	}
+
+	void GeoScapeGlobeControl::onPress()
+	{
+		if (m_id == RotateUp)
+			m_gs.rotateVertical(-Sint16(m_timeElapsed));
+		if (m_id == RotateDown)
+			m_gs.rotateVertical(m_timeElapsed);
+		if (m_id == RotateLeft)
+			m_gs.rotateHorizontal(-Sint16(m_timeElapsed));
+		if (m_id == RotateRight)
+			m_gs.rotateHorizontal(m_timeElapsed);
+		if (m_id == ZoomIn)
+			m_gs.zoom(1);
+		if (m_id == ZoomOut)
+			m_gs.zoom(-1);
+	}
+
+	bool GeoScapeGlobeControl::onMouseLeftUnclick(Sint16 x, Sint16 y)
+	{
+		m_ui->releaseFocus(this);
+		m_pressed = false;
+		return true;
+	}
+
+	bool GeoScapeGlobeControl::onMouseMove(Sint16 x, Sint16 y)
+	{
+		m_mouse.x = x;
+		m_mouse.y = y;
+		return true;
+	}
+
+	void GeoScapeGlobeControl::draw(Surface& surface)
+	{
+		if (m_pressed && contains(m_mouse.x, m_mouse.y))
+		{
+			onPress();
+			if (!m_continuous)
+				m_pressed = false;
+		}
+	}
+
 	GeoScapeTimeButton::GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id)
 		: m_gs(gs), UIRadioButton(_x, _y, 31, 13, 0)
 	{
@@ -90,7 +136,7 @@ namespace ufo
 	}
 
 	GeoScape::GeoScape()
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false)
 	{
 	}
 
@@ -133,19 +179,26 @@ namespace ufo
 		m_palette.apply(m_ui->surface);
 
 		// create buttons
-		m_ui->create(new GeoScapeButton(*this, 257, 0, GeoScapeButton::Intercept));
-		m_ui->create(new GeoScapeButton(*this, 257, 12, GeoScapeButton::Bases));
-		m_ui->create(new GeoScapeButton(*this, 257, 24, GeoScapeButton::Graphs));
-		m_ui->create(new GeoScapeButton(*this, 257, 36, GeoScapeButton::Ufopaedia));
-		m_ui->create(new GeoScapeButton(*this, 257, 48, GeoScapeButton::Options));
-		m_ui->create(new GeoScapeButton(*this, 257, 60, GeoScapeButton::Funding));
+		create(new GeoScapeButton(*this, 257, 0, GeoScapeButton::Intercept));
+		create(new GeoScapeButton(*this, 257, 12, GeoScapeButton::Bases));
+		create(new GeoScapeButton(*this, 257, 24, GeoScapeButton::Graphs));
+		create(new GeoScapeButton(*this, 257, 36, GeoScapeButton::Ufopaedia));
+		create(new GeoScapeButton(*this, 257, 48, GeoScapeButton::Options));
+		create(new GeoScapeButton(*this, 257, 60, GeoScapeButton::Funding));
 
-		m_ui->create(new GeoScapeTimeButton(*this, 257, 112, GeoScapeTimeButton::Time5Sec));
-		m_ui->create(new GeoScapeTimeButton(*this, 289, 112, GeoScapeTimeButton::Time1Min));
-		m_ui->create(new GeoScapeTimeButton(*this, 257, 126, GeoScapeTimeButton::Time5Min));
-		m_ui->create(new GeoScapeTimeButton(*this, 289, 126, GeoScapeTimeButton::Time30Min));
-		m_ui->create(new GeoScapeTimeButton(*this, 257, 140, GeoScapeTimeButton::Time1Hour));
-		m_ui->create(new GeoScapeTimeButton(*this, 289, 140, GeoScapeTimeButton::Time1Day));
+		create(new GeoScapeTimeButton(*this, 257, 112, GeoScapeTimeButton::Time5Sec));
+		create(new GeoScapeTimeButton(*this, 289, 112, GeoScapeTimeButton::Time1Min));
+		create(new GeoScapeTimeButton(*this, 257, 126, GeoScapeTimeButton::Time5Min));
+		create(new GeoScapeTimeButton(*this, 289, 126, GeoScapeTimeButton::Time30Min));
+		create(new GeoScapeTimeButton(*this, 257, 140, GeoScapeTimeButton::Time1Hour));
+		create(new GeoScapeTimeButton(*this, 289, 140, GeoScapeTimeButton::Time1Day));
+
+		create(new GeoScapeGlobeControl(*this, 271, 162, 13, 13, GeoScapeGlobeControl::RotateUp));
+		create(new GeoScapeGlobeControl(*this, 271, 186, 13, 13, GeoScapeGlobeControl::RotateDown));
+		create(new GeoScapeGlobeControl(*this, 259, 174, 13, 13, GeoScapeGlobeControl::RotateLeft));
+		create(new GeoScapeGlobeControl(*this, 284, 174, 13, 13, GeoScapeGlobeControl::RotateRight));
+		create(new GeoScapeGlobeControl(*this, 295, 155, 23, 23, GeoScapeGlobeControl::ZoomIn, false));
+		create(new GeoScapeGlobeControl(*this, 299, 182, 15, 17, GeoScapeGlobeControl::ZoomOut, false));
 
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
@@ -297,20 +350,23 @@ namespace ufo
 
 		surface.clearClipRect();
 
-		m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_rotx, m_rotz));
-
-		GeoPoint gptemp;
-		if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
+		if (m_debug)
 		{
-			toSpherical(gptemp.c, gptemp.s);
-			m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y));
-			m_font.print(surface, 5, 25, format("Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z));
+			m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_rotx, m_rotz));
+
+			GeoPoint gptemp;
+			if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
+			{
+				toSpherical(gptemp.c, gptemp.s);
+				m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y));
+				m_font.print(surface, 5, 25, format("Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z));
+			}
+
+			m_font.print(surface, 5, 45, format("Radius: %d", m_radius));
+			m_font.print(surface, 5, 35, format("Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y));
+
+			m_font.print(surface, 5, 55, format("Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y)));
 		}
-
-		m_font.print(surface, 5, 45, format("Radius: %d", m_radius));
-		m_font.print(surface, 5, 35, format("Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y));
-
-		m_font.print(surface, 5, 55, format("Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y)));
 	}
 
 	void GeoScape::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)
@@ -386,12 +442,12 @@ namespace ufo
 		return sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)));
 	}
 
-	void GeoScape::rotateHorz(Sint16 delta)
+	void GeoScape::rotateHorizontal(Sint16 delta)
 	{
 		m_rotz += delta;
 	}
 
-	void GeoScape::rotateVert(Sint16 delta)
+	void GeoScape::rotateVertical(Sint16 delta)
 	{
 		m_rotx += delta;
 	}
@@ -461,7 +517,7 @@ namespace ufo
 		return true;
 	}
 
-	bool GeoScape::onMouseHover(Sint16 x, Sint16 y)
+	bool GeoScape::onMouseMove(Sint16 x, Sint16 y)
 	{
 		m_mouse.x = x;
 		m_mouse.y = y;
@@ -471,18 +527,8 @@ namespace ufo
 
 	bool GeoScape::onKeyDown(SDL_keysym keysym)
 	{
-		if (keysym.sym == SDLK_UP)
-			rotateVert(-8);
-		if (keysym.sym == SDLK_DOWN)
-			rotateVert(8);
-		if (keysym.sym == SDLK_LEFT)
-			rotateHorz(-8);
-		if (keysym.sym == SDLK_RIGHT)
-			rotateHorz(8);
-		if (keysym.sym == SDLK_PAGEUP)
-			zoom(1);
-		if (keysym.sym == SDLK_PAGEDOWN)
-			zoom(-1);
+		if (keysym.sym == SDLK_F12)
+			m_debug = !m_debug;
 		if (keysym.sym == SDLK_SPACE)
 			setDefaultTarget(m_mouse.x, m_mouse.y);
 
