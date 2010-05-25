@@ -1,8 +1,7 @@
 #include "font.h"
 #include "util.h"
-#include <SDL_gfxPrimitives.h>
+#include "palette.h"
 #include <fstream>
-#include <sstream>
 
 using namespace std;
 
@@ -22,12 +21,12 @@ namespace ufo
 	}
 
 	Font::Font(string filename, Uint16 width, Uint16 height)
-		: m_width(width), m_height(height), m_colorOffset(20), m_spaceWidth(width / 2)
+		: m_width(width), m_height(height), m_color(Palette::blockSize * 8 + 6), m_spaceWidth(width / 2)
 	{
 		load(filename);
 	}
 
-	void Font::print(Surface& surface, Sint16 x, Sint16 y, string buffer)
+	void Font::print(Surface& surface, Sint16 x, Sint16 y, string buffer, bool invert)
 	{
 		surface.lock();
 		for (size_t i = 0; i < buffer.size(); ++i)
@@ -44,7 +43,10 @@ namespace ufo
 					Uint8 c = m_data[j + k];
 					if (c > 0)
 					{
-						surface.pixelColor8(x + (k % m_width), y + (k / m_width), c + m_colorOffset);
+						if (invert)
+							c += 2 * (3 - c);
+
+						surface.pixelColor8(x + (k % m_width), y + (k / m_width), c + m_color - 1);
 						if ((k % m_width) > max)
 							max = k % m_width;
 					}
@@ -58,53 +60,38 @@ namespace ufo
 		surface.unlock();
 	}
 
-	void Font::printf(Surface& surface, Sint16 x, Sint16 y, string format, ...)
+	Uint16 Font::getTextWidth(string buffer)
 	{
-		va_list ap;
-		va_start(ap, format);
+		Uint16 width = 0;
 
-		string buffer;
-		for (size_t i = 0; i < format.size(); ++i)
+		for (size_t i = 0; i < buffer.size(); ++i)
 		{
-			if (format[i] == '%')
+			if (buffer[i] >= 33)
 			{
-				if (++i >= format.size())
-					break;
-
-				if (format[i] == 's')
-					buffer += va_arg(ap, char*);
-				else if (format[i] == 'z')
-					buffer += va_arg(ap, string);
-				else if (format[i] == 'd')
+				size_t j = m_width * m_height * (buffer[i] - 33);
+				Uint16 max = 0;
+				for (Uint16 k = 0; k < m_width * m_height; ++k)
 				{
-					stringstream temp;
-					temp << va_arg(ap, Sint32);
-					buffer += temp.str();
-				}
-				else if (format[i] == 'f')
-				{
-					stringstream temp;
-					temp << va_arg(ap, double);
-					buffer += temp.str();
-				}
-				else if (format[i] == 'c')
-					buffer += va_arg(ap, char);
-				else if (format[i] == '%')
-					break;
+					if (j + k + 1 >= m_data.size())
+						continue;
 
-				continue;
+					Uint8 c = m_data[j + k];
+					if (c > 0 && (k % m_width) > max)
+						max = k % m_width;
+				}
+
+				width += max;
 			}
-
-			buffer += format[i];
+			else
+				width += m_spaceWidth;
 		}
 
-		va_end(ap);
-		print(surface, x, y, buffer);
+		return width;
 	}
 
-	void Font::colorOffset(Uint8 colorOffset)
+	void Font::setColor(Uint8 color)
 	{
-		m_colorOffset = colorOffset;
+		m_color = color;
 	}
 
 	SmallFont::SmallFont()

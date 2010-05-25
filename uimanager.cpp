@@ -26,12 +26,35 @@ namespace ufo
 
 	void UIManager::destroy(UIElement* e)
 	{
+		if (find(m_toDestroy.begin(), m_toDestroy.end(), e) != m_toDestroy.end())
+			return;
+
 		list<UIElement*>::iterator i = find(begin(), end(), e);
 		if (i != end())
 		{
+			// destroy child elements first
+			for (size_t i = 0; i < e->m_elements.size(); ++i)
+				destroy(e->m_elements[i]);
+
 			e->onDestroy();
 			m_toDestroy.push_back(e);
 		}
+	}
+
+	void UIManager::cleanup()
+	{
+		// remove any destroyed elements
+		for (size_t i = 0; i < m_toDestroy.size(); ++i)
+		{
+			list<UIElement*>::iterator j = find(begin(), end(), m_toDestroy[i]);
+			if (j != end())
+			{
+				delete *j;
+				erase(j);
+			}
+		}
+
+		m_toDestroy.clear();
 	}
 
 	bool UIManager::requestFocus(UIElement* e)
@@ -113,18 +136,7 @@ namespace ufo
 			}
 		}
 
-		// remove any destroyed elements
-		for (size_t i = 0; i < m_toDestroy.size(); ++i)
-		{
-			list<UIElement*>::iterator j = find(begin(), end(), m_toDestroy[i]);
-			if (j != end())
-			{
-				delete *j;
-				erase(j);
-			}
-		}
-
-		m_toDestroy.clear();
+		cleanup();
 
 		return true;
 	}
@@ -142,5 +154,7 @@ namespace ufo
 			updateTime(*i);
 			(*i)->draw(surface);
 		}
+
+		cleanup();
 	}
 }

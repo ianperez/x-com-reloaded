@@ -60,7 +60,33 @@ namespace ufo
 
 	void InterceptDialog::onOpen()
 	{
-		m_ui->create(new UIPushButtonStandard(x + 20, y + h - 20, 288, 16));
+		InterceptDialogButton* button = new InterceptDialogButton(m_smfont, "Cancel", 0, y + h - 30, 288, 16);
+		create(button);
+		button->centerHorizontal(*this);
+	}
+
+	void InterceptDialog::draw(Surface& surface)
+	{
+		UIDialog::draw(surface);
+
+		if (m_open)
+		{
+			string text("LAUNCH INTERCEPTION");
+
+			Rect r(0, y + 16, m_bgfont.getTextWidth(text), m_bgfont.getHeight());
+			r.centerHorizontal(*this);
+			m_bgfont.print(surface, r.x, r.y, text);
+		}
+	}
+
+	InterceptDialogButton::InterceptDialogButton(Font& font, string text, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h)
+		: UIPushButtonStandard(font, text, _x, _y, _w, _h)
+	{
+	}
+
+	void InterceptDialogButton::onPress()
+	{
+		m_ui->destroy(m_parent);
 	}
 
 	GeoScape::GeoScape()
@@ -105,9 +131,6 @@ namespace ufo
 
 		// apply palette to output surface
 		m_palette.apply(m_ui->surface);
-
-		// set the font color (palette index) offset
-		m_font.colorOffset(Palette::blockSize * 14 + 15);
 
 		// create buttons
 		m_ui->create(new GeoScapeButton(*this, 257, 0, GeoScapeButton::Intercept));
@@ -274,20 +297,20 @@ namespace ufo
 
 		surface.clearClipRect();
 
-		m_font.printf(surface, 5, 5, "Rotation (x, z): %d, %d", m_rotx, m_rotz);
+		m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_rotx, m_rotz));
 
 		GeoPoint gptemp;
 		if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
 		{
 			toSpherical(gptemp.c, gptemp.s);
-			m_font.printf(surface, 5, 15, "Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y);
-			m_font.printf(surface, 5, 25, "Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z);
+			m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y));
+			m_font.print(surface, 5, 25, format("Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z));
 		}
 
-		m_font.printf(surface, 5, 45, "Radius: %d", m_radius);
-		m_font.printf(surface, 5, 35, "Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y);
+		m_font.print(surface, 5, 45, format("Radius: %d", m_radius));
+		m_font.print(surface, 5, 35, format("Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y));
 
-		m_font.printf(surface, 5, 55, "Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y));
+		m_font.print(surface, 5, 55, format("Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y)));
 	}
 
 	void GeoScape::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)

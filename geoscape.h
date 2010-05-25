@@ -92,12 +92,26 @@ namespace ufo
 
 	class InterceptDialog : public UIDialog
 	{
+		SmallFont m_smfont;
+		BigFont m_bgfont;
+
 	public:
 
 		InterceptDialog();
 
 		void onCreate();
 		void onOpen();
+
+		void draw(Surface& surface);
+	};
+
+	class InterceptDialogButton : public UIPushButtonStandard
+	{
+	public:
+
+		InterceptDialogButton(Font& font, string text, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h);
+
+		void onPress();
 	};
 
 	class GeoScape : public UIElement
