@@ -31,6 +31,22 @@ namespace ufo
 		return (_x >= x && _y >= y && _x <= x + w && _y <= y + h);
 	}
 
+	void Rect::center(const Rect& r)
+	{
+		centerHorizontal(r);
+		centerVertical(r);
+	}
+
+	void Rect::centerHorizontal(const Rect& r)
+	{
+		x = r.x + r.w / 2 - w / 2;
+	}
+
+	void Rect::centerVertical(const Rect& r)
+	{
+		y = r.y + r.h / 2 - h / 2;
+	}
+
 	Surface::Surface()
 		: m_surface(0), w(0), h(0)
 	{
@@ -214,7 +230,7 @@ namespace ufo
 			Uint8* end = p + r->w;
 			while (p < end)
 			{
-				*p = *p + 2 * (pivot - *p);
+				*p += 2 * (pivot - *p);
 				++p;
 			}
 		}

@@ -1,4 +1,5 @@
 #include "uielement.h"
+#include "uimanager.h"
 
 namespace ufo
 {
@@ -11,5 +12,12 @@ namespace ufo
 		: m_exclusive(false), m_lastUpdate(SDL_GetTicks()), m_timeElapsed(0)
 	{
 		operator() (_x, _y, _w, _h);
+	}
+
+	void UIElement::create(UIElement* e)
+	{
+		e->m_parent = this;
+		m_elements.push_back(e);
+		m_ui->create(e);
 	}
 }

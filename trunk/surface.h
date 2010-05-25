@@ -17,6 +17,10 @@ namespace ufo
 		Rect& operator() (Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
 
 		bool contains(Sint16 _x, Sint16 _y);
+
+		void center(const Rect& r);
+		void centerHorizontal(const Rect& r);
+		void centerVertical(const Rect& r);
 	};
 
 	class Surface

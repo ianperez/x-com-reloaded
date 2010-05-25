@@ -26,12 +26,6 @@ namespace ufo
 		}
 	}
 
-	void UIDialog::center(Rect& r)
-	{
-		x = r.x + r.w / 2 - w / 2;
-		y = r.y + r.h / 2 - h / 2;
-	}
-
 	void UIDialog::draw(Surface& surface)
 	{
 		// draw window border

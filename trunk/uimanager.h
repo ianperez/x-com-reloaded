@@ -22,6 +22,8 @@ namespace ufo
 		void create(UIElement* e);
 		void destroy(UIElement* e);
 
+		void cleanup();
+
 		bool requestFocus(UIElement* e);
 		bool releaseFocus(UIElement* e);
 

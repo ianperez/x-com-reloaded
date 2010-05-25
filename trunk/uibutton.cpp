@@ -67,8 +67,8 @@ namespace ufo
 		return true;
 	}
 
-	UIPushButtonStandard::UIPushButtonStandard(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
-		: UIPushButton(_x, _y, _w, _h)
+	UIPushButtonStandard::UIPushButtonStandard(Font& font, string text, Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h)
+		: UIPushButton(_x, _y, _w, _h), m_font(font), m_text(text)
 	{
 	}
 
@@ -91,5 +91,13 @@ namespace ufo
 		r.w -= 2;
 		r.h -= 2;
 		surface.fillRect(&r, Palette::blockSize * 8 + 8);
+
+		if (m_pressed)
+			surface.invert(Palette::blockSize * 8 + 8, this);
+
+		// draw text in center of button
+		Rect textRect(0, 0, m_font.getTextWidth(m_text), m_font.getHeight());
+		textRect.center(*this);
+		m_font.print(surface, textRect.x, textRect.y, m_text, m_pressed);
 	}
 }

@@ -1,6 +1,7 @@
 #pragma once
 #include <map>
 #include "uielement.h"
+#include "font.h"
 
 namespace ufo
 {
@@ -48,9 +49,12 @@ namespace ufo
 
 	class UIPushButtonStandard : public UIPushButton
 	{
+		string m_text;
+		Font& m_font;
+
 	public:
 
-		UIPushButtonStandard(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		UIPushButtonStandard(Font& font, string text, Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
 
 		virtual void draw(Surface& surface);
 	};

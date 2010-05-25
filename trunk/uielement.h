@@ -47,10 +47,15 @@ namespace ufo
 		Uint16 getId() const { return m_id; }
 		void setId(Uint16 id) { m_id = id; }
 
+		void create(UIElement* e);
+
 	protected:
 
 		Uint16 m_id;
 		UIManager* m_ui;
+
+		vector<UIElement*> m_elements;
+		UIElement* m_parent;
 
 		Uint32 m_lastUpdate;
 		Uint32 m_timeElapsed;
