@@ -94,8 +94,9 @@ namespace ufo
 	{
 	public:
 
-		InterceptDialog(Surface& surface);
+		InterceptDialog();
 
+		void onCreate();
 		void onOpen();
 	};
 

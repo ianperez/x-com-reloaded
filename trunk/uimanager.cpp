@@ -30,7 +30,6 @@ namespace ufo
 		if (i != end())
 		{
 			e->onDestroy();
-			delete e;
 			m_toDestroy.push_back(e);
 		}
 	}
