@@ -103,6 +103,6 @@ namespace ufo
 	BigFont::BigFont()
 		: Font("geodata/biglets.dat", 16, 16)
 	{
-		m_spaceWidth = 6;
+		m_spaceWidth = 12;
 	}
 }
