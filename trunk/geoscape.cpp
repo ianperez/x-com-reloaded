@@ -117,9 +117,7 @@ namespace ufo
 
 	void InterceptDialog::onOpen()
 	{
-		InterceptDialogButton* button = new InterceptDialogButton(m_smfont, "Cancel", 0, y + h - 25, 288, 16);
-		create(button);
-		button->centerHorizontal(*this);
+		create(new InterceptDialogButton(m_smfont, "Cancel", 0, y + h - 25, 288, 16));
 	}
 
 	void InterceptDialog::draw(Surface& surface)
@@ -141,6 +139,11 @@ namespace ufo
 	InterceptDialogButton::InterceptDialogButton(Font& font, string text, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h)
 		: UIPushButtonStandard(font, text, _x, _y, _w, _h)
 	{
+	}
+
+	void InterceptDialogButton::onCreate()
+	{
+		centerHorizontal(*m_parent);
 	}
 
 	void InterceptDialogButton::onPress()

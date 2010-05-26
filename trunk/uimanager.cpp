@@ -2,12 +2,10 @@
 #include "util.h"
 #include <algorithm>
 
-using namespace std;
-
 namespace ufo
 {
-	UIManager::UIManager(Surface& s)
-		: m_focus(0), surface(s)
+	UIManager::UIManager(Surface& _surface, StringTable& _strings)
+		: m_focus(0), surface(_surface), text(_strings), strings(_strings)
 	{
 	}
 

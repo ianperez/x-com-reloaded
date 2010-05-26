@@ -11,7 +11,7 @@ namespace ufo
 	{
 	public:
 
-		UIPushButton(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		UIPushButton(Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
 		virtual void onPress() { };
 		virtual bool onMouseLeftClick(Sint16 x, Sint16 y);
@@ -26,7 +26,7 @@ namespace ufo
 	{
 	public:
 
-		UIToggleButton(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		UIToggleButton(Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
 		virtual bool onMouseLeftClick(Sint16 x, Sint16 y);
 		virtual bool onMouseLeftUnclick(Sint16 x, Sint16 y) { return true; }
@@ -36,7 +36,7 @@ namespace ufo
 	{
 	public:
 
-		UIRadioButton(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h, Uint16 groupId);
+		UIRadioButton(Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint16 groupId);
 
 		virtual bool onMouseLeftClick(Sint16 x, Sint16 y);
 		virtual bool onMouseLeftUnclick(Sint16 x, Sint16 y) { return true; }
@@ -54,7 +54,7 @@ namespace ufo
 
 	public:
 
-		UIPushButtonStandard(Font& font, string text, Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		UIPushButtonStandard(Font& font, string text, Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
 		virtual void draw(Surface& surface);
 	};

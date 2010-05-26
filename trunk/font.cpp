@@ -3,8 +3,6 @@
 #include "palette.h"
 #include <fstream>
 
-using namespace std;
-
 namespace ufo
 {
 	void Font::load(string filename)
@@ -21,7 +19,7 @@ namespace ufo
 	}
 
 	Font::Font(string filename, Uint16 width, Uint16 height)
-		: m_width(width), m_height(height), m_color(Palette::blockSize * 8 + 6), m_spaceWidth(width / 2)
+		: m_width(width), m_height(height), m_color(Palette::blockSize * 8 + 6), m_spaceWidth(width / 2), m_charSpacing(0)
 	{
 		load(filename);
 	}
@@ -52,7 +50,7 @@ namespace ufo
 					}
 				}
 
-				x += max;
+				x += max + m_charSpacing;
 			}
 			else
 				x += m_spaceWidth;
@@ -80,7 +78,7 @@ namespace ufo
 						max = k % m_width;
 				}
 
-				width += max;
+				width += max + m_charSpacing;
 			}
 			else
 				width += m_spaceWidth;
@@ -97,12 +95,45 @@ namespace ufo
 	SmallFont::SmallFont()
 		: Font("geodata/smallset.dat", 8, 9)
 	{
-		m_spaceWidth = 4;
+		m_spaceWidth = 5;
+		m_charSpacing = 0;
 	}
 
 	BigFont::BigFont()
 		: Font("geodata/biglets.dat", 16, 16)
 	{
 		m_spaceWidth = 10;
+		m_charSpacing = 1;
+	}
+
+	void TextRenderer::print(Surface& surface, Rect& r, Uint16 stringId, FontType type, Alignment align, bool invert)
+	{
+		Font* font = &m_smFont;
+		if (type == BigFont)
+			font = &m_bgFont;
+
+		surface.setClipRect(r);
+
+		Rect textRect(r.x, r.y, 0, 0);
+		for (size_t i = 0; i < m_strings[stringId].size(); ++i)
+		{
+			if (i > 0)
+				font = &m_smFont;
+
+			textRect.w = font->getTextWidth(m_strings[stringId][i]);
+			textRect.h = font->getHeight();
+
+			if (align == AlignCenter)
+				textRect.centerHorizontal(r);
+			else if (align == AlignRight)
+				textRect.x = r.x + r.w - textRect.w;
+
+			font->setColor(m_color);
+			font->print(surface, textRect.x, textRect.y, m_strings[stringId][i], invert);
+
+			textRect.y += textRect.h + m_lineSpacing;
+		}
+
+		surface.clearClipRect();
 	}
 }

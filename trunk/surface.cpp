@@ -2,8 +2,6 @@
 #include <sdl_gfxprimitives.h>
 #include <fstream>
 
-using namespace std;
-
 namespace ufo
 {
 	Rect::Rect(const SDL_Rect& r)
@@ -119,7 +117,7 @@ namespace ufo
 		// draw top line
 		r.x = dst->x;
 		r.y = dst->y;
-		r.w = dst->w;
+		r.w = dst->w - 1;
 		r.h = 1;
 		SDL_FillRect(m_surface, &r, colorTopLeft);
 
@@ -138,9 +136,9 @@ namespace ufo
 
 		// draw right line
 		r.x = dst->x + dst->w - 1;
-		r.y = dst->y + 1;
+		r.y = dst->y;
 		r.w = 1;
-		r.h = dst->h - 2;
+		r.h = dst->h - 1;
 		SDL_FillRect(m_surface, &r, colorBottomRight);
 	}
 
