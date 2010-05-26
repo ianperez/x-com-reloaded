@@ -1,5 +1,5 @@
 #include "game.h"
-#include "geoscape.h"
+#include "dialog.main.h"
 #include "uimanager.h"
 #include <sdl_rotozoom.h>
 #include <boost/shared_ptr.hpp>
@@ -18,7 +18,7 @@ namespace ufo
 		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_SWSURFACE | SDL_HWPALETTE));
 
 		UIManager ui(screen);
-		ui.create(new GeoScape());
+		ui.create(new MainMenuDialog());
 
 		while (1)
 		{

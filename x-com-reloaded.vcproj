@@ -235,6 +235,14 @@
 			Name="Engine"
 			>
 			<File
+				RelativePath=".\dialog.main.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\dialog.main.h"
+				>
+			</File>
+			<File
 				RelativePath=".\game.cpp"
 				>
 			</File>
