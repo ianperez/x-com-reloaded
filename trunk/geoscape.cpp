@@ -444,12 +444,12 @@ namespace ufo
 
 	void GeoScape::rotateHorizontal(Sint16 delta)
 	{
-		m_rotz += delta;
+		m_rotz = (m_rotz + delta) % 2880;
 	}
 
 	void GeoScape::rotateVertical(Sint16 delta)
 	{
-		m_rotx += delta;
+		m_rotx = (m_rotx + delta) % 2880;
 	}
 
 	void GeoScape::zoom(Sint8 delta)
