@@ -101,7 +101,7 @@ namespace ufo
 	}
 
 	InterceptDialog::InterceptDialog()
-		: UIDialog(0, 0, 320, 140, Palette::blockSize * 15, UIDialog::Horizontal)
+		: UIDialog(0, 0, 320, 140, Palette::blockSize * 8 + 6, UIDialog::Horizontal)
 	{
 	}
 
@@ -110,14 +110,14 @@ namespace ufo
 		center(Rect(0, 0, m_ui->surface.w, m_ui->surface.h));
 		m_bg.loadSCR("geograph/back12.scr");
 
-		Palette p("geodata/backpals.dat", 4, 16);
+		Palette p("geodata/backpals.dat", 0, 16);
 		p.apply(m_bg);
 		p.apply(m_ui->surface);
 	}
 
 	void InterceptDialog::onOpen()
 	{
-		InterceptDialogButton* button = new InterceptDialogButton(m_smfont, "Cancel", 0, y + h - 30, 288, 16);
+		InterceptDialogButton* button = new InterceptDialogButton(m_smfont, "Cancel", 0, y + h - 25, 288, 16);
 		create(button);
 		button->centerHorizontal(*this);
 	}

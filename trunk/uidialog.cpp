@@ -48,22 +48,28 @@ namespace ufo
 		{
 			Uint16 delta = round<Uint16>(m_timeElapsed / m_speed);
 
-			// adjust delta if needed
-			if ((m_type == Horizontal || m_type == Both) && w + (delta * 2) > m_openWidth)
-				delta = (m_openWidth - w) / 2;
-			if ((m_type == Vertical || m_type == Both) && (h + delta * 2) > m_openHeight)
-				delta = (m_openHeight - h) / 2;
-
 			// update element size for animated opening
 			if ((m_type == Horizontal || m_type == Both) && w < m_openWidth)
 			{
 				x -= delta;
 				w += delta * 2;
+
+				if (w > m_openWidth)
+				{
+					x += (w - m_openWidth) / 2;
+					w -= w - m_openWidth;
+				}
 			}
 			if ((m_type == Vertical || m_type == Both) && h < m_openHeight)
 			{
 				y -= delta;
 				h += delta * 2;
+
+				if (h > m_openWidth)
+				{
+					y += (h - m_openHeight) / 2;
+					h -= h - m_openHeight;
+				}
 			}
 
 			if (!m_open && w == m_openWidth && h == m_openHeight)
