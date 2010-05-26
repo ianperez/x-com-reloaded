@@ -27,7 +27,18 @@ namespace ufo
 	{
 	}
 
-	void MainMenuDialog::draw()
+	void MainMenuDialog::draw(Surface& surface)
 	{
+		UIDialog::draw(surface);
+
+		if (m_open)
+		{
+			string text("UFO");
+			Rect r(0, y + 30, m_bgFont.getTextWidth(text), m_bgFont.getHeight());
+			r.centerHorizontal(*this);
+
+			m_bgFont.setColor(Palette::blockSize * 5 + 10);
+			m_bgFont.print(surface, r.x, r.y, "UFO");
+		}
 	}
 }

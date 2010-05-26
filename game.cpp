@@ -1,5 +1,6 @@
 #include "game.h"
 #include "dialog.main.h"
+#include "geoscape.h"
 #include "uimanager.h"
 #include <sdl_rotozoom.h>
 #include <boost/shared_ptr.hpp>
@@ -15,10 +16,10 @@ namespace ufo
 
 		SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
 
-		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_SWSURFACE | SDL_HWPALETTE));
+		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_HWSURFACE | SDL_HWPALETTE));
 
 		UIManager ui(screen);
-		ui.create(new MainMenuDialog());
+		ui.create(new GeoScape());
 
 		while (1)
 		{
