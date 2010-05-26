@@ -82,6 +82,7 @@ namespace ufo
 
 		bool onMouseLeftUnclick(Sint16 x, Sint16 y);
 		bool onMouseMove(Sint16 x, Sint16 y);
+		bool onBlur();
 		void draw(Surface& surface);
 
 		// Map Control button Id's

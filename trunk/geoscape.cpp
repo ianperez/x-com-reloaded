@@ -60,7 +60,18 @@ namespace ufo
 	{
 		m_mouse.x = x;
 		m_mouse.y = y;
-		return true;
+		if (!m_pressed && m_continuous && (SDL_GetMouseState(0, 0) & SDL_BUTTON(1)))
+		{
+			m_ui->requestFocus(this);
+			m_pressed = true;
+		}
+		return false;
+	}
+
+	bool GeoScapeGlobeControl::onBlur()
+	{
+		m_pressed = false;
+		return false;
 	}
 
 	void GeoScapeGlobeControl::draw(Surface& surface)
@@ -121,6 +132,8 @@ namespace ufo
 
 			Rect r(0, y + 16, m_bgfont.getTextWidth(text), m_bgfont.getHeight());
 			r.centerHorizontal(*this);
+
+			m_bgfont.setColor(Palette::blockSize * 15);
 			m_bgfont.print(surface, r.x, r.y, text);
 		}
 	}
@@ -250,7 +263,7 @@ namespace ufo
 		surface.setClipRect(Rect(0, 0, w, h));
 
 		// draw ocean
-		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius - 1, GetColor(0, 0, 255));
+		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius - 1, m_palette.getRGBA(Palette::blockSize * 12));
 
 		vector<Sint16> vx(4), vy(4);
 		for (size_t i = 0; i < m_polygons.size(); ++i)
