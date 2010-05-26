@@ -53,23 +53,23 @@ namespace ufo
 			{
 				x -= delta;
 				w += delta * 2;
-
-				if (w > m_openWidth)
-				{
-					x += (w - m_openWidth) / 2;
-					w -= w - m_openWidth;
-				}
 			}
 			if ((m_type == Vertical || m_type == Both) && h < m_openHeight)
 			{
 				y -= delta;
 				h += delta * 2;
+			}
 
-				if (h > m_openWidth)
-				{
-					y += (h - m_openHeight) / 2;
-					h -= h - m_openHeight;
-				}
+			// adjust if we went past the open size
+			if (w > m_openWidth)
+			{
+				x += (w - m_openWidth) / 2;
+				w = m_openWidth;
+			}
+			if (h > m_openHeight)
+			{
+				y += (h - m_openHeight) / 2;
+				h = m_openHeight;
 			}
 
 			if (!m_open && w == m_openWidth && h == m_openHeight)

@@ -12,11 +12,11 @@ namespace ufo
 
 		Rect() { }
 		Rect(const SDL_Rect& r);
-		Rect(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		Rect(Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
-		Rect& operator() (Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		Rect& operator() (Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
-		bool contains(Sint16 _x, Sint16 _y);
+		bool contains(Sint16 x, Sint16 y);
 
 		void center(const Rect& r);
 		void centerHorizontal(const Rect& r);

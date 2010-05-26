@@ -2,8 +2,6 @@
 #include <cstdarg>
 #include <sstream>
 
-using namespace std;
-
 namespace ufo
 {
 	double toRad(double x)

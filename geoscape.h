@@ -52,7 +52,7 @@ namespace ufo
 
 	public:
 
-		GeoScapeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id);
+		GeoScapeButton(GeoScape& gs, Sint16 x, Sint16 y, Uint16 id);
 
 		void onPress();
 		void draw(Surface& surface);
@@ -76,7 +76,7 @@ namespace ufo
 
 	public:
 
-		GeoScapeGlobeControl(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h, Uint16 id, bool continuous = true);
+		GeoScapeGlobeControl(GeoScape& gs, Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint16 id, bool continuous = true);
 
 		void onPress();
 
@@ -102,7 +102,7 @@ namespace ufo
 
 	public:
 
-		GeoScapeTimeButton(GeoScape& gs, Sint16 _x, Sint16 _y, Uint16 id);
+		GeoScapeTimeButton(GeoScape& gs, Sint16 x, Sint16 y, Uint16 id);
 
 		void onPress();
 		void draw(Surface& surface);
@@ -137,8 +137,9 @@ namespace ufo
 	{
 	public:
 
-		InterceptDialogButton(Font& font, string text, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h);
+		InterceptDialogButton(Font& font, string text, Sint16 x, Sint16 y, Sint16 w, Sint16 h);
 
+		void onCreate();
 		void onPress();
 	};
 

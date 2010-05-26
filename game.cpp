@@ -18,8 +18,10 @@ namespace ufo
 
 		Surface screen(SDL_SetVideoMode(320, 200, 8, SDL_HWSURFACE | SDL_HWPALETTE));
 
-		UIManager ui(screen);
-		ui.create(new GeoScape());
+		StringTable strings;
+
+		UIManager ui(screen, strings);
+		ui.create(new LanguageDialog());
 
 		while (1)
 		{

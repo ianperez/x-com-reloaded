@@ -2,8 +2,6 @@
 #include "util.h"
 #include <fstream>
 
-using namespace std;
-
 namespace ufo
 {
 	void Palette::load(string filename, Uint8 index, Uint16 paletteSize)

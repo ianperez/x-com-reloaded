@@ -40,7 +40,7 @@ namespace ufo
 		friend class UIManager;
 
 		UIElement();
-		UIElement(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h);
+		UIElement(Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
 		virtual void draw(Surface& surface) { }
 

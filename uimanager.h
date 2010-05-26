@@ -1,5 +1,6 @@
 #pragma once
 #include "uielement.h"
+#include "font.h"
 #include <list>
 
 namespace ufo
@@ -16,7 +17,7 @@ namespace ufo
 
 	public:
 
-		UIManager(Surface& s);
+		UIManager(Surface& surface, StringTable& strings);
 		~UIManager();
 
 		void create(UIElement* e);
@@ -31,5 +32,7 @@ namespace ufo
 		void draw();
 
 		Surface& surface;
+		StringTable& strings;
+		TextRenderer text;
 	};
 }
