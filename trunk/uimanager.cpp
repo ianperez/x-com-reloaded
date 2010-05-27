@@ -17,7 +17,25 @@ namespace ufo
 
 	void UIManager::create(UIElement* e)
 	{
-		push_front(e);
+		if (e->m_alwaysOnTop)
+			push_front(e);
+		else
+		{
+			bool inserted = false;
+			for (list<UIElement*>::iterator i = begin(); i != end(); ++i)
+			{
+				if (!(*i)->m_alwaysOnTop)
+				{
+					insert(i, e);
+					inserted = true;
+					break;
+				}
+			}
+
+			if (!inserted)
+				insert(end(), e);
+		}
+
 		e->m_ui = this;
 		e->onCreate();
 	}

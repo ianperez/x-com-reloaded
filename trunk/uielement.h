@@ -61,5 +61,6 @@ namespace ufo
 		Uint32 m_timeElapsed;
 
 		bool m_exclusive;
+		bool m_alwaysOnTop;
 	};
 }

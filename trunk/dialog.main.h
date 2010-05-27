@@ -6,8 +6,6 @@ namespace ufo
 {
 	class LanguageDialog : public UIDialog
 	{
-		SmallFont m_smFont;
-
 	public:
 
 		LanguageDialog();
@@ -18,9 +16,6 @@ namespace ufo
 
 	class MainMenuDialog : public UIDialog
 	{
-		BigFont m_bgFont;
-		SmallFont m_smFont;
-
 	public:
 
 		MainMenuDialog();
@@ -33,8 +28,6 @@ namespace ufo
 
 	class DifficultyDialog : public UIDialog
 	{
-		SmallFont m_smFont;
-
 	public:
 
 		DifficultyDialog();

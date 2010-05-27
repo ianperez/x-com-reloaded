@@ -10,6 +10,8 @@ namespace ufo
 	{
 	public:
 
+		StringTable();
+
 		enum Language
 		{
 			English,

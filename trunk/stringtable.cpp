@@ -3,8 +3,17 @@
 
 namespace ufo
 {
+	StringTable::StringTable()
+	{
+		push_back(vector<string>(1, "ENGLISH"));
+		push_back(vector<string>(1, "DEUTSCHE"));
+		push_back(vector<string>(1, "FRANCAIS"));
+	}
+
 	void StringTable::load(string filename)
 	{
+		clear();
+
 		ifstream infile(filename.c_str());
 		if (!infile)
 			throw runtime_error("error opening " + filename);

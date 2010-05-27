@@ -207,6 +207,14 @@
 			Name="Graphics"
 			>
 			<File
+				RelativePath=".\cursor.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\cursor.h"
+				>
+			</File>
+			<File
 				RelativePath=".\font.cpp"
 				>
 			</File>
