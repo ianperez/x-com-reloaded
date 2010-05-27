@@ -1,11 +1,7 @@
 #include "game.h"
 #include "dialog.main.h"
-#include "geoscape.h"
 #include "uimanager.h"
 #include <sdl_rotozoom.h>
-#include <boost/shared_ptr.hpp>
-
-using namespace boost;
 
 namespace ufo
 {

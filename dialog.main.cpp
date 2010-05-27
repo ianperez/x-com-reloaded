@@ -91,7 +91,7 @@ namespace ufo
 			if (m_id == New)
 			{
 				m_ui->destroy(m_parent);
-				m_ui->create(new GeoScape());
+				m_ui->create(new DifficultyDialog());
 			}
 			else if (m_id == Quit)
 			{
@@ -139,6 +139,74 @@ namespace ufo
 			Rect r(x, y + 25, w, h);
 			m_ui->text.setColor(Palette::blockSize * 8 + 11);
 			m_ui->text.print(surface, r, 779, TextRenderer::BigFont, TextRenderer::AlignCenter);
+		}
+	}
+
+	class DifficultyButton : public UIPushButtonStandard
+	{
+	public:
+
+		DifficultyButton(Font& font, string text, Sint16 y, Uint16 id)
+			: UIPushButtonStandard(font, text, 0, y, 160, 18) { m_id = id; }
+
+		void onCreate()
+		{
+			centerHorizontal(*m_parent);
+		}
+
+		enum
+		{
+			Beginner,
+			Experienced,
+			Veteran,
+			Genius,
+			Superhuman
+		};
+
+		void onPress()
+		{
+			m_ui->destroy(m_parent);
+			m_ui->create(new GeoScape());
+		}
+	};
+
+	DifficultyDialog::DifficultyDialog()
+		: UIDialog(0, 0, 192, 180, Palette::blockSize * 8 + 6, UIDialog::Vertical)
+	{
+	}
+
+	void DifficultyDialog::onCreate()
+	{
+		center(Rect(0, 0, m_ui->surface.w, m_ui->surface.h));
+
+		m_bg.loadSCR("geograph/back01.scr");
+
+		Palette mainPalette("geodata/palettes.dat");
+		mainPalette.apply(m_ui->surface);
+
+		Palette backPalette("geodata/backpals.dat", 0, 16);
+		backPalette.apply(m_bg);
+		backPalette.apply(m_ui->surface);
+	}
+
+	void DifficultyDialog::onOpen()
+	{
+		create(new DifficultyButton(m_smFont, m_ui->strings(783), y + 45, DifficultyButton::Beginner));
+		create(new DifficultyButton(m_smFont, m_ui->strings(784), y + 70, DifficultyButton::Experienced));
+		create(new DifficultyButton(m_smFont, m_ui->strings(785), y + 95, DifficultyButton::Veteran));
+		create(new DifficultyButton(m_smFont, m_ui->strings(786), y + 120, DifficultyButton::Genius));
+		create(new DifficultyButton(m_smFont, m_ui->strings(787), y + 145, DifficultyButton::Superhuman));
+	}
+
+	void DifficultyDialog::draw(Surface& surface)
+	{
+		UIDialog::draw(surface);
+
+		if (m_open)
+		{
+			Rect r(x, y + 20, w, h);
+			m_ui->text.setColor(Palette::blockSize * 8 + 11);
+			m_ui->text.print(surface, r, 782, TextRenderer::SmallFont, TextRenderer::AlignCenter);
 		}
 	}
 }

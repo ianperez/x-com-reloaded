@@ -33,5 +33,15 @@ namespace ufo
 
 	class DifficultyDialog : public UIDialog
 	{
+		SmallFont m_smFont;
+
+	public:
+
+		DifficultyDialog();
+
+		void onCreate();
+		void onOpen();
+
+		void draw(Surface& surface);
 	};
 }
