@@ -10,8 +10,8 @@ namespace ufo
 	{
 	public:
 
-		LanguageButton(Font& font, string text, Sint16 y, Uint16 id)
-			: UIPushButtonStandard(font, text, 0, y, 192, 20) { m_id = id; }
+		LanguageButton(Uint16 stringId, Sint16 y, Uint16 id)
+			: UIPushButtonStandard(stringId, 0, y, 192, 20) { m_id = id; }
 
 		void onCreate()
 		{
@@ -62,17 +62,17 @@ namespace ufo
 
 	void LanguageDialog::onOpen()
 	{
-		create(new LanguageButton(m_smFont, "ENGLISH", y + 70, StringTable::English));
-		create(new LanguageButton(m_smFont, "DEUTSCHE", y + 98, StringTable::German));
-		create(new LanguageButton(m_smFont, "FRANCAIS", y + 126, StringTable::French));
+		create(new LanguageButton(0, y + 70, StringTable::English));
+		create(new LanguageButton(1, y + 98, StringTable::German));
+		create(new LanguageButton(2, y + 126, StringTable::French));
 	}
 
 	class MainMenuButton : public UIPushButtonStandard
 	{
 	public:
 
-		MainMenuButton(Font& font, string text, Sint16 y, Uint16 id)
-			: UIPushButtonStandard(font, text, 0, y, 192, 20) { m_id = id; }
+		MainMenuButton(Uint16 stringId, Sint16 y, Uint16 id)
+			: UIPushButtonStandard(stringId, 0, y, 192, 20) { m_id = id; }
 
 		enum
 		{
@@ -125,9 +125,9 @@ namespace ufo
 
 	void MainMenuDialog::onOpen()
 	{
-		create(new MainMenuButton(m_smFont, m_ui->strings(780), y + 70, MainMenuButton::New));
-		create(new MainMenuButton(m_smFont, m_ui->strings(781), y + 98, MainMenuButton::Load));
-		create(new MainMenuButton(m_smFont, m_ui->strings(801), y + 126, MainMenuButton::Quit));
+		create(new MainMenuButton(780, y + 70, MainMenuButton::New));
+		create(new MainMenuButton(781, y + 98, MainMenuButton::Load));
+		create(new MainMenuButton(801, y + 126, MainMenuButton::Quit));
 	}
 
 	void MainMenuDialog::draw(Surface& surface)
@@ -146,8 +146,8 @@ namespace ufo
 	{
 	public:
 
-		DifficultyButton(Font& font, string text, Sint16 y, Uint16 id)
-			: UIPushButtonStandard(font, text, 0, y, 160, 18) { m_id = id; }
+		DifficultyButton(Uint16 stringId, Sint16 y, Uint16 id)
+			: UIPushButtonStandard(stringId, 0, y, 160, 18) { m_id = id; }
 
 		void onCreate()
 		{
@@ -191,11 +191,11 @@ namespace ufo
 
 	void DifficultyDialog::onOpen()
 	{
-		create(new DifficultyButton(m_smFont, m_ui->strings(783), y + 45, DifficultyButton::Beginner));
-		create(new DifficultyButton(m_smFont, m_ui->strings(784), y + 70, DifficultyButton::Experienced));
-		create(new DifficultyButton(m_smFont, m_ui->strings(785), y + 95, DifficultyButton::Veteran));
-		create(new DifficultyButton(m_smFont, m_ui->strings(786), y + 120, DifficultyButton::Genius));
-		create(new DifficultyButton(m_smFont, m_ui->strings(787), y + 145, DifficultyButton::Superhuman));
+		create(new DifficultyButton(783, y + 45, DifficultyButton::Beginner));
+		create(new DifficultyButton(784, y + 70, DifficultyButton::Experienced));
+		create(new DifficultyButton(785, y + 95, DifficultyButton::Veteran));
+		create(new DifficultyButton(786, y + 120, DifficultyButton::Genius));
+		create(new DifficultyButton(787, y + 145, DifficultyButton::Superhuman));
 	}
 
 	void DifficultyDialog::draw(Surface& surface)

@@ -60,11 +60,18 @@ namespace ufo
 
 		TextRenderer(StringTable& strings) : m_lineSpacing(0), m_strings(strings), m_color(Palette::blockSize * 8 + 6) { }
 
-		enum Alignment
+		enum HorizontalAlignment
 		{
 			AlignLeft,
 			AlignCenter,
 			AlignRight
+		};
+
+		enum VerticalAlignment
+		{
+			AlignTop,
+			AlignMiddle,
+			AlignBottom
 		};
 
 		enum FontType
@@ -75,6 +82,6 @@ namespace ufo
 
 		void setColor(Uint8 color) { m_color = color; }
 
-		void print(Surface& surface, Rect& r, Uint16 stringId, FontType type = SmallFont, Alignment align = AlignLeft, bool invert = false);
+		void print(Surface& surface, Rect& r, Uint16 stringId, FontType type = SmallFont, HorizontalAlignment halign = AlignLeft, VerticalAlignment valign = AlignTop, bool invert = false);
 	};
 }

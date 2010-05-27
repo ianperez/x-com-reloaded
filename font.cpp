@@ -106,7 +106,7 @@ namespace ufo
 		m_charSpacing = 1;
 	}
 
-	void TextRenderer::print(Surface& surface, Rect& r, Uint16 stringId, FontType type, Alignment align, bool invert)
+	void TextRenderer::print(Surface& surface, Rect& r, Uint16 stringId, FontType type, HorizontalAlignment halign, VerticalAlignment valign, bool invert)
 	{
 		Font* font = &m_smFont;
 		if (type == BigFont)
@@ -123,10 +123,15 @@ namespace ufo
 			textRect.w = font->getTextWidth(m_strings[stringId][i]);
 			textRect.h = font->getHeight();
 
-			if (align == AlignCenter)
+			if (halign == AlignCenter)
 				textRect.centerHorizontal(r);
-			else if (align == AlignRight)
+			else if (halign == AlignRight)
 				textRect.x = r.x + r.w - textRect.w;
+
+			if (valign == AlignMiddle)
+				textRect.centerVertical(r);
+			else if (valign == AlignBottom)
+				textRect.y = r.y + r.h - textRect.h;
 
 			font->setColor(m_color);
 			font->print(surface, textRect.x, textRect.y, m_strings[stringId][i], invert);

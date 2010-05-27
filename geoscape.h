@@ -19,12 +19,21 @@ namespace ufo
 
 	class InterceptDialog : public UIDialog
 	{
-		SmallFont m_smfont;
-		BigFont m_bgfont;
-
 	public:
 
 		InterceptDialog();
+
+		void onCreate();
+		void onOpen();
+
+		void draw(Surface& surface);
+	};
+
+	class OptionsDialog : public UIDialog
+	{
+	public:
+
+		OptionsDialog();
 
 		void onCreate();
 		void onOpen();

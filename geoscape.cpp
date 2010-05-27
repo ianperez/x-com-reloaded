@@ -7,8 +7,8 @@ namespace ufo
 	{
 	public:
 
-		InterceptDialogButton(Font& font, string text, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h)
-			: UIPushButtonStandard(font, text, _x, _y, _w, _h) { }
+		InterceptDialogButton(Uint16 stringId, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h)
+			: UIPushButtonStandard(stringId, _x, _y, _w, _h) { }
 
 		void onCreate()
 		{
@@ -38,7 +38,7 @@ namespace ufo
 
 	void InterceptDialog::onOpen()
 	{
-		create(new InterceptDialogButton(m_smfont, m_ui->strings(71), 0, y + h - 25, 288, 16));
+		create(new InterceptDialogButton(71, 0, y + h - 25, 288, 16));
 	}
 
 	void InterceptDialog::draw(Surface& surface)
@@ -51,6 +51,29 @@ namespace ufo
 			m_ui->text.setColor(Palette::blockSize * 15);
 			m_ui->text.print(surface, r, 264, TextRenderer::BigFont, TextRenderer::AlignCenter);
 		}
+	}
+
+	OptionsDialog::OptionsDialog()
+		: UIDialog(0, 20, 216, 160, Palette::blockSize * 8 + 6, UIDialog::Both)
+	{
+	}
+
+	void OptionsDialog::onCreate()
+	{
+		centerHorizontal(Rect(0, 0, m_ui->surface.w, m_ui->surface.h));
+		m_bg.loadSCR("geograph/back01.scr");
+
+		Palette p("geodata/backpals.dat", 0, 16);
+		p.apply(m_bg);
+		p.apply(m_ui->surface);
+	}
+
+	void OptionsDialog::onOpen()
+	{
+	}
+
+	void OptionsDialog::draw(Surface& surface)
+	{
 	}
 
 	class GeoScapeButton : public UIPushButton
