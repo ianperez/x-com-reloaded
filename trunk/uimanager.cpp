@@ -77,48 +77,48 @@ namespace ufo
 		return false;
 	}
 
-	bool UIManager::processEvent(SDL_Event& e, UIElement* i)
+	bool UIManager::processEvent(SDL_Event& evt, UIElement* e)
 	{
-		if (!i)
+		if (!e)
 			return false;
 
-		if (e.type == SDL_MOUSEMOTION)
+		if (evt.type == SDL_MOUSEMOTION)
 		{
-			if ((i == m_focus || i->contains(e.motion.x, e.motion.y)) && i->onMouseMove(e.motion.x, e.motion.y))
+			if ((e == m_focus || e->contains(evt.motion.x, evt.motion.y)) && e->onMouseMove(evt.motion.x, evt.motion.y))
 				return true;
 		}
-		else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_LEFT)
+		else if (evt.type == SDL_MOUSEBUTTONDOWN && evt.button.button == SDL_BUTTON_LEFT)
 		{
-			if ((i == m_focus || i->contains(e.button.x, e.button.y)) && i->onMouseLeftClick(e.button.x, e.button.y))
+			if ((e == m_focus || e->contains(evt.button.x, evt.button.y)) && e->onMouseLeftClick(evt.button.x, evt.button.y))
 				return true;
 		}
-		else if (e.type == SDL_MOUSEBUTTONDOWN && e.button.button == SDL_BUTTON_RIGHT)
+		else if (evt.type == SDL_MOUSEBUTTONDOWN && evt.button.button == SDL_BUTTON_RIGHT)
 		{
-			if ((i == m_focus || i->contains(e.button.x, e.button.y)) && i->onMouseRightClick(e.button.x, e.button.y))
+			if ((e == m_focus || e->contains(evt.button.x, evt.button.y)) && e->onMouseRightClick(evt.button.x, evt.button.y))
 				return true;
 		}
-		else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_LEFT)
+		else if (evt.type == SDL_MOUSEBUTTONUP && evt.button.button == SDL_BUTTON_LEFT)
 		{
-			if ((i == m_focus || i->contains(e.button.x, e.button.y)) && i->onMouseLeftUnclick(e.button.x, e.button.y))
+			if ((e == m_focus || e->contains(evt.button.x, evt.button.y)) && e->onMouseLeftUnclick(evt.button.x, evt.button.y))
 				return true;
 		}
-		else if (e.type == SDL_MOUSEBUTTONUP && e.button.button == SDL_BUTTON_RIGHT)
+		else if (evt.type == SDL_MOUSEBUTTONUP && evt.button.button == SDL_BUTTON_RIGHT)
 		{
-			if ((i == m_focus || i->contains(e.button.x, e.button.y)) && i->onMouseRightUnclick(e.button.x, e.button.y))
+			if ((e == m_focus || e->contains(evt.button.x, evt.button.y)) && e->onMouseRightUnclick(evt.button.x, evt.button.y))
 				return true;
 		}
-		else if (e.type == SDL_KEYDOWN)
+		else if (evt.type == SDL_KEYDOWN)
 		{
-			if (i->onKeyDown(e.key.keysym))
+			if (e->onKeyDown(evt.key.keysym))
 				return true;
 		}
-		else if (e.type == SDL_KEYUP)
+		else if (evt.type == SDL_KEYUP)
 		{
-			if (i->onKeyUp(e.key.keysym))
+			if (e->onKeyUp(evt.key.keysym))
 				return true;
 		}
 
-		return i->m_exclusive;
+		return e->m_exclusive;
 	}
 
 	bool UIManager::processEvent(SDL_Event& e)

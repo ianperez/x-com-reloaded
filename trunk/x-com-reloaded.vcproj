@@ -259,6 +259,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\globe.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\globe.h"
+				>
+			</File>
+			<File
 				RelativePath=".\stringtable.cpp"
 				>
 			</File>
