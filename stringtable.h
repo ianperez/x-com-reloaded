@@ -18,6 +18,7 @@ namespace ufo
 		};
 
 		Language getLanguage() const { return m_language; }
+		void setLanguage(Language language) { m_language = language; }
 
 		void load(string filename);
 

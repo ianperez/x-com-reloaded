@@ -21,11 +21,20 @@ namespace ufo
 		void onPress()
 		{
 			if (m_id == StringTable::English)
+			{
 				m_ui->strings.load("geodata/english.dat");
+				m_ui->strings.setLanguage(StringTable::English);
+			}
 			else if (m_id == StringTable::German)
+			{
 				m_ui->strings.load("geodata/german.dat");
+				m_ui->strings.setLanguage(StringTable::German);
+			}
 			else if (m_id == StringTable::French)
+			{
 				m_ui->strings.load("geodata/french.dat");
+				m_ui->strings.setLanguage(StringTable::French);
+			}
 
 			m_ui->destroy(m_parent);
 			m_ui->create(new MainMenuDialog());
