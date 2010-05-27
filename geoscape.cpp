@@ -117,7 +117,7 @@ namespace ufo
 
 	void InterceptDialog::onOpen()
 	{
-		create(new InterceptDialogButton(m_smfont, "Cancel", 0, y + h - 25, 288, 16));
+		create(new InterceptDialogButton(m_smfont, m_ui->strings(71), 0, y + h - 25, 288, 16));
 	}
 
 	void InterceptDialog::draw(Surface& surface)
@@ -126,13 +126,9 @@ namespace ufo
 
 		if (m_open)
 		{
-			string text("LAUNCH INTERCEPTION");
-
-			Rect r(0, y + 16, m_bgfont.getTextWidth(text), m_bgfont.getHeight());
-			r.centerHorizontal(*this);
-
-			m_bgfont.setColor(Palette::blockSize * 15);
-			m_bgfont.print(surface, r.x, r.y, text);
+			Rect r(0, y + 16, w, h);
+			m_ui->text.setColor(Palette::blockSize * 15);
+			m_ui->text.print(surface, r, 264, TextRenderer::BigFont, TextRenderer::AlignCenter);
 		}
 	}
 
@@ -174,6 +170,17 @@ namespace ufo
 		// load geoscape background image
 		m_bg.loadSCR("geograph/geobord.scr");
 		m_palette.apply(m_bg);
+
+		// load geoscape panel overlay if not english
+		if (m_ui->strings.getLanguage() != StringTable::English)
+		{
+			Surface overlay;
+			overlay.loadSCR(m_ui->strings.getLanguage() == StringTable::German ? "geodata/lang2.dat" : "geodata/lang1.dat", 64);
+			m_palette.apply(overlay);
+
+			Rect overlayRect(m_bg.w - 64, 0, 0, 0);
+			overlay.blit(m_bg, &overlayRect);
+		}
 
 		// load globe textures
 		Surface texture;

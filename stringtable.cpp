@@ -30,4 +30,9 @@ namespace ufo
 				buffer += c;
 		}
 	}
+
+	string& StringTable::operator() (size_t index)
+	{
+		return at(index).at(0);
+	}
 }
