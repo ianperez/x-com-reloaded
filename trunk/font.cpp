@@ -29,9 +29,9 @@ namespace ufo
 		surface.lock();
 		for (size_t i = 0; i < buffer.size(); ++i)
 		{
-			if (buffer[i] >= 33)
+			if (Uint8(buffer[i]) >= 33)
 			{
-				size_t j = m_width * m_height * (buffer[i] - 33);
+				size_t j = m_width * m_height * (Uint8(buffer[i]) - 33);
 				Uint16 max = 0;
 				for (Uint16 k = 0; k < m_width * m_height; ++k)
 				{

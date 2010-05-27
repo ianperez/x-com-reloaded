@@ -13,13 +13,6 @@ namespace ufo
 		LanguageButton(Font& font, string text, Sint16 y, Uint16 id)
 			: UIPushButtonStandard(font, text, 0, y, 192, 20) { m_id = id; }
 
-		enum
-		{
-			English,
-			Deutsche,
-			Francais
-		};
-
 		void onCreate()
 		{
 			centerHorizontal(*m_parent);
@@ -27,11 +20,11 @@ namespace ufo
 
 		void onPress()
 		{
-			if (m_id == English)
+			if (m_id == StringTable::English)
 				m_ui->strings.load("geodata/english.dat");
-			else if (m_id == Deutsche)
+			else if (m_id == StringTable::German)
 				m_ui->strings.load("geodata/german.dat");
-			else if (m_id == Francais)
+			else if (m_id == StringTable::French)
 				m_ui->strings.load("geodata/french.dat");
 
 			m_ui->destroy(m_parent);
@@ -60,9 +53,9 @@ namespace ufo
 
 	void LanguageDialog::onOpen()
 	{
-		create(new LanguageButton(m_smFont, "ENGLISH", y + 70, LanguageButton::English));
-		create(new LanguageButton(m_smFont, "DEUTSCHE", y + 98, LanguageButton::Deutsche));
-		create(new LanguageButton(m_smFont, "FRANCAIS", y + 126, LanguageButton::Francais));
+		create(new LanguageButton(m_smFont, "ENGLISH", y + 70, StringTable::English));
+		create(new LanguageButton(m_smFont, "DEUTSCHE", y + 98, StringTable::German));
+		create(new LanguageButton(m_smFont, "FRANCAIS", y + 126, StringTable::French));
 	}
 
 	class MainMenuButton : public UIPushButtonStandard
@@ -123,9 +116,9 @@ namespace ufo
 
 	void MainMenuDialog::onOpen()
 	{
-		create(new MainMenuButton(m_smFont, m_ui->strings[780][0], y + 70, MainMenuButton::New));
-		create(new MainMenuButton(m_smFont, m_ui->strings[781][0], y + 98, MainMenuButton::Load));
-		create(new MainMenuButton(m_smFont, m_ui->strings[801][0], y + 126, MainMenuButton::Quit));
+		create(new MainMenuButton(m_smFont, m_ui->strings(780), y + 70, MainMenuButton::New));
+		create(new MainMenuButton(m_smFont, m_ui->strings(781), y + 98, MainMenuButton::Load));
+		create(new MainMenuButton(m_smFont, m_ui->strings(801), y + 126, MainMenuButton::Quit));
 	}
 
 	void MainMenuDialog::draw(Surface& surface)
