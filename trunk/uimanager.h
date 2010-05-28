@@ -29,6 +29,8 @@ namespace ufo
 		bool releaseFocus(UIElement* e);
 
 		bool processEvent(SDL_Event& e);
+
+		void logic();
 		void draw();
 
 		Surface& surface;

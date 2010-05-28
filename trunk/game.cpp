@@ -59,6 +59,7 @@ namespace ufo
 				ui.processEvent(e);
 			}
 
+			ui.logic();
 			ui.draw();
 
 			Surface temp(zoomSurface(main.get(), scale, scale, 0));

@@ -22,7 +22,7 @@ namespace ufo
 	};
 
 	InterceptDialog::InterceptDialog()
-		: UIDialog(0, 0, 320, 140, Palette::blockSize * 8 + 6, UIDialog::Horizontal)
+		: UIDialog(0, 0, 320, 140, Palette::blockSize * 15, UIDialog::Horizontal)
 	{
 	}
 
@@ -53,14 +53,36 @@ namespace ufo
 		}
 	}
 
+	class OptionsDialogButton : public UIPushButtonStandard
+	{
+	public:
+
+		OptionsDialogButton(Uint16 stringId, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h)
+			: UIPushButtonStandard(stringId, _x, _y, _w, _h) { }
+
+		void onCreate()
+		{
+			centerHorizontal(*m_parent);
+			m_color = Palette::blockSize * 15;
+		}
+
+		void onPress()
+		{
+			if (m_stringId == 800)
+				m_ui->create(new AbandonGameDialog());
+
+			m_ui->destroy(m_parent);
+		}
+	};
+
 	OptionsDialog::OptionsDialog()
-		: UIDialog(0, 20, 216, 160, Palette::blockSize * 8 + 6, UIDialog::Both)
+		: UIDialog(0, 20, 216, 160, Palette::blockSize * 15, UIDialog::Both)
 	{
 	}
 
 	void OptionsDialog::onCreate()
 	{
-		centerHorizontal(Rect(0, 0, m_ui->surface.w, m_ui->surface.h));
+		centerHorizontal(Rect(0, 0, 256, 200));
 		m_bg.loadSCR("geograph/back01.scr");
 
 		Palette p("geodata/backpals.dat", 0, 16);
@@ -70,10 +92,80 @@ namespace ufo
 
 	void OptionsDialog::onOpen()
 	{
+		create(new OptionsDialogButton(316, 0, y + 40, 180, 20));
+		create(new OptionsDialogButton(317, 0, y + 65, 180, 20));
+		create(new OptionsDialogButton(800, 0, y + 90, 180, 20));
+		create(new OptionsDialogButton(49, 0, y + 120, 180, 20));
 	}
 
 	void OptionsDialog::draw(Surface& surface)
 	{
+		UIDialog::draw(surface);
+
+		if (m_open)
+		{
+			m_ui->text.setColor(Palette::blockSize * 15);
+			m_ui->text.print(surface, Rect(x, y + 12, w, h), 315, TextRenderer::BigFont, TextRenderer::AlignCenter);
+		}
+	}
+
+	class AbandonGameDialogButton : public UIPushButtonStandard
+	{
+	public:
+
+		AbandonGameDialogButton(Uint16 stringId, Sint16 _x, Sint16 _y, Sint16 _w, Sint16 _h)
+			: UIPushButtonStandard(stringId, _x, _y, _w, _h) { }
+
+		void onCreate()
+		{
+			m_color = Palette::blockSize * 15;
+		}
+
+		void onPress()
+		{
+			if (m_stringId == 279)
+			{
+			}
+			else if (m_stringId == 280)
+				m_ui->destroy(m_parent);
+		}
+	};
+
+	AbandonGameDialog::AbandonGameDialog()
+		: UIDialog(0, 20, 216, 160, Palette::blockSize * 15, UIDialog::Both)
+	{
+	}
+
+	void AbandonGameDialog::onCreate()
+	{
+		centerHorizontal(Rect(0, 0, 256, 200));
+		m_bg.loadSCR("geograph/back01.scr");
+
+		Palette p("geodata/backpals.dat", 0, 16);
+		p.apply(m_bg);
+		p.apply(m_ui->surface);
+
+		m_bgFont.setColor(Palette::blockSize * 15);
+	}
+
+	void AbandonGameDialog::onOpen()
+	{
+		create(new AbandonGameDialogButton(279, x + 18, y + 120, 50, 20));
+		create(new AbandonGameDialogButton(280, x + w - 68, y + 120, 50, 20));
+	}
+
+	void AbandonGameDialog::draw(Surface& surface)
+	{
+		UIDialog::draw(surface);
+
+		if (m_open)
+		{
+			string text(m_ui->strings(800) + '?');
+
+			Rect r(x, y + 50, m_bgFont.getTextWidth(text), h);
+			r.centerHorizontal(*this);
+			m_bgFont.print(surface, r.x, r.y, text);
+		}
 	}
 
 	class GeoScapeButton : public UIPushButton
@@ -101,7 +193,9 @@ namespace ufo
 		void onPress()
 		{
 			if (m_id == Intercept)
-				m_ui->create(new InterceptDialog());
+				create(new InterceptDialog());
+			else if (m_id == Options)
+				create(new OptionsDialog());
 		}
 
 		void draw(Surface& surface)

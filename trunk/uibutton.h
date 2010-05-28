@@ -49,13 +49,15 @@ namespace ufo
 
 	class UIPushButtonStandard : public UIPushButton
 	{
-		Uint16 m_stringId;
-		Uint8 m_color;
-
 	public:
 
 		UIPushButtonStandard(Uint16 stringId, Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint8 color = Palette::blockSize * 8 + 6);
 
 		virtual void draw(Surface& surface);
+
+	protected:
+
+		Uint16 m_stringId;
+		Uint8 m_color;
 	};
 }
