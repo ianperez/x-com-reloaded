@@ -171,13 +171,14 @@ namespace ufo
 
 	void UIManager::logic()
 	{
+		bool exclusive = false;
 		for (list<UIElement*>::iterator i = begin(); i != end(); ++i)
 		{
 			updateTime(*i);
-			(*i)->logic();
+			if (!exclusive)
+				(*i)->logic();
 
-			if ((*i)->m_exclusive)
-				break;
+			exclusive = exclusive || (*i)->m_exclusive;
 		}
 
 		cleanup();
