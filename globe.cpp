@@ -54,21 +54,18 @@ namespace ufo
 			GeoPolygon polygon;
 			for (char i = 0; i < 4; ++i)
 			{
-				Sint16 v;
-				file.read((char*)&v, 2);
+				file.read((char*)&gp.s.x, 2);
 				if (file.eof())
 					break;
 
-				gp.s.x = v;
-
-				file.read((char*)&v, 2);
+				file.read((char*)&gp.s.y, 2);
 
 				if (gp.s.x == -1)
 					break;
 
-				gp.s.y = v + 720;
+				gp.s.y += 720;
 
-				toCartesian(gp.s, gp.c);
+				gp.s.toCartesian(gp.c, m_radius);
 
 				polygon.push_back(gp);
 			}
@@ -101,7 +98,7 @@ namespace ufo
 					m_test[i].s.x += round<Sint16>(cos(direction));
 					m_test[i].s.y += round<Sint16>(sin(direction));
 
-					toCartesian(m_test[i].s, m_test[i].c);
+					m_test[i].s.toCartesian(m_test[i].c, m_radius);
 				}
 
 				m_test[i].lastUpdate = SDL_GetTicks();
@@ -189,7 +186,7 @@ namespace ufo
 		}
 
 		Point3d p1;
-		toCartesian(m_defaultTarget, p1);
+		m_defaultTarget.toCartesian(p1, m_radius);
 
 		rotate(p1, m_rotx, m_rotz);
 		if (p1.y <= 0)
@@ -207,7 +204,7 @@ namespace ufo
 			GeoPoint gptemp;
 			if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
 			{
-				toSpherical(gptemp.c, gptemp.s);
+				gptemp.c.toSpherical(gptemp.s, m_radius);
 				m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y));
 				m_font.print(surface, 5, 25, format("Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z));
 			}
@@ -227,25 +224,6 @@ namespace ufo
 		surface.pixelColor8(x - 1, y, color);
 		surface.pixelColor8(x, y + 1, color);
 		surface.pixelColor8(x, y - 1, color);
-	}
-
-	// convert Spherical coordinates to Cartesian coordinates
-	void Globe::toCartesian(const Point2d& p1, Point3d& p2)
-	{
-		double rx = toRad(p1.x);
-		double ry = toRad(p1.y);
-		double sy = sin(ry);
-
-		p2.x = m_radius * sy * cos(rx);
-		p2.y = m_radius * sy * sin(rx);
-		p2.z = m_radius * cos(ry);
-	}
-
-	// convert Cartesian coordinates to Spherical coordinates
-	void Globe::toSpherical(const Point3d& p1, Point2d& p2)
-	{
-		p2.y = round<Sint16>(toDeg(acos(p1.z / m_radius)));
-		p2.x = round<Sint16>(toDeg(atan2(p1.y, p1.x)));
 	}
 
 	// convert Screen coordinates to Cartesian (x,y,z)
@@ -314,11 +292,11 @@ namespace ufo
 			for (Uint32 i = 0; i < m_polygons.size(); ++i)
 			{
 				for (Uint32 j = 0; j < m_polygons[i].size(); ++j)
-					toCartesian(m_polygons[i][j].s, m_polygons[i][j].c);
+					m_polygons[i][j].s.toCartesian(m_polygons[i][j].c, m_radius);
 			}
 
 			for (Uint32 i = 0; i < m_test.size(); ++i)
-				toCartesian(m_test[i].s, m_test[i].c);
+				m_test[i].s.toCartesian(m_test[i].c, m_radius);
 		}
 	}
 
@@ -328,7 +306,7 @@ namespace ufo
 		if (!screenToCartesian(sx, sy, p))
 			return;
 
-		toSpherical(p, m_defaultTarget);
+		p.toSpherical(m_defaultTarget, m_radius);
 	}
 
 	bool Globe::onMouseLeftClick(Sint16 x, Sint16 y)
@@ -337,7 +315,7 @@ namespace ufo
 		if (screenToCartesian(x, y, gp.c))
 		{
 			// populate spherical coordinates
-			toSpherical(gp.c, gp.s);
+			gp.c.toSpherical(gp.s, m_radius);
 
 			// set target
 			gp.target = m_defaultTarget;
@@ -360,7 +338,7 @@ namespace ufo
 		GeoPoint gp;
 		if (screenToCartesian(x, y, gp.c))
 		{
-			toSpherical(gp.c, gp.s);
+			gp.c.toSpherical(gp.s, m_radius);
 
 			m_rotx = gp.s.y - 720;
 			m_rotz = gp.s.x + 720;

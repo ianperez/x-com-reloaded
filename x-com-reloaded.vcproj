@@ -243,6 +243,10 @@
 			Name="Engine"
 			>
 			<File
+				RelativePath=".\base.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dialog.main.cpp"
 				>
 			</File>
@@ -251,11 +255,27 @@
 				>
 			</File>
 			<File
+				RelativePath=".\facility.h"
+				>
+			</File>
+			<File
 				RelativePath=".\game.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\game.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gamestate.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gametime.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\gametime.h"
 				>
 			</File>
 			<File
@@ -272,6 +292,14 @@
 			</File>
 			<File
 				RelativePath=".\globe.h"
+				>
+			</File>
+			<File
+				RelativePath=".\point.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\point.h"
 				>
 			</File>
 			<File
