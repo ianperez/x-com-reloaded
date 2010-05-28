@@ -21,7 +21,7 @@ namespace ufo
 		~UIManager();
 
 		void create(UIElement* e);
-		void destroy(UIElement* e);
+		void destroy(UIElement* e, bool cascade = false);
 
 		void cleanup();
 

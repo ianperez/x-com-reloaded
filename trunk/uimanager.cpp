@@ -40,13 +40,13 @@ namespace ufo
 		e->onCreate();
 	}
 
-	void UIManager::destroy(UIElement* e)
+	void UIManager::destroy(UIElement* e, bool cascade)
 	{
 		if (find(m_toDestroy.begin(), m_toDestroy.end(), e) != m_toDestroy.end())
 			return;
 
 		list<UIElement*>::iterator i = find(begin(), end(), e);
-		if (i != end())
+		for (; i != end(); ++i)
 		{
 			// destroy child elements first
 			for (size_t i = 0; i < e->m_elements.size(); ++i)
@@ -54,6 +54,9 @@ namespace ufo
 
 			e->onDestroy();
 			m_toDestroy.push_back(e);
+
+			if (!cascade)
+				break;
 		}
 	}
 
