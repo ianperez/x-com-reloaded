@@ -1,5 +1,6 @@
 #include "geoscape.h"
 #include "uimanager.h"
+#include "dialog.main.h"
 
 namespace ufo
 {
@@ -125,6 +126,8 @@ namespace ufo
 		{
 			if (m_stringId == 279)
 			{
+				m_ui->destroy(m_parent, true);
+				m_ui->create(new MainMenuDialog());
 			}
 			else if (m_stringId == 280)
 				m_ui->destroy(m_parent);
