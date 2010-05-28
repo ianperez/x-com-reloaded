@@ -16,7 +16,7 @@ namespace ufo
 		SDL_WM_SetCaption("x-com-reloaded", "");
 
 		SDL_EnableKeyRepeat(SDL_DEFAULT_REPEAT_DELAY, SDL_DEFAULT_REPEAT_INTERVAL);
-//		SDL_ShowCursor(SDL_DISABLE);
+		SDL_ShowCursor(SDL_DISABLE);
 
 		Surface screen(SDL_SetVideoMode(640, 400, 32, SDL_HWSURFACE));
 		Surface main(SDL_CreateRGBSurface(SDL_HWSURFACE, 320, 200, 8, 0, 0, 0, 0));
@@ -30,7 +30,7 @@ namespace ufo
 
 		StringTable strings;
 		UIManager ui(main, strings);
-//		ui.create(new Cursor());
+		ui.create(new Cursor());
 		ui.create(new LanguageDialog());
 
 		while (1)

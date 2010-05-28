@@ -17,12 +17,12 @@ namespace ufo
 
 	void Cursor::draw(Surface& surface)
 	{
-		for (Uint8 i = 0, j = 13; i < 9; i++, --j)
+		for (Uint8 i = 0, j = 13; i < 9; i++)
 		{
-			for (Uint8 k = i; k < j; ++k)
-			{
-				surface.pixelColor8(m_mousex + i, m_mousey + k, m_color + i);
-			}
+			for (Uint8 k = 0; k < j; ++k)
+				surface.pixelColor8(m_mousex + i, m_mousey + k + i, m_color + (k < i ? k : i));
+
+			j -= j > 6 ? 2 : 1;
 		}
 	}
 }
