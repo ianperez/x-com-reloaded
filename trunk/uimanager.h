@@ -15,6 +15,10 @@ namespace ufo
 		bool processEvent(SDL_Event& e, UIElement* i);
 		void updateTime(UIElement* e);
 
+		bool m_debug;
+
+		SmallFont m_font;
+
 	public:
 
 		UIManager(Surface& surface, StringTable& strings);

@@ -5,7 +5,7 @@
 namespace ufo
 {
 	UIManager::UIManager(Surface& _surface, StringTable& _strings)
-		: m_focus(0), surface(_surface), text(_strings), strings(_strings)
+		: m_focus(0), surface(_surface), text(_strings), strings(_strings), m_debug(false)
 	{
 	}
 
@@ -49,11 +49,11 @@ namespace ufo
 		for (; i != end(); ++i)
 		{
 			// destroy child elements first
-			for (size_t i = 0; i < e->m_elements.size(); ++i)
-				destroy(e->m_elements[i]);
+			for (size_t j = 0; j < (*i)->m_elements.size(); ++j)
+				destroy((*i)->m_elements[j]);
 
-			e->onDestroy();
-			m_toDestroy.push_back(e);
+			(*i)->onDestroy();
+			m_toDestroy.push_back(*i);
 
 			if (!cascade)
 				break;
@@ -144,6 +144,9 @@ namespace ufo
 
 	bool UIManager::processEvent(SDL_Event& e)
 	{
+		if (e.type == SDL_KEYDOWN && e.key.keysym.sym == SDLK_F11)
+			m_debug = !m_debug;
+
 		// first give the focused element this event
 		if (!processEvent(e, m_focus))
 		{
@@ -186,5 +189,12 @@ namespace ufo
 			(*i)->draw(surface);
 
 		cleanup();
+
+		if (m_debug)
+		{
+			size_t j = 0;
+			for (list<UIElement*>::iterator i = begin(); i != end(); ++i, ++j)
+				m_font.print(surface, 10, 10 + j * 10, format("element %d (exclusive = %s, alwaysOnTop = %s)", j, (*i)->m_exclusive ? "true" : "false", (*i)->m_alwaysOnTop ? "true" : "false"));
+		}
 	}
 }
