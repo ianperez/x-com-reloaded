@@ -42,6 +42,7 @@ namespace ufo
 		UIElement();
 		UIElement(Sint16 x, Sint16 y, Uint16 w, Uint16 h);
 
+		virtual void logic() { }
 		virtual void draw(Surface& surface) { }
 
 		Uint16 getId() const { return m_id; }

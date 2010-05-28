@@ -12,7 +12,7 @@ namespace ufo
 
 	public:
 
-		Cursor(Uint8 color = Palette::blockSize * 5 + 10);
+		Cursor(Uint8 color = Palette::blockSize * 15 + 12);
 
 		bool onMouseMove(Sint16 x, Sint16 y);
 		void draw(Surface& surface);

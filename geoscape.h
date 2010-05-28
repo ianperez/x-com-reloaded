@@ -15,8 +15,6 @@ namespace ufo
 	using namespace std;
 	using namespace boost;
 
-	class GeoScape;
-
 	class InterceptDialog : public UIDialog
 	{
 	public:
@@ -34,6 +32,20 @@ namespace ufo
 	public:
 
 		OptionsDialog();
+
+		void onCreate();
+		void onOpen();
+
+		void draw(Surface& surface);
+	};
+
+	class AbandonGameDialog : public UIDialog
+	{
+		BigFont m_bgFont;
+
+	public:
+
+		AbandonGameDialog();
 
 		void onCreate();
 		void onOpen();

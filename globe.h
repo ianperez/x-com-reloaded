@@ -83,7 +83,6 @@ namespace ufo
 
 		Globe();
 
-		void draw(Surface& surface);
 		void center(Sint16 sx, Sint16 sy);
 		void onClick(Sint16 sx, Sint16 sy);
 		void rotateHorizontal(Sint16 delta);
@@ -97,5 +96,8 @@ namespace ufo
 		bool onKeyDown(SDL_keysym keysym);
 
 		void onCreate();
+
+		void logic();
+		void draw(Surface& surface);
 	};
 }

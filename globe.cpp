@@ -84,6 +84,31 @@ namespace ufo
 		m_defaultTarget.y = 0;
 	}
 
+	void Globe::logic()
+	{
+		for (Uint32 i = 0; i < m_test.size(); ++i)
+		{
+			// move point toward target
+			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
+			{
+				if (m_test[i].s.x != m_test[i].target.x || m_test[i].s.y != m_test[i].target.y)
+				{
+					Point2d targetTemp(m_test[i].target);
+					if (m_test[i].s.y > m_polarDegFix && m_test[i].s.y < (1440 - m_polarDegFix) && (m_test[i].target.y <= m_polarDegFix || m_test[i].target.y >= (1440 - m_polarDegFix)))
+						targetTemp.x = m_test[i].s.x;
+
+					double direction = atan2(static_cast<double>(targetTemp.y - m_test[i].s.y), static_cast<double>(targetTemp.x - m_test[i].s.x));
+					m_test[i].s.x += round<Sint16>(cos(direction));
+					m_test[i].s.y += round<Sint16>(sin(direction));
+
+					toCartesian(m_test[i].s, m_test[i].c);
+				}
+
+				m_test[i].lastUpdate = SDL_GetTicks();
+			}
+		}
+	}
+
 	void Globe::draw(Surface& surface)
 	{
 		// set clipping rectangle
@@ -91,6 +116,9 @@ namespace ufo
 
 		// draw ocean
 		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius - 1, m_palette.getRGBA(Palette::blockSize * 12));
+
+		// fix clipping rectangle for texturing
+		surface.setClipRect(Rect(x, y, w + 1, h));
 
 		vector<Sint16> vx(4), vy(4);
 		for (size_t i = 0; i < m_polygons.size(); ++i)
@@ -144,27 +172,11 @@ namespace ufo
 			texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
 		}
 
+		// set clipping rectangle
+		surface.setClipRect(*this);
+
 		for (Uint32 i = 0; i < m_test.size(); ++i)
 		{
-			// move point toward target
-			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
-			{
-				if (m_test[i].s.x != m_test[i].target.x || m_test[i].s.y != m_test[i].target.y)
-				{
-					Point2d targetTemp(m_test[i].target);
-					if (m_test[i].s.y > m_polarDegFix && m_test[i].s.y < (1440 - m_polarDegFix) && (m_test[i].target.y <= m_polarDegFix || m_test[i].target.y >= (1440 - m_polarDegFix)))
-						targetTemp.x = m_test[i].s.x;
-
-					double direction = atan2(static_cast<double>(targetTemp.y - m_test[i].s.y), static_cast<double>(targetTemp.x - m_test[i].s.x));
-					m_test[i].s.x += round<Sint16>(cos(direction));
-					m_test[i].s.y += round<Sint16>(sin(direction));
-
-					toCartesian(m_test[i].s, m_test[i].c);
-				}
-
-				m_test[i].lastUpdate = SDL_GetTicks();
-			}
-
 			Point3d p1(m_test[i].c);
 			rotate(p1, m_rotx, m_rotz);
 			if (p1.y > 0)
@@ -188,8 +200,6 @@ namespace ufo
 			drawShip(surface, p2.x, p2.y, 13);
 		}
 
-		surface.clearClipRect();
-
 		if (m_debug)
 		{
 			m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_rotx, m_rotz));
@@ -207,6 +217,8 @@ namespace ufo
 
 			m_font.print(surface, 5, 55, format("Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y)));
 		}
+
+		surface.clearClipRect();
 	}
 
 	void Globe::drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color)

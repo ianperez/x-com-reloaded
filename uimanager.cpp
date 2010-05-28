@@ -163,13 +163,24 @@ namespace ufo
 		e->m_lastUpdate = SDL_GetTicks();
 	}
 
+	void UIManager::logic()
+	{
+		for (list<UIElement*>::iterator i = begin(); i != end(); ++i)
+		{
+			updateTime(*i);
+			(*i)->logic();
+
+			if ((*i)->m_exclusive)
+				break;
+		}
+
+		cleanup();
+	}
+
 	void UIManager::draw()
 	{
 		for (list<UIElement*>::reverse_iterator i = rbegin(); i != rend(); ++i)
-		{
-			updateTime(*i);
 			(*i)->draw(surface);
-		}
 
 		cleanup();
 	}

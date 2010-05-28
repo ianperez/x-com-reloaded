@@ -20,7 +20,10 @@ namespace ufo
 		for (Uint8 i = 0, j = 13; i < 9; i++)
 		{
 			for (Uint8 k = 0; k < j; ++k)
-				surface.pixelColor8(m_mousex + i, m_mousey + k + i, m_color + (k < i ? k : i));
+			{
+				Uint8 delta = k < i ? k : i;
+				surface.pixelColor8(m_mousex + i, m_mousey + k + i, m_color + (delta > 3 ? 3 : delta));
+			}
 
 			j -= j > 6 ? 2 : 1;
 		}
