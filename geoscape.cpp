@@ -1,6 +1,7 @@
 #include "geoscape.h"
 #include "uimanager.h"
 #include "dialog.main.h"
+#include "util.h"
 
 namespace ufo
 {
@@ -296,24 +297,86 @@ namespace ufo
 			m_id = id;
 		}
 
-		// GeoScape Time button Id's
-		enum {
-			Time5Sec,
-			Time1Min,
-			Time5Min,
-			Time30Min,
-			Time1Hour,
-			Time1Day
-		};
-
 		void onPress()
 		{
+			if (m_id == GameTime::Time5Sec)
+				m_ui->state.time.setStep(GameTime::Time5Sec);
+			else if (m_id == GameTime::Time1Min)
+				m_ui->state.time.setStep(GameTime::Time1Min);
+			else if (m_id == GameTime::Time5Min)
+				m_ui->state.time.setStep(GameTime::Time5Min);
+			else if (m_id == GameTime::Time30Min)
+				m_ui->state.time.setStep(GameTime::Time30Min);
+			else if (m_id == GameTime::Time1Hour)
+				m_ui->state.time.setStep(GameTime::Time1Hour);
+			else if (m_id == GameTime::Time1Day)
+				m_ui->state.time.setStep(GameTime::Time1Day);
 		}
 
 		void draw(Surface& surface)
 		{
 			if (m_pressed)
 				surface.invert(248, this);
+		}
+	};
+
+	class GameTimeDisplay : public UIElement
+	{
+		SmallFont m_smFont;
+		BigFont m_bgFont;
+
+	public:
+
+		GameTimeDisplay()
+			: UIElement(259, 74, 59, 35)
+		{
+			m_smFont.setColor(Palette::blockSize * 15 + 5);
+			m_bgFont.setColor(Palette::blockSize * 15 + 5);
+		}
+
+		void logic()
+		{
+			m_ui->state.time.increment(m_timeElapsed);
+		}
+
+		void draw(Surface& surface)
+		{
+			// draw time
+			m_bgFont.print(surface, x + 20, y, ":  :");
+
+			string hour(format("%d", m_ui->state.time.getHour()));
+			m_bgFont.print(surface, x + (m_ui->state.time.getHour() > 9 ? 0 : 20 - m_bgFont.getTextWidth(hour)), y, hour);
+
+			string minute(format("%.2d", m_ui->state.time.getMinute()));
+			m_bgFont.print(surface, x + 24, y, minute);
+
+			string second(format("%.2d", m_ui->state.time.getSecond()));
+			m_smFont.print(surface, x + 48, y + 6, second);
+
+			// draw week day
+			string weekday(m_ui->strings(185 + m_ui->state.time.getWeekDay()));
+			Rect textRect(x, y + 13, m_smFont.getTextWidth(weekday), h);
+			textRect.centerHorizontal(*this);
+
+			m_smFont.print(surface, textRect.x, textRect.y, weekday);
+
+			// draw day
+			string day(format("%d", m_ui->state.time.getDay() + 1));
+			Uint8 index = day[day.size() - 1] - 48;
+			index = index < 1 || index > 3 ? 3 : index - 1;
+
+			m_smFont.print(surface, x + 8, y + 20, day + m_ui->strings(index + 170));
+
+			// draw month
+			string month("JanFebMarAprMayJunJulAugSepOctNovDec");
+			m_smFont.print(surface, x + 36, y + 20, month.substr(m_ui->state.time.getMonth() * 3, 3));
+
+			// draw year
+			string year(format("%d", m_ui->state.time.getYear()));
+			textRect = Rect(x + 20, y + 27, m_smFont.getTextWidth(year), h);
+			textRect.centerHorizontal(*this);
+
+			m_smFont.print(surface, textRect.x, textRect.y, year);
 		}
 	};
 
@@ -354,12 +417,12 @@ namespace ufo
 		create(new GeoScapeButton(*m_globe, 257, 48, GeoScapeButton::Options));
 		create(new GeoScapeButton(*m_globe, 257, 60, GeoScapeButton::Funding));
 
-		create(new GeoScapeTimeButton(*m_globe, 257, 112, GeoScapeTimeButton::Time5Sec));
-		create(new GeoScapeTimeButton(*m_globe, 289, 112, GeoScapeTimeButton::Time1Min));
-		create(new GeoScapeTimeButton(*m_globe, 257, 126, GeoScapeTimeButton::Time5Min));
-		create(new GeoScapeTimeButton(*m_globe, 289, 126, GeoScapeTimeButton::Time30Min));
-		create(new GeoScapeTimeButton(*m_globe, 257, 140, GeoScapeTimeButton::Time1Hour));
-		create(new GeoScapeTimeButton(*m_globe, 289, 140, GeoScapeTimeButton::Time1Day));
+		create(new GeoScapeTimeButton(*m_globe, 257, 112, GameTime::Time5Sec));
+		create(new GeoScapeTimeButton(*m_globe, 289, 112, GameTime::Time1Min));
+		create(new GeoScapeTimeButton(*m_globe, 257, 126, GameTime::Time5Min));
+		create(new GeoScapeTimeButton(*m_globe, 289, 126, GameTime::Time30Min));
+		create(new GeoScapeTimeButton(*m_globe, 257, 140, GameTime::Time1Hour));
+		create(new GeoScapeTimeButton(*m_globe, 289, 140, GameTime::Time1Day));
 
 		create(new GeoScapeGlobeControl(*m_globe, 271, 162, 13, 13, GeoScapeGlobeControl::RotateUp));
 		create(new GeoScapeGlobeControl(*m_globe, 271, 186, 13, 13, GeoScapeGlobeControl::RotateDown));
@@ -367,6 +430,9 @@ namespace ufo
 		create(new GeoScapeGlobeControl(*m_globe, 284, 174, 13, 13, GeoScapeGlobeControl::RotateRight));
 		create(new GeoScapeGlobeControl(*m_globe, 295, 155, 23, 23, GeoScapeGlobeControl::ZoomIn, false));
 		create(new GeoScapeGlobeControl(*m_globe, 299, 182, 15, 17, GeoScapeGlobeControl::ZoomOut, false));
+
+		// create time display
+		create(new GameTimeDisplay());
 	}
 
 	void GeoScape::draw(Surface& surface)

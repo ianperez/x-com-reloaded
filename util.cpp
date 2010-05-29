@@ -1,6 +1,7 @@
 #include "util.h"
 #include <cstdarg>
 #include <sstream>
+#include <iomanip>
 
 namespace ufo
 {
@@ -37,6 +38,18 @@ namespace ufo
 				if (++i >= format.size())
 					break;
 
+				int precision = 1;
+				if (format[i] == '.')
+				{
+					if (++i >= format.size())
+						break;
+
+					precision = atoi(format.substr(i, 1).c_str());
+
+					if (++i >= format.size())
+						break;
+				}
+
 				if (format[i] == 's')
 					buffer += va_arg(ap, char*);
 				else if (format[i] == 'z')
@@ -44,7 +57,7 @@ namespace ufo
 				else if (format[i] == 'd')
 				{
 					stringstream temp;
-					temp << va_arg(ap, Sint32);
+					temp << setw(precision) << setfill('0') << va_arg(ap, Sint32);
 					buffer += temp.str();
 				}
 				else if (format[i] == 'f')

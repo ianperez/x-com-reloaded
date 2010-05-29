@@ -4,7 +4,7 @@
 namespace ufo
 {
 	UIDialog::UIDialog(Sint16 _x, Sint16 _y, Uint16 _w, Uint16 _h, Uint8 color, AnimationType type)
-		: UIElement(_x, _y, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(2.0)
+		: UIElement(_x, _y, _w, _h), m_type(type), m_color(color), m_openWidth(_w), m_openHeight(_h), m_open(false), m_speed(1.0)
 	{
 		m_exclusive = true;
 		const Uint16 min = 90;

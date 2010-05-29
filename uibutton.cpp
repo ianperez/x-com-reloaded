@@ -54,6 +54,11 @@ namespace ufo
 		}
 	}
 
+	UIRadioButton::~UIRadioButton()
+	{
+		m_current.erase(m_groupId);
+	}
+
 	bool UIRadioButton::onMouseLeftClick(Sint16 x, Sint16 y)
 	{
 		if (!m_pressed)

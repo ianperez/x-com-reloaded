@@ -1,7 +1,8 @@
 #pragma once
+#include <list>
 #include "uielement.h"
 #include "font.h"
-#include <list>
+#include "gamestate.h"
 
 namespace ufo
 {
@@ -21,7 +22,7 @@ namespace ufo
 
 	public:
 
-		UIManager(Surface& surface, StringTable& strings);
+		UIManager(Surface& surface, StringTable& strings, GameState& state);
 		~UIManager();
 
 		void create(UIElement* e);
@@ -39,6 +40,7 @@ namespace ufo
 
 		Surface& surface;
 		StringTable& strings;
+		GameState& state;
 		TextRenderer text;
 	};
 }
