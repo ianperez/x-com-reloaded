@@ -1,10 +1,11 @@
+#include <sdl_rotozoom.h>
+#include <boost/shared_ptr.hpp>
 #include "game.h"
 #include "dialog.main.h"
 #include "uimanager.h"
 #include "cursor.h"
 #include "util.h"
-#include <sdl_rotozoom.h>
-#include <boost/shared_ptr.hpp>
+#include "gamestate.h"
 
 using namespace boost;
 
@@ -28,8 +29,9 @@ namespace ufo
 		dst.x = xscale ? 0 : round<Sint16>((screen.w - main.w * scale) / 2);
 		dst.y = xscale ? round<Sint16>((screen.h - main.h * scale) / 2) : 0;
 
+		GameState state;
 		StringTable strings;
-		UIManager ui(main, strings);
+		UIManager ui(main, strings, state);
 		ui.create(new Cursor());
 		ui.create(new LanguageDialog());
 

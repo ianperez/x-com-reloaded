@@ -38,6 +38,8 @@ namespace ufo
 
 		UIRadioButton(Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint16 groupId);
 
+		~UIRadioButton();
+
 		virtual bool onMouseLeftClick(Sint16 x, Sint16 y);
 		virtual bool onMouseLeftUnclick(Sint16 x, Sint16 y) { return true; }
 

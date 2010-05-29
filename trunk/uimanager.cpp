@@ -4,8 +4,8 @@
 
 namespace ufo
 {
-	UIManager::UIManager(Surface& _surface, StringTable& _strings)
-		: m_focus(0), surface(_surface), text(_strings), strings(_strings), m_debug(false)
+	UIManager::UIManager(Surface& _surface, StringTable& _strings, GameState& _state)
+		: m_focus(0), surface(_surface), text(_strings), strings(_strings), state(_state), m_debug(false)
 	{
 	}
 
