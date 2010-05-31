@@ -13,7 +13,7 @@ namespace ufo
 		Uint8 bufferSize = paletteSize == 256 ? 6 : 0;
 		m_offset = paletteSize == 256 ? 0 : 224;
 
-		infile.seekg((paletteSize + bufferSize) * index * 3, ios::beg);
+		infile.seekg((paletteSize * 3 + bufferSize) * index, ios::beg);
 
 		for (Uint16 i = 0; i < paletteSize; ++i)
 		{

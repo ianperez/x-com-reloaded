@@ -24,8 +24,10 @@ namespace ufo
 		load(filename);
 	}
 
-	void Font::print(Surface& surface, Sint16 x, Sint16 y, string buffer, bool invert)
+	void Font::print(Surface& surface, Sint16 _x, Sint16 y, string buffer, bool invert)
 	{
+		Sint16 x = _x;
+
 		surface.lock();
 		for (size_t i = 0; i < buffer.size(); ++i)
 		{
@@ -51,6 +53,11 @@ namespace ufo
 				}
 
 				x += max + m_charSpacing;
+			}
+			else if (Uint8(buffer[i]) == 10)
+			{
+				x = _x;
+				y += m_height;
 			}
 			else
 				x += m_spaceWidth;
@@ -136,7 +143,7 @@ namespace ufo
 			font->setColor(m_color);
 			font->print(surface, textRect.x, textRect.y, m_strings[stringId][i], invert);
 
-			textRect.y += textRect.h + m_lineSpacing;
+			textRect.y += textRect.h;
 		}
 
 		surface.clearClipRect();

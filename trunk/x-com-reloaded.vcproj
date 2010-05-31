@@ -247,6 +247,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\baseview.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\baseview.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dialog.main.cpp"
 				>
 			</File>
@@ -264,6 +272,10 @@
 			</File>
 			<File
 				RelativePath=".\game.h"
+				>
+			</File>
+			<File
+				RelativePath=".\gamestate.cpp"
 				>
 			</File>
 			<File

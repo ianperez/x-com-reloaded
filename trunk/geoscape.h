@@ -55,17 +55,28 @@ namespace ufo
 
 	class GeoScape : public UIElement
 	{
-		Surface m_bg;
-		Palette m_palette;
-
-		Globe* m_globe;
-
 	public:
 
-		GeoScape();
+		enum StartMode
+		{
+			Normal,
+			CreateFirstBase,
+			CreateBase
+		};
+
+		GeoScape(StartMode mode = Normal);
 
 		void onCreate();
 
 		void draw(Surface& surface);
+
+	private:
+
+		StartMode m_mode;
+
+		Surface m_bg;
+		Palette m_palette;
+
+		Globe* m_globe;
 	};
 }
