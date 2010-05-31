@@ -1,10 +1,64 @@
 #include "geoscape.h"
 #include "uimanager.h"
 #include "dialog.main.h"
+#include "baseview.h"
 #include "util.h"
 
 namespace ufo
 {
+	class NewBaseDialogButton : public UIPushButtonStandard
+	{
+	public:
+
+		NewBaseDialogButton()
+			: UIPushButtonStandard(49, 186, 8, 54, 12) { }
+
+		void onPress()
+		{
+			m_ui->destroy(m_parent);
+		}
+	};
+
+	class NewBaseDialog : public UIDialog
+	{
+		bool m_showCancel;
+
+	public:
+
+		NewBaseDialog(bool showCancel = false)
+			: UIDialog(0, 0, 256, 28, Palette::blockSize * 8 + 6), m_showCancel(showCancel) { }
+
+		void onCreate()
+		{
+			m_exclusive = false;
+
+			m_bg.loadSCR("geograph/back01.scr");
+
+			Palette backPalette("geodata/backpals.dat", 0, 16);
+			backPalette.apply(m_bg);
+			backPalette.apply(m_ui->surface);
+
+			// create dummy button to block geoscape buttons on the right
+			create(new UIPushButton(256, 0, 64, 154));
+
+			if (m_showCancel)
+				create(new NewBaseDialogButton());
+
+			m_ui->state.time.pause();
+		}
+
+		void onDestroy()
+		{
+			m_ui->state.time.pause(false);
+		}
+
+		void draw(Surface& surface)
+		{
+			UIDialog::draw(surface);
+			m_ui->text.print(surface, Rect(8, 10, w, h), 283, TextRenderer::SmallFont);
+		}
+	};
+
 	class InterceptDialogButton : public UIPushButtonStandard
 	{
 	public:
@@ -197,9 +251,14 @@ namespace ufo
 		void onPress()
 		{
 			if (m_id == Intercept)
-				create(new InterceptDialog());
+				m_parent->create(new InterceptDialog());
 			else if (m_id == Options)
-				create(new OptionsDialog());
+				m_parent->create(new OptionsDialog());
+			else if (m_id == Bases)
+			{
+				m_ui->destroy(m_parent);
+				m_ui->create(new BaseView());
+			}
 		}
 
 		void draw(Surface& surface)
@@ -380,8 +439,8 @@ namespace ufo
 		}
 	};
 
-	GeoScape::GeoScape()
-		: UIElement(0, 0, 320, 200), m_palette("geodata/palettes.dat")
+	GeoScape::GeoScape(StartMode mode)
+		: UIElement(0, 0, 320, 200), m_palette("geodata/palettes.dat"), m_mode(mode)
 	{
 	}
 
@@ -433,6 +492,10 @@ namespace ufo
 
 		// create time display
 		create(new GameTimeDisplay());
+
+		// show base creation dialog if mode is set
+		if (m_mode != Normal)
+			create(new NewBaseDialog(m_mode != CreateFirstBase));
 	}
 
 	void GeoScape::draw(Surface& surface)

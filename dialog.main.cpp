@@ -1,4 +1,5 @@
 #include "dialog.main.h"
+#include "dialog.geoscape.h"
 #include "palette.h"
 #include "uimanager.h"
 #include "uibutton.h"
@@ -166,7 +167,7 @@ namespace ufo
 		void onPress()
 		{
 			m_ui->destroy(m_parent);
-			m_ui->create(new GeoScape());
+			m_ui->create(new GeoScape(GeoScape::CreateFirstBase));
 		}
 	};
 

@@ -12,9 +12,9 @@ namespace ufo
 
 		Base();
 
-		void draw(Surface& s);
-
 	protected:
+
+		vector<Facility> m_facilities;
 
 		Uint16 m_detectShort;
 		Uint16 m_detectLong;

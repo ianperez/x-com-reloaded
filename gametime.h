@@ -29,6 +29,8 @@ namespace ufo
 		void setStep(Step step);
 		void increment(Uint32 timeElapsed);
 
+		void pause(bool pause = true) { m_pause = pause; }
+
 		Uint32 getYear() const { return m_year; }
 		Uint32 getMonth() const { return m_month; }
 		Uint32 getWeekDay() const { return m_weekday; }
@@ -37,9 +39,12 @@ namespace ufo
 		Uint32 getMinute() const { return m_minute; }
 		Uint32 getSecond() const { return m_second; }
 
+		void save(string path);
+		void load(string path);
+
 	protected:
 
-		Uint32 m_year;
+		Uint16 m_year;
 		Uint32 m_month;
 		Uint32 m_weekday;
 		Uint32 m_day;
@@ -49,6 +54,8 @@ namespace ufo
 
 		Step m_step;
 		Uint32 m_speed;
+
+		bool m_pause;
 
 		Uint32 m_timeElapsed;
 	};

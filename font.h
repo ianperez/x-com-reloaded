@@ -53,12 +53,11 @@ namespace ufo
 		BigFont m_bgFont;
 		StringTable& m_strings;
 
-		Uint16 m_lineSpacing;
 		Uint8 m_color;
 
 	public:
 
-		TextRenderer(StringTable& strings) : m_lineSpacing(0), m_strings(strings), m_color(Palette::blockSize * 8 + 6) { }
+		TextRenderer(StringTable& strings) : m_strings(strings), m_color(Palette::blockSize * 8 + 6) { }
 
 		enum HorizontalAlignment
 		{

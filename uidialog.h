@@ -17,7 +17,7 @@ namespace ufo
 			Both
 		};
 
-		UIDialog(Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint8 color, AnimationType type);
+		UIDialog(Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint8 color, AnimationType type = None);
 
 		virtual void draw(Surface& surface);
 
