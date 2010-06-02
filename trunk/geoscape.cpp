@@ -6,59 +6,6 @@
 
 namespace ufo
 {
-	class NewBaseDialogButton : public UIPushButtonStandard
-	{
-	public:
-
-		NewBaseDialogButton()
-			: UIPushButtonStandard(49, 186, 8, 54, 12) { }
-
-		void onPress()
-		{
-			m_ui->destroy(m_parent);
-		}
-	};
-
-	class NewBaseDialog : public UIDialog
-	{
-		bool m_showCancel;
-
-	public:
-
-		NewBaseDialog(bool showCancel = false)
-			: UIDialog(0, 0, 256, 28, Palette::blockSize * 8 + 6), m_showCancel(showCancel) { }
-
-		void onCreate()
-		{
-			m_exclusive = false;
-
-			m_bg.loadSCR("geograph/back01.scr");
-
-			Palette backPalette("geodata/backpals.dat", 0, 16);
-			backPalette.apply(m_bg);
-			backPalette.apply(m_ui->surface);
-
-			// create dummy button to block geoscape buttons on the right
-			create(new UIPushButton(256, 0, 64, 154));
-
-			if (m_showCancel)
-				create(new NewBaseDialogButton());
-
-			m_ui->state.time.pause();
-		}
-
-		void onDestroy()
-		{
-			m_ui->state.time.pause(false);
-		}
-
-		void draw(Surface& surface)
-		{
-			UIDialog::draw(surface);
-			m_ui->text.print(surface, Rect(8, 10, w, h), 283, TextRenderer::SmallFont);
-		}
-	};
-
 	class InterceptDialogButton : public UIPushButtonStandard
 	{
 	public:
@@ -439,7 +386,7 @@ namespace ufo
 		}
 	};
 
-	GeoScape::GeoScape(StartMode mode)
+	GeoScape::GeoScape(Globe::StartMode mode)
 		: UIElement(0, 0, 320, 200), m_palette("geodata/palettes.dat"), m_mode(mode)
 	{
 	}
@@ -464,9 +411,8 @@ namespace ufo
 		// apply palette to output surface
 		m_palette.apply(m_ui->surface);
 
-		// create globe
-		m_globe = new Globe();
-		create(m_globe);
+		// create globe object
+		m_globe = new Globe(m_mode);
 
 		// create buttons
 		create(new GeoScapeButton(*m_globe, 257, 0, GeoScapeButton::Intercept));
@@ -493,9 +439,8 @@ namespace ufo
 		// create time display
 		create(new GameTimeDisplay());
 
-		// show base creation dialog if mode is set
-		if (m_mode != Normal)
-			create(new NewBaseDialog(m_mode != CreateFirstBase));
+		// create globe
+		create(m_globe);
 	}
 
 	void GeoScape::draw(Surface& surface)

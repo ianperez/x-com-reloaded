@@ -1,5 +1,4 @@
 #include "dialog.main.h"
-#include "dialog.geoscape.h"
 #include "palette.h"
 #include "uimanager.h"
 #include "uibutton.h"
@@ -122,6 +121,9 @@ namespace ufo
 		Palette backPalette("geodata/backpals.dat", 0, 16);
 		backPalette.apply(m_bg);
 		backPalette.apply(m_ui->surface);
+
+		// reset game state
+		m_ui->state = GameState();
 	}
 
 	void MainMenuDialog::onOpen()
@@ -167,7 +169,7 @@ namespace ufo
 		void onPress()
 		{
 			m_ui->destroy(m_parent);
-			m_ui->create(new GeoScape(GeoScape::CreateFirstBase));
+			m_ui->create(new GeoScape(Globe::CreateBase));
 		}
 	};
 

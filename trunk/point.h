@@ -33,4 +33,17 @@ namespace ufo
 
 		double x, y, z;
 	};
+
+	struct GeoPoint
+	{
+		Point2d s; // spherical coordinate
+		Point3d c; // cartesian coordinate
+	};
+
+	struct GeoObject : public GeoPoint
+	{
+		Uint32 lastUpdate;
+
+		Point2d target;
+	};
 }

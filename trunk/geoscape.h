@@ -57,14 +57,7 @@ namespace ufo
 	{
 	public:
 
-		enum StartMode
-		{
-			Normal,
-			CreateFirstBase,
-			CreateBase
-		};
-
-		GeoScape(StartMode mode = Normal);
+		GeoScape(Globe::StartMode mode = Globe::Normal);
 
 		void onCreate();
 
@@ -72,7 +65,7 @@ namespace ufo
 
 	private:
 
-		StartMode m_mode;
+		Globe::StartMode m_mode;
 
 		Surface m_bg;
 		Palette m_palette;

@@ -29,10 +29,12 @@ namespace ufo
 		dst.x = xscale ? 0 : round<Sint16>((screen.w - main.w * scale) / 2);
 		dst.y = xscale ? round<Sint16>((screen.h - main.h * scale) / 2) : 0;
 
+		Cursor* cursor = new Cursor();
+
 		GameState state;
 		StringTable strings;
-		UIManager ui(main, strings, state);
-		ui.create(new Cursor());
+		UIManager ui(main, strings, state, cursor);
+		ui.create(cursor);
 		ui.create(new LanguageDialog());
 
 		while (1)

@@ -94,6 +94,11 @@ namespace ufo
 		return width;
 	}
 
+	Uint8 Font::getMaxChar()
+	{
+		return m_data.size() / m_width / m_height + 33;
+	}
+
 	void Font::setColor(Uint8 color)
 	{
 		m_color = color;
