@@ -80,6 +80,7 @@ namespace ufo
 
 		bool screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
 		bool screenToSpherical(Sint16 x, Sint16 y, Point2d& p);
+		bool screenToPolygon(Sint16 x, Sint16 y, GeoPolygon* p = NULL);
 		void rotate(Point3d& p, Sint16 x, Sint16 z);
 		void project(const Point3d& p1, Point2d& p2);
 		double distance(Point2d p1, Point2d p2);

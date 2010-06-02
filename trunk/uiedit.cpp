@@ -19,14 +19,14 @@ namespace ufo
 	{
 		if (m_editing)
 		{
-			if (keysym.sym == SDLK_RETURN)
+			if (keysym.sym == SDLK_RETURN || keysym.sym == SDLK_KP_ENTER)
 				m_ui->releaseFocus(this);
 			else if (keysym.sym == SDLK_ESCAPE)
 				onCancel();
 			else if (keysym.sym == SDLK_BACKSPACE)
 			{
 				if (m_buffer.size())
-					m_buffer.erase(m_buffer.size() - 1, 1);
+					m_buffer.erase(m_buffer.end() - 1);
 			}
 			else if (m_buffer.size() < m_size && m_font.getTextWidth(m_buffer) < w && keysym.sym >= 32 && keysym.sym <= m_font.getMaxChar())
 			{
