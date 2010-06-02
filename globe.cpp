@@ -271,7 +271,10 @@ namespace ufo
 			if (maxy != minx && maxy != miny && maxy != maxx)
 				(*maxy) += 1;
 
-			texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
+			if (m_polygons[i].texture == 100)
+				filledPolygonColor(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_palette.getRGBA(11));
+			else
+				texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
 		}
 
 		// set clipping rectangle
@@ -363,6 +366,42 @@ namespace ufo
 		rotate(p, 0, -m_rotz);
 
 		return true;
+	}
+
+	bool Globe::screenToPolygon(Sint16 _x, Sint16 _y, GeoPolygon* gp)
+	{
+		Point2d p;
+		screenToSpherical(_x, _y, p);
+
+		for (size_t i = 0; i < m_polygons.size(); ++i)
+		{
+			bool result = false;
+			for (size_t j = 0, k = m_polygons[i].size() - 1; j < m_polygons[i].size(); k = j++)
+			{
+				Point3d p1(m_polygons[i][j].c);
+
+				// perform rotation
+				rotate(p1, m_rotx, m_rotz);
+
+				// check if point is on back of sphere
+				if (p1.y > 0)
+					return false;
+
+				if ( ( (m_polygons[i][j].s.y <= p.y && p.y < m_polygons[i][k].s.y) || (m_polygons[i][k].s.y <= p.y && p.y < m_polygons[i][j].s.y) ) && (p.x < (m_polygons[i][k].s.x - m_polygons[i][j].s.x) * (p.y - m_polygons[i][j].s.y) / (m_polygons[i][k].s.y - m_polygons[i][j].s.y) + m_polygons[i][j].s.x) )
+					result = !result;
+			}
+
+			if (result)
+			{
+				if (gp)
+					*gp = m_polygons[i];
+
+				m_polygons[i].texture = 100;
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	void Globe::rotate(Point3d& p, Sint16 x, Sint16 z)
