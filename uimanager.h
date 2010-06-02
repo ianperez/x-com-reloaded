@@ -8,6 +8,8 @@ namespace ufo
 {
 	using namespace std;
 
+	class Cursor;
+
 	class UIManager : public list<UIElement*>
 	{
 		UIElement* m_focus;
@@ -22,7 +24,7 @@ namespace ufo
 
 	public:
 
-		UIManager(Surface& surface, StringTable& strings, GameState& state);
+		UIManager(Surface& surface, StringTable& strings, GameState& state, Cursor* cursor);
 		~UIManager();
 
 		void create(UIElement* e);
@@ -42,5 +44,7 @@ namespace ufo
 		StringTable& strings;
 		GameState& state;
 		TextRenderer text;
+
+		Cursor* cursor;
 	};
 }

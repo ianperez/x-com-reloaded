@@ -1,11 +1,12 @@
+#include <algorithm>
 #include "uimanager.h"
 #include "util.h"
-#include <algorithm>
+#include "cursor.h"
 
 namespace ufo
 {
-	UIManager::UIManager(Surface& _surface, StringTable& _strings, GameState& _state)
-		: m_focus(0), surface(_surface), text(_strings), strings(_strings), state(_state), m_debug(false)
+	UIManager::UIManager(Surface& _surface, StringTable& _strings, GameState& _state, Cursor* _cursor)
+		: m_focus(0), surface(_surface), text(_strings), strings(_strings), state(_state), m_debug(false), cursor(_cursor)
 	{
 	}
 
@@ -68,6 +69,9 @@ namespace ufo
 			list<UIElement*>::iterator j = find(begin(), end(), m_toDestroy[i]);
 			if (j != end())
 			{
+				if (m_focus == *j)
+					m_focus = NULL;
+
 				delete *j;
 				erase(j);
 			}
@@ -91,6 +95,7 @@ namespace ufo
 	{
 		if (m_focus == e)
 		{
+			m_focus->onBlur();
 			m_focus = NULL;
 			return true;
 		}

@@ -1,14 +1,113 @@
-#include "globe.h"
-#include "uibutton.h"
-#include "util.h"
 #include <fstream>
 #include <cmath>
 #include <sdl_gfxprimitives.h>
+#include "globe.h"
+#include "uibutton.h"
+#include "util.h"
+#include "uimanager.h"
+#include "uiedit.h"
 
 namespace ufo
 {
-	Globe::Globe()
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false)
+	class NewBaseNameEdit : public UIEdit
+	{
+		BigFont m_font;
+
+	public:
+
+		NewBaseNameEdit(Sint16 _x, Sint16 _y)
+			: UIEdit(m_font, _x, _y, 140, 13, true) { }
+
+		void onEnter()
+		{
+			m_ui->state.bases.back()->setName(m_buffer);
+			m_ui->destroy(m_parent);
+		}
+	};
+
+	class NewBaseNameDialog : public UIDialog
+	{
+	public:
+
+		NewBaseNameDialog()
+			: UIDialog(32, 60, 192, 80, Palette::blockSize * 8 + 6, UIDialog::Both) { }
+
+		void onOpen()
+		{
+			m_bg.loadSCR("geograph/back01.scr");
+
+			Palette backPalette("geodata/backpals.dat", 0, 16);
+			backPalette.apply(m_bg);
+
+			m_parent->create(new NewBaseNameEdit(x + 22, y + 50));
+		}
+
+		void draw(Surface& surface)
+		{
+			UIDialog::draw(surface);
+
+			Rect r(x, y + 16, w, h);
+			m_ui->text.setColor(Palette::blockSize * 8 + 6);
+			m_ui->text.print(surface, r, 145, TextRenderer::BigFont, TextRenderer::AlignCenter);
+		}
+	};
+
+	class NewBaseDialogButton : public UIPushButtonStandard
+	{
+	public:
+
+		NewBaseDialogButton()
+			: UIPushButtonStandard(49, 186, 8, 54, 12) { }
+
+		void onPress()
+		{
+			m_ui->destroy(m_parent);
+		}
+	};
+
+	class NewBaseDialog : public UIDialog
+	{
+		bool m_showCancel;
+
+	public:
+
+		NewBaseDialog(bool showCancel = false)
+			: UIDialog(0, 0, 256, 28, Palette::blockSize * 15), m_showCancel(showCancel) { }
+
+		void onCreate()
+		{
+			m_exclusive = false;
+
+			m_bg.loadSCR("geograph/back01.scr");
+
+			Palette backPalette("geodata/backpals.dat", 0, 16);
+			backPalette.apply(m_bg);
+			backPalette.apply(m_ui->surface);
+
+			// create dummy button to block geoscape buttons on the right
+			create(new UIPushButton(256, 0, 64, 154));
+
+			if (m_showCancel)
+				create(new NewBaseDialogButton());
+
+			m_ui->state.time.pause();
+		}
+
+		void onDestroy()
+		{
+			m_ui->state.time.pause(false);
+		}
+
+		void draw(Surface& surface)
+		{
+			UIDialog::draw(surface);
+			m_ui->text.setColor(Palette::blockSize * 15);
+			m_ui->text.print(surface, Rect(8, 10, w, h), 283, TextRenderer::SmallFont);
+		}
+	};
+
+	Globe::Globe(StartMode mode)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false), m_mode(mode)
 	{
 	}
 
@@ -79,6 +178,12 @@ namespace ufo
 
 		m_defaultTarget.x = 0;
 		m_defaultTarget.y = 0;
+
+		if (m_mode == CreateBase)
+		{
+			m_newBaseDialog = new NewBaseDialog(m_ui->state.bases.size() > 0);
+			create(m_newBaseDialog);
+		}
 	}
 
 	void Globe::logic()
@@ -171,6 +276,20 @@ namespace ufo
 
 		// set clipping rectangle
 		surface.setClipRect(*this);
+
+		// draw bases
+		for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
+		{
+			Point3d p1(m_ui->state.bases[i]->getLocation().c);
+			rotate(p1, m_rotx, m_rotz);
+			if (p1.y > 0)
+				continue;
+
+			Point2d p2;
+			project(p1, p2);
+
+			m_ui->state.bases[i]->draw(surface, p2);
+		}
 
 		for (Uint32 i = 0; i < m_test.size(); ++i)
 		{
@@ -309,25 +428,42 @@ namespace ufo
 		p.toSpherical(m_defaultTarget, m_radius);
 	}
 
-	bool Globe::onMouseLeftClick(Sint16 x, Sint16 y)
+	bool Globe::onMouseLeftClick(Sint16 _x, Sint16 _y)
 	{
-		GeoObject gp;
-		if (screenToCartesian(x, y, gp.c))
+		if (m_mode == CreateBase)
 		{
-			// populate spherical coordinates
-			gp.c.toSpherical(gp.s, m_radius);
+			GeoPoint p;
+			if (screenToCartesian(_x, _y, p.c))
+			{
+				p.c.toSpherical(p.s, m_radius);
 
-			// set target
-			gp.target = m_defaultTarget;
+				m_ui->state.bases.push_back(shared_ptr<Base>(new Base));
+				m_ui->state.bases.back()->setLocation(p);
 
-			// adjust target if needed
-			if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
-				gp.target.x -= 2880;
-			if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)))
-				gp.target.x += 2880;
+				m_mode = Normal;
+				m_newBaseDialog->create(new NewBaseNameDialog());
+			}
+		}
+		else
+		{
+			GeoObject gp;
+			if (screenToCartesian(_x, _y, gp.c))
+			{
+				// populate spherical coordinates
+				gp.c.toSpherical(gp.s, m_radius);
 
-			gp.lastUpdate = SDL_GetTicks();
-			m_test.push_back(gp);
+				// set target
+				gp.target = m_defaultTarget;
+
+				// adjust target if needed
+				if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
+					gp.target.x -= 2880;
+				if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)))
+					gp.target.x += 2880;
+
+				gp.lastUpdate = SDL_GetTicks();
+				m_test.push_back(gp);
+			}
 		}
 
 		return true;
@@ -363,5 +499,15 @@ namespace ufo
 			setDefaultTarget(m_mouse.x, m_mouse.y);
 
 		return false;
+	}
+
+	bool Globe::screenToSpherical(Sint16 _x, Sint16 _y, Point2d& p)
+	{
+		Point3d temp;
+		if (!screenToCartesian(_x, _y, temp))
+			return false;
+
+		temp.toSpherical(p, m_radius);
+		return true;
 	}
 }

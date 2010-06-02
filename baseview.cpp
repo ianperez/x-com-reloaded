@@ -1,6 +1,7 @@
 #include "baseview.h"
 #include "uimanager.h"
 #include "uibutton.h"
+#include "geoscape.h"
 
 namespace ufo
 {
@@ -13,6 +14,8 @@ namespace ufo
 
 		void onPress()
 		{
+			m_ui->destroy(m_parent);
+			m_ui->create(new GeoScape());
 		}
 	};
 

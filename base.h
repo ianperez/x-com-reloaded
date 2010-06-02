@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include "point.h"
+#include "surface.h"
 
 namespace ufo
 {
@@ -12,15 +13,22 @@ namespace ufo
 
 		Base();
 
-	protected:
+		string getName() const { return m_name; }
+		GeoPoint getLocation() const { return m_location; }
 
-		vector<Facility> m_facilities;
+		void setLocation(GeoPoint p);
+		void setName(string name);
+
+		void draw(Surface& surface, Point2d p);
+
+	protected:
 
 		Uint16 m_detectShort;
 		Uint16 m_detectLong;
 		Uint16 m_detectHyper;
 
-		Point2d m_location;
+		Uint8 m_color;
+		GeoPoint m_location;
 
 		string m_name;
 	};

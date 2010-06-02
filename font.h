@@ -20,6 +20,7 @@ namespace ufo
 
 		Uint16 getHeight() const { return m_height; }
 		Uint16 getTextWidth(string buffer);
+		Uint8 getMaxChar();
 
 		void print(Surface& surface, Sint16 x, Sint16 y, string buffer, bool invert = false);
 		void setColor(Uint8 color);

@@ -187,6 +187,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\uiedit.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uiedit.h"
+				>
+			</File>
+			<File
 				RelativePath=".\uielement.cpp"
 				>
 			</File>
@@ -242,6 +250,10 @@
 		<Filter
 			Name="Engine"
 			>
+			<File
+				RelativePath=".\base.cpp"
+				>
+			</File>
 			<File
 				RelativePath=".\base.h"
 				>
