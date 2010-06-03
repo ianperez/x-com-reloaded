@@ -14,7 +14,7 @@ namespace ufo
 		Base();
 
 		string getName() const { return m_name; }
-		GeoPoint getLocation() const { return m_location; }
+		GeoPoint& getLocation() { return m_location; }
 
 		void setLocation(GeoPoint p);
 		void setName(string name);

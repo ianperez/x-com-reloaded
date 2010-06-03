@@ -12,14 +12,17 @@ namespace ufo
 	class NewBaseNameEdit : public UIEdit
 	{
 		BigFont m_font;
+		GeoPoint m_location;
 
 	public:
 
-		NewBaseNameEdit(Sint16 _x, Sint16 _y)
-			: UIEdit(m_font, _x, _y, 140, 13, true) { }
+		NewBaseNameEdit(Sint16 _x, Sint16 _y, GeoPoint location)
+			: UIEdit(m_font, _x, _y, 140, 13, true), m_location(location) { }
 
 		void onEnter()
 		{
+			m_ui->state.bases.push_back(shared_ptr<Base>(new Base));
+			m_ui->state.bases.back()->setLocation(m_location);
 			m_ui->state.bases.back()->setName(m_buffer);
 			m_ui->destroy(m_parent);
 		}
@@ -27,19 +30,24 @@ namespace ufo
 
 	class NewBaseNameDialog : public UIDialog
 	{
+		GeoPoint m_location;
+
 	public:
 
-		NewBaseNameDialog()
-			: UIDialog(32, 60, 192, 80, Palette::blockSize * 8 + 6, UIDialog::Both) { }
+		NewBaseNameDialog(GeoPoint location)
+			: UIDialog(32, 60, 192, 80, Palette::blockSize * 8 + 6, UIDialog::Both), m_location(location) { }
 
-		void onOpen()
+		void onCreate()
 		{
 			m_bg.loadSCR("geograph/back01.scr");
 
 			Palette backPalette("geodata/backpals.dat", 0, 16);
 			backPalette.apply(m_bg);
+		}
 
-			m_parent->create(new NewBaseNameEdit(x + 22, y + 50));
+		void onOpen()
+		{
+			m_parent->create(new NewBaseNameEdit(x + 22, y + 50, m_location));
 		}
 
 		void draw(Surface& surface)
@@ -292,7 +300,11 @@ namespace ufo
 			Point2d p2;
 			project(p1, p2);
 
-			m_font.print(surface, p2.x, p2.y, format("%d,%d", m_polygons[m_currentPolygon][i].s.x, m_polygons[m_currentPolygon][i].s.y));
+			Point2d p3(m_polygons[m_currentPolygon][i].s);
+			if (i > 0)
+				p3.adjust(m_polygons[m_currentPolygon][0].s);
+
+			m_font.print(surface, p2.x, p2.y, format("%d,%d", p3.x, p3.y));
 		}
 
 		// set clipping rectangle
@@ -386,50 +398,54 @@ namespace ufo
 		return true;
 	}
 
-	bool Globe::screenToPolygon(Sint16 _x, Sint16 _y, GeoPolygon* gp)
+	vector<GeoPolygon>::iterator Globe::screenToPolygon(Sint16 _x, Sint16 _y)
 	{
-		GeoPoint p;
-		if (screenToCartesian(_x, _y, p.c))
+		for (size_t i = 0; i < m_polygons.size(); ++i)
 		{
-			p.c.toSpherical(p.s, m_radius);
-
-			for (size_t i = 0; i < m_polygons.size(); ++i)
+			bool lastResult;
+			bool found = true;
+			for (size_t j = 0; j < m_polygons[i].size(); ++j)
 			{
-				bool lastResult;
-				bool found = true;
-				for (size_t j = 0; j < m_polygons[i].size(); ++j)
+				size_t k = (j + 1) % m_polygons[i].size();
+
+				Point3d p1(m_polygons[i][j].c);
+				Point3d p2(m_polygons[i][k].c);
+
+				// perform rotation
+				rotate(p1, m_rotx, m_rotz);
+				rotate(p2, m_rotx, m_rotz);
+
+				// check if point is on back of sphere
+				if (p1.y > 0 || p2.y > 0)
 				{
-					size_t k = (j + 1) % m_polygons[i].size();
-
-					Point2d p1(m_polygons[i][j].s);
-					Point2d p2(m_polygons[i][k].s);
-
-					if (j > 0)
-						p1.adjust(m_polygons[i][0].s);
-					p2.adjust(m_polygons[i][0].s);
-
-					Sint32 v = (p.s.y - p1.y) * (p2.x - p1.x) - (p.s.x - p1.x) * (p2.y - p1.y);
-					if (j == 0)
-						lastResult = (v < 0);
-					else if (lastResult != (v < 0))
-					{
-						found = false;
-						break;
-					}
+					found = false;
+					break;
 				}
 
-				if (found)
-				{
-					if (gp)
-						*gp = m_polygons[i];
+				Point2d p3;
+				project(p1, p3);
 
-					m_polygons[i].texture = 100;
-					return true;
+				Point2d p4;
+				project(p2, p4);
+
+				Sint32 v = (_y - p3.y) * (p4.x - p3.x) - (_x - p3.x) * (p4.y - p3.y);
+				if (j == 0)
+					lastResult = (v < 0);
+				else if (lastResult != (v < 0))
+				{
+					found = false;
+					break;
 				}
+			}
+
+			if (found)
+			{
+				m_polygons[i].texture = 100;
+				return m_polygons.begin() + i;
 			}
 		}
 
-		return false;
+		return m_polygons.end();
 	}
 
 	void Globe::rotate(Point3d& p, Sint16 x, Sint16 z)
@@ -478,6 +494,8 @@ namespace ufo
 
 			for (Uint32 i = 0; i < m_test.size(); ++i)
 				m_test[i].s.toCartesian(m_test[i].c, m_radius);
+			for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
+				m_ui->state.bases[i]->getLocation().s.toCartesian(m_ui->state.bases[i]->getLocation().c, m_radius);
 		}
 	}
 
@@ -495,15 +513,12 @@ namespace ufo
 		if (m_mode == CreateBase)
 		{
 			GeoPoint p;
-			if (screenToCartesian(_x, _y, p.c))
+			if (screenToCartesian(_x, _y, p.c) && screenToPolygon(_x, _y) != m_polygons.end())
 			{
 				p.c.toSpherical(p.s, m_radius);
 
-				m_ui->state.bases.push_back(shared_ptr<Base>(new Base));
-				m_ui->state.bases.back()->setLocation(p);
-
 				m_mode = Normal;
-				m_newBaseDialog->create(new NewBaseNameDialog());
+				m_newBaseDialog->create(new NewBaseNameDialog(p));
 			}
 		}
 		else
@@ -546,8 +561,6 @@ namespace ufo
 	{
 		m_mouse.x = x;
 		m_mouse.y = y;
-
-		screenToPolygon(x, y);
 
 		return true;
 	}

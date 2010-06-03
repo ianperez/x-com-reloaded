@@ -20,12 +20,14 @@ namespace ufo
 		return sqrt(static_cast<double>((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y)));
 	}
 
-	void Point2d::adjust(const Point2d& p)
+	Point2d& Point2d::adjust(const Point2d& p)
 	{
 		if (distance(p) > Point2d(x - 2880, y).distance(p))
 			x -= 2880;
-		if (distance(p) > Point2d(x + 2880, y).distance(p))
+		else if (distance(p) > Point2d(x + 2880, y).distance(p))
 			x += 2880;
+
+		return *this;
 	}
 
 	void Point3d::toSpherical(Point2d& p, Sint16 radius)
