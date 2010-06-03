@@ -15,7 +15,7 @@ namespace ufo
 		// convert Spherical coordinates to Cartesian coordinates
 		void toCartesian(Point3d& p, Sint16 radius);
 		double distance(const Point2d& p);
-		void adjust(const Point2d& p);
+		Point2d& adjust(const Point2d& p);
 
 		Sint16 x, y;
 	};
