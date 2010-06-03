@@ -115,7 +115,7 @@ namespace ufo
 	};
 
 	Globe::Globe(StartMode mode)
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false), m_mode(mode), m_currentPolygon(0)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false), m_mode(mode)
 	{
 	}
 
@@ -285,28 +285,6 @@ namespace ufo
 				texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
 		}
 
-		m_currentPolygon %= m_polygons.size();
-		for (size_t i = 0; i < m_polygons[m_currentPolygon].size(); ++i)
-		{
-			Point3d p1(m_polygons[m_currentPolygon][i].c);
-
-			// perform rotation
-			rotate(p1, m_rotx, m_rotz);
-
-			// check if point is on back of sphere
-			if (p1.y > 0)
-				break;
-
-			Point2d p2;
-			project(p1, p2);
-
-			Point2d p3(m_polygons[m_currentPolygon][i].s);
-			if (i > 0)
-				p3.adjust(m_polygons[m_currentPolygon][0].s);
-
-			m_font.print(surface, p2.x, p2.y, format("%d,%d", p3.x, p3.y));
-		}
-
 		// set clipping rectangle
 		surface.setClipRect(*this);
 
@@ -402,8 +380,7 @@ namespace ufo
 	{
 		for (size_t i = 0; i < m_polygons.size(); ++i)
 		{
-			bool lastResult;
-			bool found = true;
+			bool result = false;
 			for (size_t j = 0; j < m_polygons[i].size(); ++j)
 			{
 				size_t k = (j + 1) % m_polygons[i].size();
@@ -418,7 +395,7 @@ namespace ufo
 				// check if point is on back of sphere
 				if (p1.y > 0 || p2.y > 0)
 				{
-					found = false;
+					result = false;
 					break;
 				}
 
@@ -428,17 +405,11 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				Sint32 v = (_y - p3.y) * (p4.x - p3.x) - (_x - p3.x) * (p4.y - p3.y);
-				if (j == 0)
-					lastResult = (v < 0);
-				else if (lastResult != (v < 0))
-				{
-					found = false;
-					break;
-				}
+				if ( ( (p3.y <= _y && _y < p4.y) || (p4.y <= _y && _y < p3.y) ) && (_x < (p4.x - p3.x) * (_y - p3.y) / (p4.y - p3.y) + p3.x) )
+					result = !result;
 			}
 
-			if (found)
+			if (result)
 			{
 				m_polygons[i].texture = 100;
 				return m_polygons.begin() + i;
@@ -512,8 +483,10 @@ namespace ufo
 	{
 		if (m_mode == CreateBase)
 		{
+			vector<GeoPolygon>::iterator i = screenToPolygon(_x, _y);
+
 			GeoPoint p;
-			if (screenToCartesian(_x, _y, p.c) && screenToPolygon(_x, _y) != m_polygons.end())
+			if (screenToCartesian(_x, _y, p.c) && i != m_polygons.end())
 			{
 				p.c.toSpherical(p.s, m_radius);
 
@@ -571,10 +544,6 @@ namespace ufo
 			m_debug = !m_debug;
 		if (keysym.sym == SDLK_SPACE)
 			setDefaultTarget(m_mouse.x, m_mouse.y);
-		if (keysym.sym == SDLK_LEFT)
-			m_currentPolygon--;
-		if (keysym.sym == SDLK_RIGHT)
-			m_currentPolygon++;
 
 		return false;
 	}

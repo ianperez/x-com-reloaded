@@ -53,8 +53,6 @@ namespace ufo
 		vector<GeoPolygon> m_polygons;
 		vector<GeoObject> m_test;
 
-		Uint32 m_currentPolygon;
-
 		Point2d m_center;
 		Sint16 m_rotx, m_rotz;
 
