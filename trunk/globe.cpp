@@ -107,7 +107,7 @@ namespace ufo
 	};
 
 	Globe::Globe(StartMode mode)
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false), m_mode(mode)
+		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false), m_mode(mode), m_currentPolygon(0)
 	{
 	}
 
@@ -277,6 +277,24 @@ namespace ufo
 				texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
 		}
 
+		m_currentPolygon %= m_polygons.size();
+		for (size_t i = 0; i < m_polygons[m_currentPolygon].size(); ++i)
+		{
+			Point3d p1(m_polygons[m_currentPolygon][i].c);
+
+			// perform rotation
+			rotate(p1, m_rotx, m_rotz);
+
+			// check if point is on back of sphere
+			if (p1.y > 0)
+				break;
+
+			Point2d p2;
+			project(p1, p2);
+
+			m_font.print(surface, p2.x, p2.y, format("%d,%d", m_polygons[m_currentPolygon][i].s.x, m_polygons[m_currentPolygon][i].s.y));
+		}
+
 		// set clipping rectangle
 		surface.setClipRect(*this);
 
@@ -370,34 +388,44 @@ namespace ufo
 
 	bool Globe::screenToPolygon(Sint16 _x, Sint16 _y, GeoPolygon* gp)
 	{
-		Point2d p;
-		screenToSpherical(_x, _y, p);
-
-		for (size_t i = 0; i < m_polygons.size(); ++i)
+		GeoPoint p;
+		if (screenToCartesian(_x, _y, p.c))
 		{
-			bool result = false;
-			for (size_t j = 0, k = m_polygons[i].size() - 1; j < m_polygons[i].size(); k = j++)
+			p.c.toSpherical(p.s, m_radius);
+
+			for (size_t i = 0; i < m_polygons.size(); ++i)
 			{
-				Point3d p1(m_polygons[i][j].c);
+				bool lastResult;
+				bool found = true;
+				for (size_t j = 0; j < m_polygons[i].size(); ++j)
+				{
+					size_t k = (j + 1) % m_polygons[i].size();
 
-				// perform rotation
-				rotate(p1, m_rotx, m_rotz);
+					Point2d p1(m_polygons[i][j].s);
+					Point2d p2(m_polygons[i][k].s);
 
-				// check if point is on back of sphere
-				if (p1.y > 0)
-					return false;
+					if (j > 0)
+						p1.adjust(m_polygons[i][0].s);
+					p2.adjust(m_polygons[i][0].s);
 
-				if ( ( (m_polygons[i][j].s.y <= p.y && p.y < m_polygons[i][k].s.y) || (m_polygons[i][k].s.y <= p.y && p.y < m_polygons[i][j].s.y) ) && (p.x < (m_polygons[i][k].s.x - m_polygons[i][j].s.x) * (p.y - m_polygons[i][j].s.y) / (m_polygons[i][k].s.y - m_polygons[i][j].s.y) + m_polygons[i][j].s.x) )
-					result = !result;
-			}
+					Sint32 v = (p.s.y - p1.y) * (p2.x - p1.x) - (p.s.x - p1.x) * (p2.y - p1.y);
+					if (j == 0)
+						lastResult = (v < 0);
+					else if (lastResult != (v < 0))
+					{
+						found = false;
+						break;
+					}
+				}
 
-			if (result)
-			{
-				if (gp)
-					*gp = m_polygons[i];
+				if (found)
+				{
+					if (gp)
+						*gp = m_polygons[i];
 
-				m_polygons[i].texture = 100;
-				return true;
+					m_polygons[i].texture = 100;
+					return true;
+				}
 			}
 		}
 
@@ -423,11 +451,6 @@ namespace ufo
 	{
 		p2.x = round<Sint16>(p1.x + m_center.x);
 		p2.y = round<Sint16>(-p1.z + m_center.y);
-	}
-
-	double Globe::distance(Point2d p1, Point2d p2)
-	{
-		return sqrt(static_cast<double>((p2.x - p1.x) * (p2.x - p1.x) + (p2.y - p1.y) * (p2.y - p1.y)));
 	}
 
 	void Globe::rotateHorizontal(Sint16 delta)
@@ -495,10 +518,7 @@ namespace ufo
 				gp.target = m_defaultTarget;
 
 				// adjust target if needed
-				if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x - 2880, gp.target.y)))
-					gp.target.x -= 2880;
-				if (distance(gp.s, gp.target) > distance(gp.s, Point2d(gp.target.x + 2880, gp.target.y)))
-					gp.target.x += 2880;
+				gp.target.adjust(gp.s);
 
 				gp.lastUpdate = SDL_GetTicks();
 				m_test.push_back(gp);
@@ -527,6 +547,8 @@ namespace ufo
 		m_mouse.x = x;
 		m_mouse.y = y;
 
+		screenToPolygon(x, y);
+
 		return true;
 	}
 
@@ -536,6 +558,10 @@ namespace ufo
 			m_debug = !m_debug;
 		if (keysym.sym == SDLK_SPACE)
 			setDefaultTarget(m_mouse.x, m_mouse.y);
+		if (keysym.sym == SDLK_LEFT)
+			m_currentPolygon--;
+		if (keysym.sym == SDLK_RIGHT)
+			m_currentPolygon++;
 
 		return false;
 	}
