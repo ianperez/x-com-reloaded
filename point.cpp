@@ -1,5 +1,5 @@
-#include "point.h"
 #include <cmath>
+#include "point.h"
 #include "util.h"
 
 namespace ufo
@@ -13,6 +13,19 @@ namespace ufo
 		p.x = radius * sy * cos(rx);
 		p.y = radius * sy * sin(rx);
 		p.z = radius * cos(ry);
+	}
+
+	double Point2d::distance(const Point2d& p)
+	{
+		return sqrt(static_cast<double>((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y)));
+	}
+
+	void Point2d::adjust(const Point2d& p)
+	{
+		if (distance(p) > Point2d(x - 2880, y).distance(p))
+			x -= 2880;
+		if (distance(p) > Point2d(x + 2880, y).distance(p))
+			x += 2880;
 	}
 
 	void Point3d::toSpherical(Point2d& p, Sint16 radius)

@@ -53,6 +53,8 @@ namespace ufo
 		vector<GeoPolygon> m_polygons;
 		vector<GeoObject> m_test;
 
+		Uint32 m_currentPolygon;
+
 		Point2d m_center;
 		Sint16 m_rotx, m_rotz;
 
@@ -83,7 +85,6 @@ namespace ufo
 		bool screenToPolygon(Sint16 x, Sint16 y, GeoPolygon* p = NULL);
 		void rotate(Point3d& p, Sint16 x, Sint16 z);
 		void project(const Point3d& p1, Point2d& p2);
-		double distance(Point2d p1, Point2d p2);
 
 		void drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color);
 	};
