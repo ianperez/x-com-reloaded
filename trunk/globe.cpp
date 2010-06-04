@@ -187,6 +187,10 @@ namespace ufo
 		m_defaultTarget.x = 0;
 		m_defaultTarget.y = 0;
 
+		// re-populate object cartesian coordinates
+		for (size_t i = 0; i < m_ui->state.bases.size(); ++i)
+			m_ui->state.bases[i]->getLocation().sync(m_radius);
+
 		if (m_mode == CreateBase)
 		{
 			m_newBaseDialog = new NewBaseDialog(m_ui->state.bases.size() > 0);
@@ -460,13 +464,13 @@ namespace ufo
 			for (Uint32 i = 0; i < m_polygons.size(); ++i)
 			{
 				for (Uint32 j = 0; j < m_polygons[i].size(); ++j)
-					m_polygons[i][j].s.toCartesian(m_polygons[i][j].c, m_radius);
+					m_polygons[i][j].sync(m_radius);
 			}
 
 			for (Uint32 i = 0; i < m_test.size(); ++i)
-				m_test[i].s.toCartesian(m_test[i].c, m_radius);
+				m_test[i].sync(m_radius);
 			for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
-				m_ui->state.bases[i]->getLocation().s.toCartesian(m_ui->state.bases[i]->getLocation().c, m_radius);
+				m_ui->state.bases[i]->getLocation().sync(m_radius);
 		}
 	}
 
