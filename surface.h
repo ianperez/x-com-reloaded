@@ -1,10 +1,13 @@
 #pragma once
 #include <sdl.h>
 #include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 
 namespace ufo
 {
 	using namespace std;
+	using namespace boost;
 
 	class Rect : public SDL_Rect
 	{
@@ -62,9 +65,7 @@ namespace ufo
 		void blit(Surface& surface, Rect* dst = NULL, Rect* src = NULL);
 
 		// Frame functions
-		void setFrames(Uint16 frameWidth, Uint16 frameHeight, Uint16 frames);
-		Rect getFrameRect(Uint16 frame);
-		Surface getFrameSurface(Uint16 frame);
+		void getFrames(vector<shared_ptr<Surface> >& v, Uint16 frameWidth, Uint16 frameHeight, Uint16 frames);
 
 		void invert(Uint8 pivot, Rect* r = NULL);
 

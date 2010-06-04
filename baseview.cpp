@@ -2,6 +2,7 @@
 #include "uimanager.h"
 #include "uibutton.h"
 #include "geoscape.h"
+#include "globe.h"
 
 namespace ufo
 {
@@ -14,8 +15,16 @@ namespace ufo
 
 		void onPress()
 		{
-			m_ui->destroy(m_parent);
-			m_ui->create(new GeoScape());
+			if (m_stringId == 57)
+			{
+				m_ui->destroy(m_parent);
+				m_ui->create(new GeoScape(Globe::CreateBase));
+			}
+			else if (m_stringId == 66)
+			{
+				m_ui->destroy(m_parent);
+				m_ui->create(new GeoScape());
+			}
 		}
 	};
 
