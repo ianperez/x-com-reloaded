@@ -66,11 +66,20 @@ namespace ufo
 		return m_surface;
 	}
 
-	void Surface::setFrames(Uint16 frameWidth, Uint16 frameHeight, Uint16 frames)
+	void Surface::getFrames(vector<shared_ptr<Surface> >& v, Uint16 frameWidth, Uint16 frameHeight, Uint16 frames)
 	{
-		m_frameWidth = frameWidth;
-		m_frameHeight = frameHeight;
-		m_frames = frames;
+		for (Uint16 i = 0; i < frames; ++i)
+		{
+			Uint16 j = frameWidth * i / w;
+			Rect r(frameWidth * i - w * j, j * frameHeight, frameWidth, frameHeight);
+
+			v.push_back(shared_ptr<Surface>(new Surface(SDL_CreateRGBSurface(SDL_HWSURFACE, frameWidth, frameHeight, m_surface->format->BitsPerPixel, 0, 0, 0, 0))));
+
+			if (m_surface->format->BitsPerPixel == 8)
+				SDL_SetColors(v.back()->get(), m_surface->format->palette->colors, 0, m_surface->format->palette->ncolors);
+
+			blit(*v.back(), NULL, &r);
+		}
 	}
 
 	void Surface::setColors(SDL_Color* colors, int firstcolor, int ncolors)
@@ -197,21 +206,6 @@ namespace ufo
 	{
 		if (m_surface && surface.m_surface)
 			SDL_BlitSurface(m_surface, src, surface.m_surface, dst);
-	}
-
-	Rect Surface::getFrameRect(Uint16 frame)
-	{
-		Uint16 i = m_frameWidth * frame / w;
-		return Rect(m_frameWidth * frame - w * i, i * m_frameHeight, m_frameWidth, m_frameHeight);
-	}
-
-	Surface Surface::getFrameSurface(Uint16 frame)
-	{
-		Surface surface(SDL_CreateRGBSurface(SDL_HWSURFACE, m_frameWidth, m_frameHeight, m_surface->format->BytesPerPixel * 8, 0, 0, 0, 0));
-		Rect src(getFrameRect(frame));
-		blit(surface, NULL, &src);
-
-		return surface;
 	}
 
 	void Surface::invert(Uint8 pivot, Rect* r)

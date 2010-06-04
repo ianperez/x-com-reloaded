@@ -140,15 +140,7 @@ namespace ufo
 		m_palette.apply(texture);
 
 		// set texture frames (each texture is 32x32)
-		texture.setFrames(32, 32, 39);
-
-		for (size_t i = 0; i < 39; ++i)
-		{
-			m_textures.push_back(shared_ptr<Surface>(new Surface(SDL_CreateRGBSurface(SDL_HWSURFACE, 32, 32, 8, 0, 0, 0, 0))));
-			Rect r(texture.getFrameRect(i));
-			m_palette.apply(*m_textures.back());
-			texture.blit(*m_textures.back(), 0, &r);
-		}
+		texture.getFrames(m_textures, 32, 32, 39);
 
 		const string filename("geodata/world.dat");
 		ifstream file(filename.c_str(), ios::binary);
