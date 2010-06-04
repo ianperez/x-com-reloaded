@@ -51,4 +51,9 @@ namespace ufo
 		z = cos(rx) * orig.z - sin(rx) * orig.y;
 		y = sin(rx) * orig.z + cos(rx) * orig.y;
 	}
+
+	void GeoPoint::sync(Sint16 radius)
+	{
+		s.toCartesian(c, radius);
+	}
 }

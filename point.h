@@ -36,14 +36,20 @@ namespace ufo
 		double x, y, z;
 	};
 
-	struct GeoPoint
+	class GeoPoint
 	{
+	public:
+
+		void sync(Sint16 radius);
+
 		Point2d s; // spherical coordinate
 		Point3d c; // cartesian coordinate
 	};
 
-	struct GeoObject : public GeoPoint
+	class GeoObject : public GeoPoint
 	{
+	public:
+
 		Uint32 lastUpdate;
 
 		Point2d target;
