@@ -122,12 +122,12 @@ namespace ufo
 	void Globe::onCreate()
 	{
 		// set up zoom levels
-		m_zoomLevels.push_back(91);
-		m_zoomLevels.push_back(125);
+		m_zoomLevels.push_back(90);
+		m_zoomLevels.push_back(120);
 		m_zoomLevels.push_back(230);
 		m_zoomLevels.push_back(360);
 		m_zoomLevels.push_back(480);
-		m_zoomLevels.push_back(630);
+		m_zoomLevels.push_back(720);
 
 		m_radius = m_zoomLevels[0];
 
