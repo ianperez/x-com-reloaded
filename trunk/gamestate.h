@@ -20,5 +20,7 @@ namespace ufo
 
 		GameTime time;
 		vector<shared_ptr<Base> > bases;
+
+		Uint32 funds;
 	};
 }
