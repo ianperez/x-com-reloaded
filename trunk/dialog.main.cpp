@@ -6,6 +6,36 @@
 
 namespace ufo
 {
+	SaveLoadBase::SaveLoadBase()
+		: UIDialog(0, 0, 320, 200, Palette::blockSize * 8 + 6, UIDialog::Both)
+	{
+	}
+
+	void SaveLoadBase::onCreate()
+	{
+		m_bg.loadSCR("geograph/back01.scr");
+		Palette p("geodata/backpals.dat", 6, 16);
+		p.apply(m_bg);
+	}
+
+	void SaveDialog::onOpen()
+	{
+	}
+
+	void SaveDialog::draw(Surface& surface)
+	{
+		UIDialog::draw(surface);
+	}
+
+	void LoadDialog::onOpen()
+	{
+	}
+
+	void LoadDialog::draw(Surface& surface)
+	{
+		UIDialog::draw(surface);
+	}
+
 	class LanguageButton : public UIPushButtonStandard
 	{
 	public:
@@ -71,15 +101,8 @@ namespace ufo
 	{
 	public:
 
-		MainMenuButton(Uint16 stringId, Sint16 y, Uint16 id)
-			: UIPushButtonStandard(stringId, 0, y, 192, 20) { m_id = id; }
-
-		enum
-		{
-			New,
-			Load,
-			Quit
-		};
+		MainMenuButton(Uint16 stringId, Sint16 y)
+			: UIPushButtonStandard(stringId, 0, y, 192, 20) { }
 
 		void onCreate()
 		{
@@ -88,12 +111,14 @@ namespace ufo
 
 		void onPress()
 		{
-			if (m_id == New)
+			if (m_stringId == 780)
 			{
 				m_ui->destroy(m_parent);
 				m_ui->create(new DifficultyDialog());
 			}
-			else if (m_id == Quit)
+			else if (m_stringId == 781)
+				m_ui->create(new LoadDialog());
+			else if (m_stringId == 801)
 			{
 				m_ui->destroy(m_parent);
 
@@ -128,9 +153,9 @@ namespace ufo
 
 	void MainMenuDialog::onOpen()
 	{
-		create(new MainMenuButton(780, y + 70, MainMenuButton::New));
-		create(new MainMenuButton(781, y + 98, MainMenuButton::Load));
-		create(new MainMenuButton(801, y + 126, MainMenuButton::Quit));
+		create(new MainMenuButton(780, y + 70));
+		create(new MainMenuButton(781, y + 98));
+		create(new MainMenuButton(801, y + 126));
 	}
 
 	void MainMenuDialog::draw(Surface& surface)

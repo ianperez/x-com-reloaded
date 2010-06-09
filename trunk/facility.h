@@ -3,4 +3,10 @@
 
 namespace ufo
 {
+	class Facility
+	{
+	public:
+
+		Facility();
+	};
 }

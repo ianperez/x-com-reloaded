@@ -114,13 +114,42 @@ namespace ufo
 		}
 	};
 
+	GlobeState::GlobeState()
+		: rotx(0), rotz(720), radius(90)
+	{
+	}
+
+	void GlobeState::save(string path)
+	{
+	}
+
+	void GlobeState::load(string path)
+	{
+		string filename(path + "lease.dat");
+		ifstream file(filename.c_str());
+		if (!file)
+			throw runtime_error("error opening " + filename);
+
+		file.read((char*)&rotx, 2);
+
+		file.seekg(6, ios::beg);
+		file.read((char*)&rotz, 2);
+
+		file.seekg(12, ios::beg);
+		file.read((char*)&radius, 2);
+
+		rotz = (2880 - rotz + 720) % 2880;
+		rotx = (2880 - rotx) % 1440;
+	}
+
 	Globe::Globe(StartMode mode)
-		: m_rotx(0), m_rotz(720), m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_zoom(0), m_debug(false), m_mode(mode)
+		: m_polarDegFix(120), UIElement(0, 0, 256, 200), m_palette("geodata/palettes.dat"), m_mouse(0, 0), m_debug(false), m_mode(mode)
 	{
 	}
 
 	void Globe::onCreate()
 	{
+		m_ui->state.load(1);
 		// set up zoom levels
 		m_zoomLevels.push_back(90);
 		m_zoomLevels.push_back(120);
@@ -129,7 +158,7 @@ namespace ufo
 		m_zoomLevels.push_back(480);
 		m_zoomLevels.push_back(720);
 
-		m_radius = m_zoomLevels[0];
+		m_zoom = find(m_zoomLevels.begin(), m_zoomLevels.end(), m_ui->state.globe.radius);
 
 		// set center of globe
 		m_center = Point2d(w / 2, h / 2);
@@ -164,7 +193,7 @@ namespace ufo
 
 				gp.s.y += 720;
 
-				gp.s.toCartesian(gp.c, m_radius);
+				gp.s.toCartesian(gp.c, m_ui->state.globe.radius);
 
 				polygon.push_back(gp);
 			}
@@ -181,7 +210,7 @@ namespace ufo
 
 		// re-populate object cartesian coordinates
 		for (size_t i = 0; i < m_ui->state.bases.size(); ++i)
-			m_ui->state.bases[i]->getLocation().sync(m_radius);
+			m_ui->state.bases[i]->getLocation().sync(m_ui->state.globe.radius);
 
 		if (m_mode == CreateBase)
 		{
@@ -207,7 +236,7 @@ namespace ufo
 					m_test[i].s.x += round<Sint16>(cos(direction));
 					m_test[i].s.y += round<Sint16>(sin(direction));
 
-					m_test[i].s.toCartesian(m_test[i].c, m_radius);
+					m_test[i].s.toCartesian(m_test[i].c, m_ui->state.globe.radius);
 				}
 
 				m_test[i].lastUpdate = SDL_GetTicks();
@@ -221,7 +250,7 @@ namespace ufo
 		surface.setClipRect(*this);
 
 		// draw ocean
-		filledCircleColor(surface.get(), m_center.x, m_center.y, m_radius - 1, m_palette.getRGBA(Palette::blockSize * 12));
+		filledCircleColor(surface.get(), m_center.x, m_center.y, m_ui->state.globe.radius - 1, m_palette.getRGBA(Palette::blockSize * 12));
 
 		// fix clipping rectangle for texturing
 		surface.setClipRect(Rect(x, y, w + 1, h));
@@ -239,7 +268,7 @@ namespace ufo
 				Point3d p1(m_polygons[i][j].c);
 
 				// perform rotation
-				rotate(p1, m_rotx, m_rotz);
+				rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
 
 				// check if point is on back of sphere
 				if (p1.y > 0)
@@ -278,7 +307,7 @@ namespace ufo
 			if (m_polygons[i].texture == 100)
 				filledPolygonColor(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_palette.getRGBA(11));
 			else
-				texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - m_zoom) / 2)]->get(), 0, 0);
+				texturedPolygon(surface.get(), &vx[0], &vy[0], m_polygons[i].size(), m_textures[m_polygons[i].texture + 13 * ((5 - (m_zoom - m_zoomLevels.begin())) / 2)]->get(), 0, 0);
 		}
 
 		// set clipping rectangle
@@ -288,7 +317,7 @@ namespace ufo
 		for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
 		{
 			Point3d p1(m_ui->state.bases[i]->getLocation().c);
-			rotate(p1, m_rotx, m_rotz);
+			rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
 			if (p1.y > 0)
 				continue;
 
@@ -301,7 +330,7 @@ namespace ufo
 		for (Uint32 i = 0; i < m_test.size(); ++i)
 		{
 			Point3d p1(m_test[i].c);
-			rotate(p1, m_rotx, m_rotz);
+			rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
 			if (p1.y > 0)
 				continue;
 
@@ -312,9 +341,9 @@ namespace ufo
 		}
 
 		Point3d p1;
-		m_defaultTarget.toCartesian(p1, m_radius);
+		m_defaultTarget.toCartesian(p1, m_ui->state.globe.radius);
 
-		rotate(p1, m_rotx, m_rotz);
+		rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
 		if (p1.y <= 0)
 		{
 			Point2d p2;
@@ -325,17 +354,17 @@ namespace ufo
 
 		if (m_debug)
 		{
-			m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_rotx, m_rotz));
+			m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_ui->state.globe.rotx, m_ui->state.globe.rotz));
 
 			GeoPoint gptemp;
 			if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
 			{
-				gptemp.c.toSpherical(gptemp.s, m_radius);
+				gptemp.c.toSpherical(gptemp.s, m_ui->state.globe.radius);
 				m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y));
 				m_font.print(surface, 5, 25, format("Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z));
 			}
 
-			m_font.print(surface, 5, 45, format("Radius: %d", m_radius));
+			m_font.print(surface, 5, 45, format("Radius: %d", m_ui->state.globe.radius));
 			m_font.print(surface, 5, 35, format("Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y));
 
 			m_font.print(surface, 5, 55, format("Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y)));
@@ -359,15 +388,15 @@ namespace ufo
 		p.x = x - m_center.x;
 		p.z = -(y - m_center.y);
 
-		double ys = m_radius * m_radius - p.x * p.x - p.z * p.z;
+		double ys = m_ui->state.globe.radius * m_ui->state.globe.radius - p.x * p.x - p.z * p.z;
 		if (ys < 0)
 			return false;
 
 		p.y = -sqrt(ys);
 
 		// reverse rotation
-		rotate(p, -m_rotx, 0);
-		rotate(p, 0, -m_rotz);
+		rotate(p, -m_ui->state.globe.rotx, 0);
+		rotate(p, 0, -m_ui->state.globe.rotz);
 
 		return true;
 	}
@@ -385,8 +414,8 @@ namespace ufo
 				Point3d p2(m_polygons[i][k].c);
 
 				// perform rotation
-				rotate(p1, m_rotx, m_rotz);
-				rotate(p2, m_rotx, m_rotz);
+				rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
+				rotate(p2, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
 
 				// check if point is on back of sphere
 				if (p1.y > 0 || p2.y > 0)
@@ -401,7 +430,7 @@ namespace ufo
 				Point2d p4;
 				project(p2, p4);
 
-				if ( ( (p3.y <= _y && _y < p4.y) || (p4.y <= _y && _y < p3.y) ) && (_x < (p4.x - p3.x) * (_y - p3.y) / (p4.y - p3.y) + p3.x) )
+				if ( ( (p3.y <= _y && _y <= p4.y) || (p4.y <= _y && _y <= p3.y) ) && (_x <= (p4.x - p3.x) * (_y - p3.y) / (p4.y - p3.y) + p3.x) )
 					result = !result;
 			}
 
@@ -438,31 +467,31 @@ namespace ufo
 
 	void Globe::rotateHorizontal(Sint16 delta)
 	{
-		m_rotz = (m_rotz + delta) % 2880;
+		m_ui->state.globe.rotz = (m_ui->state.globe.rotz + delta) % 2880;
 	}
 
 	void Globe::rotateVertical(Sint16 delta)
 	{
-		m_rotx = (m_rotx + delta) % 2880;
+		m_ui->state.globe.rotx = (m_ui->state.globe.rotx + delta) % 2880;
 	}
 
 	void Globe::zoom(Sint8 delta)
 	{
-		if (m_zoom + delta < m_zoomLevels.size())
+		if ( (m_zoom != m_zoomLevels.begin() || delta > 0) && (m_zoom + delta != m_zoomLevels.end() || delta < 0) )
 		{
 			m_zoom += delta;
-			m_radius = m_zoomLevels[m_zoom];
+			m_ui->state.globe.radius = *m_zoom;
 
 			for (Uint32 i = 0; i < m_polygons.size(); ++i)
 			{
 				for (Uint32 j = 0; j < m_polygons[i].size(); ++j)
-					m_polygons[i][j].sync(m_radius);
+					m_polygons[i][j].sync(m_ui->state.globe.radius);
 			}
 
 			for (Uint32 i = 0; i < m_test.size(); ++i)
-				m_test[i].sync(m_radius);
+				m_test[i].sync(m_ui->state.globe.radius);
 			for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
-				m_ui->state.bases[i]->getLocation().sync(m_radius);
+				m_ui->state.bases[i]->getLocation().sync(m_ui->state.globe.radius);
 		}
 	}
 
@@ -472,7 +501,7 @@ namespace ufo
 		if (!screenToCartesian(sx, sy, p))
 			return;
 
-		p.toSpherical(m_defaultTarget, m_radius);
+		p.toSpherical(m_defaultTarget, m_ui->state.globe.radius);
 	}
 
 	bool Globe::onMouseLeftClick(Sint16 _x, Sint16 _y)
@@ -484,7 +513,7 @@ namespace ufo
 			GeoPoint p;
 			if (screenToCartesian(_x, _y, p.c) && i != m_polygons.end())
 			{
-				p.c.toSpherical(p.s, m_radius);
+				p.c.toSpherical(p.s, m_ui->state.globe.radius);
 
 				m_mode = Normal;
 				m_newBaseDialog->create(new NewBaseNameDialog(p));
@@ -496,7 +525,7 @@ namespace ufo
 			if (screenToCartesian(_x, _y, gp.c))
 			{
 				// populate spherical coordinates
-				gp.c.toSpherical(gp.s, m_radius);
+				gp.c.toSpherical(gp.s, m_ui->state.globe.radius);
 
 				// set target
 				gp.target = m_defaultTarget;
@@ -517,10 +546,10 @@ namespace ufo
 		GeoPoint gp;
 		if (screenToCartesian(x, y, gp.c))
 		{
-			gp.c.toSpherical(gp.s, m_radius);
+			gp.c.toSpherical(gp.s, m_ui->state.globe.radius);
 
-			m_rotx = gp.s.y - 720;
-			m_rotz = gp.s.x + 720;
+			m_ui->state.globe.rotx = gp.s.y - 720;
+			m_ui->state.globe.rotz = gp.s.x + 720;
 		}
 
 		return true;
@@ -550,7 +579,7 @@ namespace ufo
 		if (!screenToCartesian(_x, _y, temp))
 			return false;
 
-		temp.toSpherical(p, m_radius);
+		temp.toSpherical(p, m_ui->state.globe.radius);
 		return true;
 	}
 }

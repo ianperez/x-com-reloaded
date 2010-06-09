@@ -4,6 +4,33 @@
 
 namespace ufo
 {
+	class SaveLoadBase : public UIDialog
+	{
+	public:
+
+		SaveLoadBase();
+
+		void onCreate();
+	};
+
+	class SaveDialog : public SaveLoadBase
+	{
+	public:
+
+		void onOpen();
+
+		void draw(Surface& surface);
+	};
+
+	class LoadDialog : public SaveLoadBase
+	{
+	public:
+
+		void onOpen();
+
+		void draw(Surface& surface);
+	};
+
 	class LanguageDialog : public UIDialog
 	{
 	public:

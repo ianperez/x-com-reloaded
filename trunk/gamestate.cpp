@@ -4,6 +4,11 @@
 
 namespace ufo
 {
+	GameState::GameState()
+		: funds(4147000)
+	{
+	}
+
 	string GameState::getSavePath(Uint16 slot)
 	{
 		stringstream path;
@@ -21,5 +26,6 @@ namespace ufo
 	{
 		string path(getSavePath(slot));
 		time.load(path);
+		globe.load(path);
 	}
 }

@@ -267,6 +267,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\country.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\country.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dialog.main.cpp"
 				>
 			</File>
@@ -324,6 +332,10 @@
 			</File>
 			<File
 				RelativePath=".\point.h"
+				>
+			</File>
+			<File
+				RelativePath=".\soldierview.h"
 				>
 			</File>
 			<File
