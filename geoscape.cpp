@@ -71,6 +71,10 @@ namespace ufo
 
 		void onPress()
 		{
+			if (m_stringId == 316)
+				m_ui->create(new LoadDialog());
+			if (m_stringId == 317)
+				m_ui->create(new SaveDialog());
 			if (m_stringId == 800)
 				m_ui->create(new AbandonGameDialog());
 

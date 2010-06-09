@@ -14,6 +14,19 @@ namespace ufo
 	using namespace std;
 	using namespace boost;
 
+	class GlobeState
+	{
+	public:
+
+		GlobeState();
+
+		void save(string path);
+		void load(string path);
+
+		Sint16 rotx, rotz;
+		Sint16 radius;
+	};
+
 	struct GeoPolygon : public vector<GeoPoint>
 	{
 		Uint32 texture;
@@ -54,13 +67,9 @@ namespace ufo
 		vector<GeoObject> m_test;
 
 		Point2d m_center;
-		Sint16 m_rotx, m_rotz;
 
-		Sint16 m_radius;
-		Sint16 m_radiusMin;
-		Sint16 m_radiusMax;
 		vector<Sint16> m_zoomLevels;
-		size_t m_zoom;
+		vector<Sint16>::iterator m_zoom;
 
 		Sint16 m_polarDegFix;
 

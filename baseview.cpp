@@ -3,6 +3,7 @@
 #include "uibutton.h"
 #include "geoscape.h"
 #include "globe.h"
+#include "util.h"
 
 namespace ufo
 {
@@ -53,5 +54,7 @@ namespace ufo
 
 	void BaseView::draw(Surface& surface)
 	{
+		m_smFont.setColor(Palette::blockSize * 13 + 11);
+		m_smFont.print(surface, 194, 24, format("%z%d", m_ui->strings(56), m_ui->state.funds));
 	}
 }
