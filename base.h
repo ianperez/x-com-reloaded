@@ -1,7 +1,10 @@
 #pragma once
 #include <string>
+#include <vector>
+#include <boost/shared_ptr.hpp>
 #include "point.h"
 #include "surface.h"
+#include "objectstate.h"
 
 namespace ufo
 {
@@ -16,10 +19,9 @@ namespace ufo
 		string getName() const { return m_name; }
 		GeoPoint& getLocation() { return m_location; }
 
-		void setLocation(GeoPoint p);
 		void setName(string name);
 
-		void draw(Surface& surface, Point2d p);
+		void draw(Surface& surface);
 
 	protected:
 
@@ -31,5 +33,9 @@ namespace ufo
 		GeoPoint m_location;
 
 		string m_name;
+	};
+
+	class BaseState : public ObjectState, public vector<shared_ptr<Base> >
+	{
 	};
 }

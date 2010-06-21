@@ -26,12 +26,12 @@ namespace ufo
 				break;
 
 			SDL_Color c;
-			//c.r = (r + 1) * 4 - 1;
-			//c.g = (g + 1) * 4 - 1;
-			//c.b = (b + 1) * 4 - 1;
-			c.r = r * 255 / 63;
-			c.g = g * 255 / 63;
-			c.b = b * 255 / 63;
+			c.r = (r + 1) * 4 - 1;
+			c.g = (g + 1) * 4 - 1;
+			c.b = (b + 1) * 4 - 1;
+			//c.r = r * 255 / 63;
+			//c.g = g * 255 / 63;
+			//c.b = b * 255 / 63;
 			c.unused = 0;
 			m_colors.push_back(c);
 		}

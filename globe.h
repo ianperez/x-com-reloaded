@@ -8,13 +8,15 @@
 #include "palette.h"
 #include "font.h"
 #include "point.h"
+#include "objectstate.h"
 
 namespace ufo
 {
 	using namespace std;
 	using namespace boost;
+	using namespace Point;
 
-	class GlobeState
+	class GlobeState : public ObjectState
 	{
 	public:
 
@@ -23,12 +25,16 @@ namespace ufo
 		void save(string path);
 		void load(string path);
 
-		Sint16 rotx, rotz;
+		Sint16 rx, rz;
 		Sint16 radius;
 	};
 
-	struct GeoPolygon : public vector<GeoPoint>
+	class GeoPolygon : public vector<GeoPoint>
 	{
+	public:
+
+		bool contains(const Screen& p);
+
 		Uint32 texture;
 	};
 
@@ -66,17 +72,17 @@ namespace ufo
 		vector<GeoPolygon> m_polygons;
 		vector<GeoObject> m_test;
 
-		Point2d m_center;
+		Screen m_center;
 
 		vector<Sint16> m_zoomLevels;
 		vector<Sint16>::iterator m_zoom;
 
 		Sint16 m_polarDegFix;
 
-		Point2d m_defaultTarget;
+		GeoPoint m_defaultTarget;
 
 		vector<shared_ptr<Surface> > m_textures;
-		Point2d m_mouse;
+		Screen m_mouse;
 
 		Palette m_palette;
 
@@ -87,12 +93,8 @@ namespace ufo
 		StartMode m_mode;
 		UIElement* m_newBaseDialog;
 
-		bool screenToCartesian(Sint16 x, Sint16 y, Point3d& p);
-		bool screenToSpherical(Sint16 x, Sint16 y, Point2d& p);
-		vector<GeoPolygon>::iterator screenToPolygon(Sint16 x, Sint16 y);
-		void rotate(Point3d& p, Sint16 x, Sint16 z);
-		void project(const Point3d& p1, Point2d& p2);
-
+		vector<GeoPolygon>::iterator screenToPolygon(const Screen& p);
+		void update();
 		void drawShip(Surface& surface, Sint16 x, Sint16 y, Uint8 color);
 	};
 }

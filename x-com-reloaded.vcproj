@@ -327,6 +327,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\objectstate.h"
+				>
+			</File>
+			<File
 				RelativePath=".\point.cpp"
 				>
 			</File>

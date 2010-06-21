@@ -9,6 +9,8 @@
 
 namespace ufo
 {
+	using namespace Point;
+
 	class NewBaseNameEdit : public UIEdit
 	{
 		BigFont m_font;
@@ -22,7 +24,7 @@ namespace ufo
 		void onEnter()
 		{
 			m_ui->state.bases.push_back(shared_ptr<Base>(new Base));
-			m_ui->state.bases.back()->setLocation(m_location);
+			m_ui->state.bases.back()->getLocation() = m_location;
 			m_ui->state.bases.back()->setName(m_buffer);
 			m_ui->destroy(m_parent);
 		}
@@ -115,7 +117,7 @@ namespace ufo
 	};
 
 	GlobeState::GlobeState()
-		: rotx(0), rotz(720), radius(90)
+		: rx(0), rz(720), radius(90)
 	{
 	}
 
@@ -130,16 +132,36 @@ namespace ufo
 		if (!file)
 			throw runtime_error("error opening " + filename);
 
-		file.read((char*)&rotx, 2);
+		file.read((char*)&rx, 2);
 
 		file.seekg(6, ios::beg);
-		file.read((char*)&rotz, 2);
+		file.read((char*)&rz, 2);
 
 		file.seekg(12, ios::beg);
 		file.read((char*)&radius, 2);
 
-		rotz = (2880 - rotz + 720) % 2880;
-		rotx = (2880 - rotx) % 1440;
+		rz = (2880 - rz + 720) % 2880;
+		rx = (2880 - rx) % 1440;
+	}
+
+	bool GeoPolygon::contains(const Screen& p)
+	{
+		bool lastResult;
+		for (size_t i = 0; i < size(); ++i)
+		{
+			size_t j = (i + 1) % size();
+
+			if (!at(i).visible || !at(j).visible)
+				return false;
+
+			bool result = (p.y - at(i).p.y) * (at(j).p.x - at(i).p.x) - (p.x - at(i).p.x) * (at(j).p.y - at(i).p.y) >= 0;
+			if (i == 0)
+				lastResult = result;
+			else if (result != lastResult)
+				return false;
+		}
+
+		return true;
 	}
 
 	Globe::Globe(StartMode mode)
@@ -149,7 +171,6 @@ namespace ufo
 
 	void Globe::onCreate()
 	{
-		m_ui->state.load(1);
 		// set up zoom levels
 		m_zoomLevels.push_back(90);
 		m_zoomLevels.push_back(120);
@@ -161,7 +182,7 @@ namespace ufo
 		m_zoom = find(m_zoomLevels.begin(), m_zoomLevels.end(), m_ui->state.globe.radius);
 
 		// set center of globe
-		m_center = Point2d(w / 2, h / 2);
+		m_center = Screen(w / 2, h / 2);
 
 		// load globe textures
 		Surface texture;
@@ -182,18 +203,16 @@ namespace ufo
 			GeoPolygon polygon;
 			for (char i = 0; i < 4; ++i)
 			{
-				file.read((char*)&gp.s.x, 2);
+				file.read((char*)&gp.s.lon, 2);
 				if (file.eof())
 					break;
 
-				file.read((char*)&gp.s.y, 2);
+				file.read((char*)&gp.s.lat, 2);
 
-				if (gp.s.x == -1)
+				if (gp.s.lon == -1)
 					break;
 
-				gp.s.y += 720;
-
-				gp.s.toCartesian(gp.c, m_ui->state.globe.radius);
+				gp.s.lat += 720;
 
 				polygon.push_back(gp);
 			}
@@ -205,12 +224,8 @@ namespace ufo
 			m_polygons.push_back(polygon);
 		}
 
-		m_defaultTarget.x = 0;
-		m_defaultTarget.y = 0;
-
-		// re-populate object cartesian coordinates
-		for (size_t i = 0; i < m_ui->state.bases.size(); ++i)
-			m_ui->state.bases[i]->getLocation().sync(m_ui->state.globe.radius);
+		// update cached cartesian/screen coords
+		update();
 
 		if (m_mode == CreateBase)
 		{
@@ -226,18 +241,18 @@ namespace ufo
 			// move point toward target
 			if (SDL_GetTicks() - m_test[i].lastUpdate > 20)
 			{
-				if (m_test[i].s.x != m_test[i].target.x || m_test[i].s.y != m_test[i].target.y)
+				if (m_test[i].s.lon != m_test[i].target.lon || m_test[i].s.lat != m_test[i].target.lat)
 				{
-					Point2d targetTemp(m_test[i].target);
-					if (m_test[i].s.y > m_polarDegFix && m_test[i].s.y < (1440 - m_polarDegFix) && (m_test[i].target.y <= m_polarDegFix || m_test[i].target.y >= (1440 - m_polarDegFix)))
-						targetTemp.x = m_test[i].s.x;
+					Spherical targetTemp(m_test[i].target);
+					if (m_test[i].s.lat > m_polarDegFix && m_test[i].s.lat < (1440 - m_polarDegFix) && (m_test[i].target.lat <= m_polarDegFix || m_test[i].target.lat >= (1440 - m_polarDegFix)))
+						targetTemp.lon = m_test[i].s.lon;
 
-					double direction = atan2(static_cast<double>(targetTemp.y - m_test[i].s.y), static_cast<double>(targetTemp.x - m_test[i].s.x));
-					m_test[i].s.x += round<Sint16>(cos(direction));
-					m_test[i].s.y += round<Sint16>(sin(direction));
-
-					m_test[i].s.toCartesian(m_test[i].c, m_ui->state.globe.radius);
+					double direction = atan2(static_cast<double>(targetTemp.lat - m_test[i].s.lat), static_cast<double>(targetTemp.lon - m_test[i].s.lon));
+					m_test[i].s.lon += round<Sint16>(cos(direction));
+					m_test[i].s.lat += round<Sint16>(sin(direction));
 				}
+
+				m_test[i].sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 
 				m_test[i].lastUpdate = SDL_GetTicks();
 			}
@@ -258,27 +273,21 @@ namespace ufo
 		vector<Sint16> vx(4), vy(4);
 		for (size_t i = 0; i < m_polygons.size(); ++i)
 		{
-			size_t hidden = 0;
+			bool hidden = false;
 			Sint16* minx = &vx[0];
 			Sint16* miny = &vy[0];
 			Sint16* maxx = &vx[0];
 			Sint16* maxy = &vy[0];
 			for (size_t j = 0; j < m_polygons[i].size(); ++j)
 			{
-				Point3d p1(m_polygons[i][j].c);
+				if (!m_polygons[i][j].visible)
+				{
+					hidden = true;
+					break;
+				}
 
-				// perform rotation
-				rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
-
-				// check if point is on back of sphere
-				if (p1.y > 0)
-					++hidden;
-
-				Point2d p2;
-				project(p1, p2);
-
-				vx[j] = p2.x;
-				vy[j] = p2.y;
+				vx[j] = m_polygons[i][j].p.x;
+				vy[j] = m_polygons[i][j].p.y;
 
 				// find min x/y and max x/y
 				if (vx[j] < *minx)
@@ -291,8 +300,8 @@ namespace ufo
 					maxy = &vy[j];
 			}
 
-			// skip polygon if all points are on back of sphere
-			if (hidden == m_polygons[i].size())
+			// skip polygon if any points are on back of sphere
+			if (hidden)
 				continue;
 
 			// slightly enlarge polygons to remove gaps
@@ -315,57 +324,32 @@ namespace ufo
 
 		// draw bases
 		for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
-		{
-			Point3d p1(m_ui->state.bases[i]->getLocation().c);
-			rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
-			if (p1.y > 0)
-				continue;
-
-			Point2d p2;
-			project(p1, p2);
-
-			m_ui->state.bases[i]->draw(surface, p2);
-		}
+			m_ui->state.bases[i]->draw(surface);
 
 		for (Uint32 i = 0; i < m_test.size(); ++i)
 		{
-			Point3d p1(m_test[i].c);
-			rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
-			if (p1.y > 0)
-				continue;
-
-			Point2d p2;
-			project(p1, p2);
-
-			drawShip(surface, p2.x, p2.y, 11);
+			if (m_test[i].visible)
+				drawShip(surface, m_test[i].p.x, m_test[i].p.y, 11);
 		}
 
-		Point3d p1;
-		m_defaultTarget.toCartesian(p1, m_ui->state.globe.radius);
-
-		rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
-		if (p1.y <= 0)
-		{
-			Point2d p2;
-			project(p1, p2);
-
-			drawShip(surface, p2.x, p2.y, 13);
-		}
+		if (m_defaultTarget.visible)
+			drawShip(surface, m_defaultTarget.p.x, m_defaultTarget.p.y, 13);
 
 		if (m_debug)
 		{
-			m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_ui->state.globe.rotx, m_ui->state.globe.rotz));
+			m_font.print(surface, 5, 5, format("Rotation (x, z): %d, %d", m_ui->state.globe.rx, m_ui->state.globe.rz));
 
 			GeoPoint gptemp;
-			if (screenToCartesian(m_mouse.x, m_mouse.y, gptemp.c))
+			gptemp.c = Cartesian(m_mouse, m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
+			if (gptemp.c)
 			{
-				gptemp.c.toSpherical(gptemp.s, m_ui->state.globe.radius);
-				m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.x, gptemp.s.y));
+				gptemp.s = Spherical(gptemp.c, m_ui->state.globe.radius);
+				m_font.print(surface, 5, 15, format("Mouse -> Spherical: %d, %d", gptemp.s.lon, gptemp.s.lat));
 				m_font.print(surface, 5, 25, format("Mouse -> Cartesian: %f, %f, %f", gptemp.c.x, gptemp.c.y, gptemp.c.z));
 			}
 
 			m_font.print(surface, 5, 45, format("Radius: %d", m_ui->state.globe.radius));
-			m_font.print(surface, 5, 35, format("Default Target (Spherical): %d, %d", m_defaultTarget.x, m_defaultTarget.y));
+			m_font.print(surface, 5, 35, format("Default Target (Spherical): %d, %d", m_defaultTarget.s.lon, m_defaultTarget.s.lat));
 
 			m_font.print(surface, 5, 55, format("Pixel: %d", surface.getPixel8(m_mouse.x, m_mouse.y)));
 		}
@@ -381,60 +365,11 @@ namespace ufo
 		surface.pixelColor8(x, y - 1, color);
 	}
 
-	// convert Screen coordinates to Cartesian (x,y,z)
-	bool Globe::screenToCartesian(Sint16 x, Sint16 y, Point3d& p)
-	{
-		// unproject point
-		p.x = x - m_center.x;
-		p.z = -(y - m_center.y);
-
-		double ys = m_ui->state.globe.radius * m_ui->state.globe.radius - p.x * p.x - p.z * p.z;
-		if (ys < 0)
-			return false;
-
-		p.y = -sqrt(ys);
-
-		// reverse rotation
-		rotate(p, -m_ui->state.globe.rotx, 0);
-		rotate(p, 0, -m_ui->state.globe.rotz);
-
-		return true;
-	}
-
-	vector<GeoPolygon>::iterator Globe::screenToPolygon(Sint16 _x, Sint16 _y)
+	vector<GeoPolygon>::iterator Globe::screenToPolygon(const Screen& p)
 	{
 		for (size_t i = 0; i < m_polygons.size(); ++i)
 		{
-			bool result = false;
-			for (size_t j = 0; j < m_polygons[i].size(); ++j)
-			{
-				size_t k = (j + 1) % m_polygons[i].size();
-
-				Point3d p1(m_polygons[i][j].c);
-				Point3d p2(m_polygons[i][k].c);
-
-				// perform rotation
-				rotate(p1, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
-				rotate(p2, m_ui->state.globe.rotx, m_ui->state.globe.rotz);
-
-				// check if point is on back of sphere
-				if (p1.y > 0 || p2.y > 0)
-				{
-					result = false;
-					break;
-				}
-
-				Point2d p3;
-				project(p1, p3);
-
-				Point2d p4;
-				project(p2, p4);
-
-				if ( ( (p3.y <= _y && _y <= p4.y) || (p4.y <= _y && _y <= p3.y) ) && (_x <= (p4.x - p3.x) * (_y - p3.y) / (p4.y - p3.y) + p3.x) )
-					result = !result;
-			}
-
-			if (result)
+			if (m_polygons[i].contains(p))
 			{
 				m_polygons[i].texture = 100;
 				return m_polygons.begin() + i;
@@ -444,35 +379,33 @@ namespace ufo
 		return m_polygons.end();
 	}
 
-	void Globe::rotate(Point3d& p, Sint16 x, Sint16 z)
+	void Globe::update()
 	{
-		Point3d orig;
+		for (size_t i = 0; i < m_polygons.size(); ++i)
+		{
+			for (size_t j = 0; j < m_polygons[i].size(); ++j)
+				m_polygons[i][j].sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
+		}
 
-		// rotate z-axis
-		orig = p;
-		p.y = cos(toRad(z)) * orig.y - sin(toRad(z)) * orig.x;
-		p.x = sin(toRad(z)) * orig.y + cos(toRad(z)) * orig.x;
+		for (size_t i = 0; i < m_test.size(); ++i)
+			m_test[i].sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 
-		// rotate x-axis
-		orig = p;
-		p.z = cos(toRad(x)) * orig.z - sin(toRad(x)) * orig.y;
-		p.y = sin(toRad(x)) * orig.z + cos(toRad(x)) * orig.y;
-	}
+		for (size_t i = 0; i < m_ui->state.bases.size(); ++i)
+			m_ui->state.bases[i]->getLocation().sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 
-	void Globe::project(const Point3d& p1, Point2d& p2)
-	{
-		p2.x = round<Sint16>(p1.x + m_center.x);
-		p2.y = round<Sint16>(-p1.z + m_center.y);
+		m_defaultTarget.sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 	}
 
 	void Globe::rotateHorizontal(Sint16 delta)
 	{
-		m_ui->state.globe.rotz = (m_ui->state.globe.rotz + delta) % 2880;
+		m_ui->state.globe.rz = (m_ui->state.globe.rz + delta) % 2880;
+		update();
 	}
 
 	void Globe::rotateVertical(Sint16 delta)
 	{
-		m_ui->state.globe.rotx = (m_ui->state.globe.rotx + delta) % 2880;
+		m_ui->state.globe.rx = (m_ui->state.globe.rx + delta) % 2880;
+		update();
 	}
 
 	void Globe::zoom(Sint8 delta)
@@ -482,38 +415,33 @@ namespace ufo
 			m_zoom += delta;
 			m_ui->state.globe.radius = *m_zoom;
 
-			for (Uint32 i = 0; i < m_polygons.size(); ++i)
-			{
-				for (Uint32 j = 0; j < m_polygons[i].size(); ++j)
-					m_polygons[i][j].sync(m_ui->state.globe.radius);
-			}
-
-			for (Uint32 i = 0; i < m_test.size(); ++i)
-				m_test[i].sync(m_ui->state.globe.radius);
-			for (Uint32 i = 0; i < m_ui->state.bases.size(); ++i)
-				m_ui->state.bases[i]->getLocation().sync(m_ui->state.globe.radius);
+			update();
 		}
 	}
 
 	void Globe::setDefaultTarget(Sint16 sx, Sint16 sy)
 	{
-		Point3d p;
-		if (!screenToCartesian(sx, sy, p))
+		Cartesian p(Screen(sx, sy), m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
+		if (!p)
 			return;
 
-		p.toSpherical(m_defaultTarget, m_ui->state.globe.radius);
+		m_defaultTarget.s = Spherical(p, m_ui->state.globe.radius);
+
+		m_defaultTarget.sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 	}
 
 	bool Globe::onMouseLeftClick(Sint16 _x, Sint16 _y)
 	{
 		if (m_mode == CreateBase)
 		{
-			vector<GeoPolygon>::iterator i = screenToPolygon(_x, _y);
+			vector<GeoPolygon>::iterator i = screenToPolygon(Screen(_x, _y));
 
 			GeoPoint p;
-			if (screenToCartesian(_x, _y, p.c) && i != m_polygons.end())
+			p.c = Cartesian(Screen(_x, _y), m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
+			if (p.c && i != m_polygons.end())
 			{
-				p.c.toSpherical(p.s, m_ui->state.globe.radius);
+				p.s = Spherical(p.c, m_ui->state.globe.radius);
+				p.sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 
 				m_mode = Normal;
 				m_newBaseDialog->create(new NewBaseNameDialog(p));
@@ -522,13 +450,14 @@ namespace ufo
 		else
 		{
 			GeoObject gp;
-			if (screenToCartesian(_x, _y, gp.c))
+			gp.c = Cartesian(Screen(_x, _y), m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
+			if (gp.c)
 			{
 				// populate spherical coordinates
-				gp.c.toSpherical(gp.s, m_ui->state.globe.radius);
+				gp.s = Spherical(gp.c, m_ui->state.globe.radius);
 
 				// set target
-				gp.target = m_defaultTarget;
+				gp.target = m_defaultTarget.s;
 
 				// adjust target if needed
 				gp.target.adjust(gp.s);
@@ -544,12 +473,15 @@ namespace ufo
 	bool Globe::onMouseRightClick(Sint16 x, Sint16 y)
 	{
 		GeoPoint gp;
-		if (screenToCartesian(x, y, gp.c))
+		gp.c = Cartesian(Screen(x, y), m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
+		if (gp.c)
 		{
-			gp.c.toSpherical(gp.s, m_ui->state.globe.radius);
+			gp.s = Spherical(gp.c, m_ui->state.globe.radius);
 
-			m_ui->state.globe.rotx = gp.s.y - 720;
-			m_ui->state.globe.rotz = gp.s.x + 720;
+			m_ui->state.globe.rx = gp.s.lat - 720;
+			m_ui->state.globe.rz = gp.s.lon + 720;
+
+			update();
 		}
 
 		return true;
@@ -571,15 +503,5 @@ namespace ufo
 			setDefaultTarget(m_mouse.x, m_mouse.y);
 
 		return false;
-	}
-
-	bool Globe::screenToSpherical(Sint16 _x, Sint16 _y, Point2d& p)
-	{
-		Point3d temp;
-		if (!screenToCartesian(_x, _y, temp))
-			return false;
-
-		temp.toSpherical(p, m_ui->state.globe.radius);
-		return true;
 	}
 }
