@@ -3,12 +3,13 @@
 #include <string>
 #include "surface.h"
 #include "font.h"
+#include "objectstate.h"
 
 namespace ufo
 {
 	using namespace std;
 
-	class GameTime
+	class GameTime : public ObjectState
 	{
 		Uint32 getMonthDays(Uint32 month);
 

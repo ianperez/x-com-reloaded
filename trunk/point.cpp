@@ -4,56 +4,93 @@
 
 namespace ufo
 {
-	void Point2d::toCartesian(Point3d& p, Sint16 radius)
+	namespace Point
 	{
-		double rx = toRad(x);
-		double ry = toRad(y);
-		double sy = sin(ry);
+		Screen::Screen(const Cartesian& c, const Screen& center)
+		{
+			x = round<Sint16>(c.x + center.x);
+			y = round<Sint16>(center.y - c.z);
+		}
 
-		p.x = radius * sy * cos(rx);
-		p.y = radius * sy * sin(rx);
-		p.z = radius * cos(ry);
+		Spherical::Spherical(const Cartesian& c, Sint16 radius)
+		{
+			lat = round<Sint16>(toDeg(acos(c.z / radius)));
+			lon = round<Sint16>(toDeg(atan2(c.y, c.x)));
+		}
+
+		double Spherical::distance(const Spherical& s) const
+		{
+			return sqrt(static_cast<double>((s.lon - lon) * (s.lon - lon) + (s.lat - lat) * (s.lat - lat)));
+		}
+
+		Spherical& Spherical::adjust(const Spherical& s)
+		{
+			if (distance(s) > Spherical(lon - 2880, lat).distance(s))
+				lon -= 2880;
+			else if (distance(s) > Spherical(lon + 2880, lat).distance(s))
+				lon += 2880;
+
+			return *this;
+		}
+
+		Cartesian::Cartesian(const Screen& s, const Screen& center, Sint16 radius, Sint16 rx, Sint16 rz)
+			: m_invalid(false)
+		{
+			x = s.x - center.x;
+			z = center.y - s.y;
+
+			double ys = radius * radius - x * x - z * z;
+			if (ys < 0)
+				m_invalid = true;
+			else
+			{
+				y = -sqrt(ys);
+
+				rotate(-rx, 0);
+				rotate(0, -rz);
+			}
+		}
+
+		Cartesian::Cartesian(const Spherical& s, Sint16 radius)
+			: m_invalid(false)
+		{
+			double rx = toRad(s.lon);
+			double ry = toRad(s.lat);
+			double sy = sin(ry);
+
+			x = radius * sy * cos(rx);
+			y = radius * sy * sin(rx);
+			z = radius * cos(ry);
+		}
+
+		void Cartesian::rotate(Sint16 _x, Sint16 _z)
+		{
+			double rx = toRad(_x);
+			double rz = toRad(_z);
+
+			// rotate z-axis
+			Cartesian orig(*this);
+			y = cos(rz) * orig.y - sin(rz) * orig.x;
+			x = sin(rz) * orig.y + cos(rz) * orig.x;
+
+			// rotate x-axis
+			orig = *this;
+			z = cos(rx) * orig.z - sin(rx) * orig.y;
+			y = sin(rx) * orig.z + cos(rx) * orig.y;
+		}
+
+		Cartesian::operator bool () const
+		{
+			return !m_invalid;
+		}
 	}
 
-	double Point2d::distance(const Point2d& p)
+	void GeoPoint::sync(const Screen& center, Sint16 radius, Sint16 rx, Sint16 rz)
 	{
-		return sqrt(static_cast<double>((p.x - x) * (p.x - x) + (p.y - y) * (p.y - y)));
-	}
-
-	Point2d& Point2d::adjust(const Point2d& p)
-	{
-		if (distance(p) > Point2d(x - 2880, y).distance(p))
-			x -= 2880;
-		else if (distance(p) > Point2d(x + 2880, y).distance(p))
-			x += 2880;
-
-		return *this;
-	}
-
-	void Point3d::toSpherical(Point2d& p, Sint16 radius)
-	{
-		p.y = round<Sint16>(toDeg(acos(z / radius)));
-		p.x = round<Sint16>(toDeg(atan2(y, x)));
-	}
-
-	void Point3d::rotate(Sint16 _x, Sint16 _z)
-	{
-		double rx = toRad(_x);
-		double rz = toRad(_z);
-
-		// rotate z-axis
-		Point3d orig(*this);
-		y = cos(rz) * orig.y - sin(rz) * orig.x;
-		x = sin(rz) * orig.y + cos(rz) * orig.x;
-
-		// rotate x-axis
-		orig = *this;
-		z = cos(rx) * orig.z - sin(rx) * orig.y;
-		y = sin(rx) * orig.z + cos(rx) * orig.y;
-	}
-
-	void GeoPoint::sync(Sint16 radius)
-	{
-		s.toCartesian(c, radius);
+		c = Cartesian(s, radius);
+		c.rotate(rx, rz);
+		visible = c.y <= 0;
+		if (visible)
+			p = Screen(c, center);
 	}
 }

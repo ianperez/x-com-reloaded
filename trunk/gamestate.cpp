@@ -7,6 +7,9 @@ namespace ufo
 	GameState::GameState()
 		: funds(4147000)
 	{
+		push_back(&time);
+		push_back(&globe);
+		push_back(&bases);
 	}
 
 	string GameState::getSavePath(Uint16 slot)
@@ -19,13 +22,14 @@ namespace ufo
 	void GameState::save(Uint16 slot)
 	{
 		string path(getSavePath(slot));
-		time.save(path);
+		for (size_t i = 0; i < size(); ++i)
+			at(i)->save(path);
 	}
 
 	void GameState::load(Uint16 slot)
 	{
 		string path(getSavePath(slot));
-		time.load(path);
-		globe.load(path);
+		for (size_t i = 0; i < size(); ++i)
+			at(i)->load(path);
 	}
 }

@@ -222,7 +222,7 @@ namespace ufo
 	class GeoScapeGlobeControl : public UIPushButton
 	{
 		Globe& m_globe;
-		Point2d m_mouse;
+		Point::Screen m_mouse;
 		bool m_continuous;
 
 	public:

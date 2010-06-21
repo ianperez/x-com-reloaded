@@ -1,16 +1,16 @@
 #pragma once
 #include <vector>
-#include <boost/shared_ptr.hpp>
 #include "gametime.h"
 #include "base.h"
 #include "globe.h"
+#include "objectstate.h"
 
 namespace ufo
 {
 	using namespace std;
 	using namespace boost;
 
-	class GameState
+	class GameState : public vector<ObjectState*>
 	{
 		string getSavePath(Uint16 slot);
 
@@ -23,7 +23,7 @@ namespace ufo
 
 		GameTime time;
 		GlobeState globe;
-		vector<shared_ptr<Base> > bases;
+		BaseState bases;
 
 		Uint32 funds;
 	};
