@@ -43,7 +43,7 @@ namespace ufo
 			screen.fillRect(NULL, 0);
 
 			SDL_Event e;
-			if (SDL_PollEvent(&e))
+			while (SDL_PollEvent(&e))
 			{
 				if (e.type == SDL_QUIT)
 					break;
@@ -62,6 +62,9 @@ namespace ufo
 
 				ui.processEvent(e);
 			}
+
+			if (e.type == SDL_QUIT)
+				break;
 
 			ui.logic();
 			ui.draw();
