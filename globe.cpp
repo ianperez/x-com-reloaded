@@ -273,7 +273,7 @@ namespace ufo
 		vector<Sint16> vx(4), vy(4);
 		for (size_t i = 0; i < m_polygons.size(); ++i)
 		{
-			bool hidden = false;
+			Sint8 hidden = 0;
 			Sint16* minx = &vx[0];
 			Sint16* miny = &vy[0];
 			Sint16* maxx = &vx[0];
@@ -281,10 +281,7 @@ namespace ufo
 			for (size_t j = 0; j < m_polygons[i].size(); ++j)
 			{
 				if (!m_polygons[i][j].visible)
-				{
-					hidden = true;
-					break;
-				}
+					++hidden;
 
 				vx[j] = m_polygons[i][j].p.x;
 				vy[j] = m_polygons[i][j].p.y;
@@ -300,8 +297,8 @@ namespace ufo
 					maxy = &vy[j];
 			}
 
-			// skip polygon if any points are on back of sphere
-			if (hidden)
+			// skip polygon if all points are on back of sphere
+			if (hidden == m_polygons[i].size())
 				continue;
 
 			// slightly enlarge polygons to remove gaps
@@ -455,6 +452,7 @@ namespace ufo
 			{
 				// populate spherical coordinates
 				gp.s = Spherical(gp.c, m_ui->state.globe.radius);
+				gp.sync(m_center, m_ui->state.globe.radius, m_ui->state.globe.rx, m_ui->state.globe.rz);
 
 				// set target
 				gp.target = m_defaultTarget.s;

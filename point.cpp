@@ -90,7 +90,6 @@ namespace ufo
 		c = Cartesian(s, radius);
 		c.rotate(rx, rz);
 		visible = c.y <= 0;
-		if (visible)
-			p = Screen(c, center);
+		p = Screen(c, center);
 	}
 }
