@@ -3,9 +3,34 @@
 #include "uimanager.h"
 #include "uibutton.h"
 #include "geoscape.h"
+#include "util.h"
 
 namespace ufo
 {
+	class SaveLoadButton : public UIPushButtonStandard
+	{
+	public:
+
+		SaveLoadButton(Uint16 stringId, Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint16 id)
+			: UIPushButtonStandard(stringId, x, y, w, h) { m_id = id; }
+
+		void onCreate()
+		{
+			if (m_id == 0)
+				centerHorizontal(*m_parent);
+		}
+
+		void onPress()
+		{
+			m_ui->destroy(m_parent);
+		}
+
+		void draw(Surface& surface)
+		{
+			UIPushButtonStandard::draw(surface);
+		}
+	};
+
 	SaveLoadBase::SaveLoadBase()
 		: UIDialog(0, 0, 320, 200, Palette::blockSize * 8 + 6, UIDialog::Both)
 	{
@@ -16,6 +41,14 @@ namespace ufo
 		m_bg.loadSCR("geograph/back01.scr");
 		Palette p("geodata/backpals.dat", 6, 16);
 		p.apply(m_bg);
+		p.apply(m_ui->surface);
+	}
+
+	void SaveLoadBase::onOpen()
+	{
+		create(new SaveLoadButton(49, 0, 172, 80, 16, 0));
+		for (size_t i = 0; i < 10; ++i)
+			create(new SaveLoadButton(830, 10, 32 + i * 14, 24, 12, i + 1));
 	}
 
 	void SaveDialog::onOpen()

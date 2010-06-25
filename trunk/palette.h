@@ -21,6 +21,8 @@ namespace ufo
 		SDL_Color operator[] (Uint8 index) const;
 
 		void apply(Surface& surface);
+		void apply(Surface& surface, Uint8 offset);
+		void draw(Surface& surface, Sint16 x, Sint16 y);
 
 		static const Uint8 blockSize = 16;
 
