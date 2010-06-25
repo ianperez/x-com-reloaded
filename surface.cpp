@@ -84,7 +84,8 @@ namespace ufo
 
 	void Surface::setColors(SDL_Color* colors, int firstcolor, int ncolors)
 	{
-		SDL_SetColors(m_surface, colors, firstcolor, ncolors);
+		//SDL_SetColors(m_surface, colors, firstcolor, ncolors);
+		SDL_SetPalette(m_surface, SDL_LOGPAL, colors, firstcolor, ncolors);
 	}
 
 	void Surface::lock()

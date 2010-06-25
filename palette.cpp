@@ -11,7 +11,7 @@ namespace ufo
 			throw runtime_error("error opening " + filename);
 
 		Uint8 bufferSize = paletteSize == 256 ? 6 : 0;
-		m_offset = paletteSize == 256 ? 0 : 224;
+		m_offset = paletteSize == 16 ? 224 : 0;
 
 		infile.seekg((paletteSize * 3 + bufferSize) * index, ios::beg);
 
@@ -26,12 +26,12 @@ namespace ufo
 				break;
 
 			SDL_Color c;
-			c.r = (r + 1) * 4 - 1;
-			c.g = (g + 1) * 4 - 1;
-			c.b = (b + 1) * 4 - 1;
-			//c.r = r * 255 / 63;
-			//c.g = g * 255 / 63;
-			//c.b = b * 255 / 63;
+			//c.r = (r + 1) * 4 - 1;
+			//c.g = (g + 1) * 4 - 1;
+			//c.b = (b + 1) * 4 - 1;
+			c.r = round<Uint8>(r * 255.0 / 63);
+			c.g = round<Uint8>(g * 255.0 / 63);
+			c.b = round<Uint8>(b * 255.0 / 63);
 			c.unused = 0;
 			m_colors.push_back(c);
 		}
@@ -62,5 +62,16 @@ namespace ufo
 	void Palette::apply(Surface& surface)
 	{
 		surface.setColors(&m_colors[0], m_offset, m_colors.size());
+	}
+
+	void Palette::apply(Surface& surface, Uint8 offset)
+	{
+		surface.setColors(&m_colors[0], offset, m_colors.size());
+	}
+
+	void Palette::draw(Surface& surface, Sint16 x, Sint16 y)
+	{
+		for (size_t i = 0; i < m_colors.size(); ++i)
+			surface.fillRect(&Rect(x + i, y, 1, 20), i);
 	}
 }

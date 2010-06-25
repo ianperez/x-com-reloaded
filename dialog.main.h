@@ -1,6 +1,7 @@
 #pragma once
 #include "uidialog.h"
 #include "font.h"
+#include "point.h"
 
 namespace ufo
 {
@@ -11,6 +12,7 @@ namespace ufo
 		SaveLoadBase();
 
 		void onCreate();
+		void onOpen();
 	};
 
 	class SaveDialog : public SaveLoadBase
