@@ -368,7 +368,8 @@ namespace ufo
 		{
 			if (m_polygons[i].contains(p))
 			{
-				m_polygons[i].texture = 100;
+				if (m_debug)
+					m_polygons[i].texture = 100;
 				return m_polygons.begin() + i;
 			}
 		}
