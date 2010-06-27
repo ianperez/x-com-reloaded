@@ -7,11 +7,14 @@ namespace ufo
 {
 	class SaveLoadBase : public UIDialog
 	{
+		Palette m_prev;
+
 	public:
 
 		SaveLoadBase();
 
 		void onCreate();
+		void onDestroy();
 		void onOpen();
 	};
 
@@ -19,16 +22,12 @@ namespace ufo
 	{
 	public:
 
-		void onOpen();
-
 		void draw(Surface& surface);
 	};
 
 	class LoadDialog : public SaveLoadBase
 	{
 	public:
-
-		void onOpen();
 
 		void draw(Surface& surface);
 	};

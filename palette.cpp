@@ -48,6 +48,13 @@ namespace ufo
 		load(filename, index, paletteSize);
 	}
 
+	Palette::Palette(Surface& surface)
+		: m_offset(0)
+	{
+		for (int i = 0; i < surface.get()->format->palette->ncolors; ++i)
+			m_colors.push_back(surface.get()->format->palette->colors[i]);
+	}
+
 	Uint32 Palette::getRGBA(Uint8 index) const
 	{
 		SDL_Color c(operator[] (index));

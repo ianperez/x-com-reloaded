@@ -16,6 +16,7 @@ namespace ufo
 
 		Palette();
 		Palette(string filename, Uint8 index = 0, Uint16 paletteSize = 256);
+		Palette(Surface& surface);
 
 		Uint32 getRGBA(Uint8 index) const;
 		SDL_Color operator[] (Uint8 index) const;
