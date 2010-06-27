@@ -38,10 +38,17 @@ namespace ufo
 
 	void SaveLoadBase::onCreate()
 	{
+		m_prev = Palette(m_ui->surface);
+
 		m_bg.loadSCR("geograph/back01.scr");
 		Palette p("geodata/backpals.dat", 6, 16);
 		p.apply(m_bg);
 		p.apply(m_ui->surface);
+	}
+
+	void SaveLoadBase::onDestroy()
+	{
+		m_prev.apply(m_ui->surface);
 	}
 
 	void SaveLoadBase::onOpen()
@@ -51,17 +58,9 @@ namespace ufo
 			create(new SaveLoadButton(830, 10, 32 + i * 14, 24, 12, i + 1));
 	}
 
-	void SaveDialog::onOpen()
-	{
-	}
-
 	void SaveDialog::draw(Surface& surface)
 	{
 		UIDialog::draw(surface);
-	}
-
-	void LoadDialog::onOpen()
-	{
 	}
 
 	void LoadDialog::draw(Surface& surface)
