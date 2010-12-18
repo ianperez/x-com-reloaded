@@ -203,6 +203,14 @@
 				>
 			</File>
 			<File
+				RelativePath=".\uilist.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\uilist.h"
+				>
+			</File>
+			<File
 				RelativePath=".\uimanager.cpp"
 				>
 			</File>
@@ -336,6 +344,14 @@
 			</File>
 			<File
 				RelativePath=".\point.h"
+				>
+			</File>
+			<File
+				RelativePath=".\saveinfo.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\saveinfo.h"
 				>
 			</File>
 			<File

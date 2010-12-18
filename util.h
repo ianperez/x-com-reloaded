@@ -24,4 +24,6 @@ namespace ufo
 	Uint32 GetColor(Uint8 r, Uint8 g, Uint8 b);
 	Uint32 GetColor(SDL_Color c);
 	string format(string format, ...);
+
+	bool exists(string filename);
 }
