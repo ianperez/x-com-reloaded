@@ -2,6 +2,7 @@
 #include <cstdarg>
 #include <sstream>
 #include <iomanip>
+#include <fstream>
 
 namespace ufo
 {
@@ -80,5 +81,11 @@ namespace ufo
 		va_end(ap);
 
 		return buffer;
+	}
+
+	bool exists(string filename)
+	{
+		ifstream file(filename.c_str());
+		return file ? true : false;
 	}
 }

@@ -1,4 +1,3 @@
-#include <sstream>
 #include "gamestate.h"
 #include "util.h"
 
@@ -12,23 +11,16 @@ namespace ufo
 		push_back(&bases);
 	}
 
-	string GameState::getSavePath(Uint16 slot)
+	void GameState::save(Uint8 slot)
 	{
-		stringstream path;
-		path << "game_" << slot << '/';
-		return path.str();
-	}
-
-	void GameState::save(Uint16 slot)
-	{
-		string path(getSavePath(slot));
+		string path(format("game_%d/", slot));
 		for (size_t i = 0; i < size(); ++i)
 			at(i)->save(path);
 	}
 
-	void GameState::load(Uint16 slot)
+	void GameState::load(Uint8 slot)
 	{
-		string path(getSavePath(slot));
+		string path(format("game_%d/", slot));
 		for (size_t i = 0; i < size(); ++i)
 			at(i)->load(path);
 	}

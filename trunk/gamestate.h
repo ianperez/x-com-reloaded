@@ -12,14 +12,12 @@ namespace ufo
 
 	class GameState : public vector<ObjectState*>
 	{
-		string getSavePath(Uint16 slot);
-
 	public:
 
 		GameState();
 
-		void save(Uint16 slot);
-		void load(Uint16 slot);
+		void save(Uint8 slot);
+		void load(Uint8 slot);
 
 		GameTime time;
 		GlobeState globe;

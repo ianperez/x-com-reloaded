@@ -9,6 +9,8 @@ namespace ufo
 {
 	class SaveLoadButton : public UIPushButtonStandard
 	{
+		SmallFont m_font;
+
 	public:
 
 		SaveLoadButton(Uint16 stringId, Sint16 x, Sint16 y, Uint16 w, Uint16 h, Uint16 id)
@@ -28,11 +30,19 @@ namespace ufo
 		void draw(Surface& surface)
 		{
 			UIPushButtonStandard::draw(surface);
+
+			if (m_id > 0)
+			{
+				string text(format("%d", m_id));
+				Rect r(0, 0, m_font.getTextWidth(text), m_font.getHeight());
+				r.center(*this);
+				m_font.print(surface, r.x, r.y, text);
+			}
 		}
 	};
 
-	SaveLoadBase::SaveLoadBase()
-		: UIDialog(0, 0, 320, 200, Palette::blockSize * 8 + 6, UIDialog::Both)
+	SaveLoadBase::SaveLoadBase(Sint16 headerStringId)
+		: UIDialog(0, 0, 320, 200, Palette::blockSize * 8 + 6, UIDialog::Both), m_headerStringId(headerStringId)
 	{
 	}
 
@@ -44,6 +54,14 @@ namespace ufo
 		Palette p("geodata/backpals.dat", 6, 16);
 		p.apply(m_bg);
 		p.apply(m_ui->surface);
+
+		// load save info
+		for (Uint8 i = 1; i <= 10; ++i)
+		{
+			string path(format("game_%d/saveinfo.dat", i));
+			if (exists(path))
+				m_saves[i] = SaveInfo(i);
+		}
 	}
 
 	void SaveLoadBase::onDestroy()
@@ -58,14 +76,17 @@ namespace ufo
 			create(new SaveLoadButton(830, 10, 32 + i * 14, 24, 12, i + 1));
 	}
 
-	void SaveDialog::draw(Surface& surface)
+	void SaveLoadBase::draw(Surface& surface)
 	{
 		UIDialog::draw(surface);
-	}
+		m_ui->text.setColor(Palette::blockSize * 15);
+		m_ui->text.print(surface, Rect(0, 8, 320, 200), m_headerStringId, TextRenderer::BigFont, TextRenderer::AlignCenter);
 
-	void LoadDialog::draw(Surface& surface)
-	{
-		UIDialog::draw(surface);
+		for (map<Uint8, SaveInfo>::iterator i = m_saves.begin(); i != m_saves.end(); ++i)
+		{
+			m_font.setColor(Palette::blockSize * 8 + 11);
+			m_font.print(surface, 40, 34 + i->first * 14, i->second.getName());
+		}
 	}
 
 	class LanguageButton : public UIPushButtonStandard
